@@ -119,17 +119,22 @@ board grid and the case agree by construction.
 | Feature | X (mm) | Y (mm) | Hole |
 |---|---|---|---|
 | LCD window (centred) | 15.3 – 79.8 | 30 – 46 | 64.5 × 16 rectangle |
-| LED 1 red | 17.0 | 54.8 | ⌀5.2 |
-| LED 2 green | 37.3 | 54.8 | ⌀5.2 |
-| LED 3 blue | 57.6 | 54.8 | ⌀5.2 |
-| LED 4 yellow | 78.0 | 54.8 | ⌀5.2 |
-| Button 1 red | 17.0 | 72.5 | square, cap size +0.4 |
-| Button 2 green | 37.3 | 72.5 | " |
-| Button 3 blue | 57.6 | 72.5 | " |
-| Button 4 yellow | 78.0 | 72.5 | " |
-| AA | 17.0 | 108.1 | " |
-| no | 65.3 | 108.1 | " |
-| yes | 80.5 | 108.1 | " |
+| LED 1 red | 24.64 | 54.8 | ⌀5.2 |
+| LED 2 green | 39.88 | 54.8 | ⌀5.2 |
+| LED 3 blue | 55.12 | 54.8 | ⌀5.2 |
+| LED 4 yellow | 70.36 | 54.8 | ⌀5.2 |
+| Button 1 red | 24.64 | 72.5 | square, cap size +0.4 |
+| Button 2 green | 39.88 | 72.5 | " |
+| Button 3 blue | 55.12 | 72.5 | " |
+| Button 4 yellow | 70.36 | 72.5 | " |
+| AA | 24.64 | 108.1 | " (under column 1) |
+| no | 55.12 | 108.1 | " (under column 3) |
+| yes | 70.36 | 108.1 | " (under column 4) |
+
+**Pitch is 15.24mm — exactly 6 perfboard holes**, chosen so the row fits the kit's
+18 × 24 hole boards (58.4mm of hole field). Gap between caps is 3.6mm. All seven
+buttons and all four LEDs share the same four columns, so the board grid and the face
+agree by construction. Change `PITCH_HOLES` in the .scad to move everything at once.
 | USB-C slot | centred, ~12 wide | bottom edge | clears the **housing**, not just the plug |
 
 **Button holes are sized to the CAP, not the switch body.** Measure a cap with calipers

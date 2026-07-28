@@ -42,13 +42,31 @@ LCD_HOLE_Y = 31;
 LCD_CX     = W/2;
 LCD_CY     = 38;
 
+/* ---- column pitch -------------------------------------------------------
+   Pitch is a whole number of 0.1" perfboard holes, so the board grid and the
+   printed face agree by construction. Set PITCH_HOLES to whatever the board
+   can span:  8 = 20.32mm (needs 73mm)   <- original, needs a 9x15cm board
+              7 = 17.78mm (needs 65mm)   <- fits a 20x27-hole 5x7cm board
+              6 = 15.24mm (needs 58mm)   <- fits an 18x24-hole 5x7cm board
+   Everything below derives from it, so changing this one number moves every
+   hole and keeps the row centred in the case.                              */
+PITCH_HOLES = 6;    // kit boards are 18 x 24 holes -> 58.4mm of hole field
+PITCH       = PITCH_HOLES * 2.54;
+BTN_SPAN    = 3*PITCH + CAP;                       // outer edge to outer edge
+COL0        = (W - BTN_SPAN)/2 + CAP/2;            // centre of the first column
+COL         = [for (i=[0:3]) COL0 + i*PITCH];
+
 /* face-plate feature positions, from the OUTER top-left corner */
-COL        = [17.0, 37.3, 57.6, 78.0];   // 20.32mm pitch = exactly 8 perfboard holes
 Y_LED      = 54.8;
 Y_BTN      = 72.5;
 Y_ANS      = 108.1;
-ANS_X      = [17.0, 65.3, 80.5];         // AA . no . yes
+// AA sits under column 1, no/yes under columns 3 and 4 — keeps AA well away from
+// "yes" so it can't be hit by accident, and lands everything on the same 4 columns.
+ANS_X      = [COL[0], COL[2], COL[3]];
 LED_D      = 5.2;
+
+echo(str("pitch ", PITCH, "mm (", PITCH_HOLES, " holes) — button row spans ",
+         BTN_SPAN, "mm; columns at ", COL));
 
 /* fasteners */
 SCREW_D    = 3.2;       // M3 clearance
