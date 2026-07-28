@@ -179,7 +179,9 @@ def preflight():
         f"{ROWS} rows.",
         "3. **Beep adjacent pads.** Take any two neighbouring holes and check continuity. "
         "**They must NOT beep.** Do this in four or five places across the board, including "
-        "along the edges.",
+        "along the edges. *Positive control first:* both probes on the same pad ring **must** "
+        "beep — otherwise you are measuring oxide, not isolation, and every silent reading "
+        "is meaningless.",
         "4. **Beep the elongated edge pads to each other.** If they beep, your board has "
         "power rails down the edges — tell me before soldering, because the layout puts a GND "
         "bus in column 1 and a rail there changes things.",
@@ -187,7 +189,8 @@ def preflight():
         "plated through (sturdier pads, and a joint on one face reaches the other). Silent "
         "means they are not — which is fine, the design solders one face only either way.",
         "",
-        "✅ **Test:** neighbours silent, dimensions match, grid counts match.",
+        "✅ **Test:** neighbours silent, dimensions match, grid counts match. "
+        "*(Confirmed on the real board: adjacent pads isolated, edge pads individual.)*",
         "",
         "❌ **If neighbouring pads beep:** stop. That is stripboard, not perfboard, and every "
         "row is pre-connected. The entire layout would have to change.",

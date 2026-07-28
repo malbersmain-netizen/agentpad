@@ -11,6 +11,11 @@ MEASURED on the actual kit parts (calipers, not datasheets):
   ESP32            11 holes across (pin rows 1.0in apart) x 15 long
   perfboard        30 rows x 42 cols, 120x80mm (silkscreen: 12*8CM 2.54MM),
                    DOUBLE-SIDED, 1.0mm holes, 4 FACTORY CORNER HOLES already drilled.
+                   VERIFIED with a meter on the real board: adjacent pads are isolated
+                   (true perfboard, not stripboard), and the elongated edge pads are
+                   individual -- NOT power rails. That is what makes col 1 safe for the
+                   GND link and makes every "nothing is connected until you connect it"
+                   statement in the docs literally true here.
                    Everything fits ONE board now, with the ESP32 socketed beside the
                    controls. All joints stay on one face, so the design does not depend
                    on whether the holes are plated through.
