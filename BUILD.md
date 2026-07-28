@@ -168,24 +168,32 @@ Orient the board **24 columns across, 18 rows down**. Grid reference: col 1, row
 top-left. All four LEDs and the four select buttons share columns **3, 9, 15, 21**
 (6-hole pitch).
 
-**Measured footprints** (confirmed on the real parts): the colored buttons have legs
-**5 holes apart in both directions** (a 5×5 span); the small buttons are **3×3**.
+**Measured footprints** (confirmed on the real parts):
+
+| Part | Pins across | Pins long |
+|---|---|---|
+| Colored button | **3 holes** (1 hole between) | **6 holes** (4 holes between) |
+| Small button | **3 holes** | **3 holes** |
+
+So a colored button's legs sit in columns `c−1` and `c+1`, rows **6 and 11**. Its 12mm
+body is wider than its legs and overhangs them.
 
 | Row | What | Columns |
 |---|---|---|
-| 1 | 220Ω top ends → GPIO wires | 5, 11, 17, 23 |
-| **2** | **ESP32 header, row A** (ESP32 plugs in from BELOW) | 5 → 19 |
-| 3 | LED anodes (+) | 3, 9, 15, 21 |
-| 4 | LED cathodes (−), straight down to the GND bus | 3, 9, 15, 21 |
+| 1 → 3 | 220Ω standing, top end takes the GPIO wire | 6, 12, 18, 24 |
+| 2 | LED anodes (+) | 3, 9, 15, 21 |
+| 3 | LED cathodes (−) | 3, 9, 15, 21 |
+| **4** | **ESP32 header, row A** (ESP32 plugs in from BELOW) | 5 → 19 |
 | **5** | **GND bus** — bare wire straight across | 1 → 24 |
-| **6 and 11** | **Colored button legs** (5 holes apart) | 1-6, 7-12, 13-18, 19-24 |
-| **12** | **ESP32 header, row B** (10 holes from row A) | 5 → 19 |
-| **14 and 16** | **AA / no / yes legs** (3×3 buttons) | 3-5, 11-13, 19-21 |
-| **17** | **GND bus** (second run, linked to row 5 down column 24) | 1 → 24 |
+| **6 and 11** | **Colored button legs** | 2-4, 8-10, 14-16, 20-22 |
+| **13** | **ESP32 header, row B** (9 holes from row A) | 5 → 19 |
+| **14 and 16** | **AA / no / yes legs** | 3-5, 11-13, 19-21 |
+| **17** | **GND bus** (linked to row 5 down column 24) | 1 → 24 |
 | 18 | **5V bus** + LCD 4-pin connector | 1 → 24 |
 
-The four colored buttons occupy columns **1-6, 7-12, 13-18, 19-24 — all 24 columns,
-exactly**. There is no spare width, so keep them on those columns.
+Verified clearances: **3.2mm** between button bodies, **6.7mm** LED→button, **7.5mm**
+between the two button banks. Re-check any time with
+`mise exec -- python tools/verify-layout.py`.
 
 ### Why this works
 

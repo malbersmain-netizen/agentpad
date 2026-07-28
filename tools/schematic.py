@@ -15,14 +15,14 @@ FF   = 'font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif"'
 
 # ---- layout (mirrors verify-layout.py) ------------------------------------
 ROWS, COLS = 18, 24
-BIG_LEG, SMALL_LEG = 5, 2
-BTN_COL0 = [1, 7, 13, 19]
-BTN_ROWS = (6, 11)
+BIG_LEG_COLS, BIG_LEG_ROWS, SMALL_LEG = 2, 5, 2
 LED_COLS = [3, 9, 15, 21]
-RES_COLS = [5, 11, 17, 23]
+BTN_COL0 = [c-1 for c in LED_COLS]
+BTN_ROWS = (6, 11)
+RES_COLS = [6, 12, 18, 24]
 ANS_COL0 = [3, 11, 19]
 ANS_ROWS = (14, 16)
-HEADER   = (2, 12)
+HEADER   = (4, 13)
 GND_ROWS = (5, 17)
 V5_ROW   = 18
 LED_GPIO = [13, 14, 27, 26]
@@ -186,18 +186,18 @@ def board(stage=99, side="top"):
             label(X(COLS)+40, Y(V5_ROW)+4, "5V bus", "#c0392b", 11, "start")
         if stage >= 3:
             for i, c in enumerate(LED_COLS):
-                o.append(f'<circle cx="{X(c)}" cy="{Y(3.5)}" r="{5/2*PITCH/2.54}" fill="{COL[i]}" stroke="#111" stroke-width="1.5"/>')
-                label(X(c), Y(3.5)+4, str(i+1), "#fff", 12)
+                o.append(f'<circle cx="{X(c)}" cy="{Y(2.5)}" r="{5/2*PITCH/2.54}" fill="{COL[i]}" stroke="#111" stroke-width="1.5"/>')
+                label(X(c), Y(2.5)+4, str(i+1), "#fff", 12)
                 rc = RES_COLS[i]
                 o.append(f'<rect x="{X(rc)-6}" y="{Y(1)-4}" width="12" height="{2*PITCH+8}" rx="4" fill="#c8862a" stroke="#8a5a12"/>')
-                o.append(f'<line x1="{X(c)}" y1="{Y(3)}" x2="{X(rc)}" y2="{Y(3)}" stroke="{COL[i]}" stroke-width="2.5"/>')
-                o.append(f'<line x1="{X(c)}" y1="{Y(4)}" x2="{X(c)}" y2="{Y(GND_ROWS[0])}" stroke="#444" stroke-width="2.5"/>')
+                o.append(f'<line x1="{X(c)}" y1="{Y(2)}" x2="{X(rc)}" y2="{Y(2)}" stroke="{COL[i]}" stroke-width="2.5"/>')
+                o.append(f'<line x1="{X(c)}" y1="{Y(3)}" x2="{X(c)}" y2="{Y(GND_ROWS[0])}" stroke="#444" stroke-width="2.5"/>')
                 o.append(f'<line x1="{X(rc)}" y1="{Y(1)}" x2="{X(rc)}" y2="{Y(1)-22}" stroke="{COL[i]}" stroke-width="2.5"/>')
                 label(X(rc), Y(1)-28, f"GPIO {LED_GPIO[i]}", COL[i], 9.5)
-            label(X(2), Y(3.5)-26, "220Ω", "#c8862a", 9.5)
+            label(X(2), Y(2.5)-26, "220Ω", "#c8862a", 9.5)
         if stage >= 4:
             for i, c0 in enumerate(BTN_COL0):
-                x0, x1 = X(c0), X(c0+BIG_LEG)
+                x0, x1 = X(c0), X(c0+BIG_LEG_COLS)
                 y0, y1 = Y(BTN_ROWS[0]), Y(BTN_ROWS[1])
                 cx, cy = (x0+x1)/2, (y0+y1)/2
                 s = 12*PITCH/2.54
@@ -288,7 +288,7 @@ def fig_wires():
         rows.append(("", f"cathode, col {LED_COLS[i]} row 4", f"GND bus (row {GND_ROWS[0]})", COL[i]))
     for i in range(4):
         rows.append((f"Button {i+1} {NAME[i]}", f"leg col {BTN_COL0[i]} row {BTN_ROWS[0]}", f"GPIO {BTN_GPIO[i]}", COL[i]))
-        rows.append(("", f"leg col {BTN_COL0[i]+BIG_LEG} row {BTN_ROWS[1]}", f"GND bus (row {GND_ROWS[1]})", COL[i]))
+        rows.append(("", f"leg col {BTN_COL0[i]+BIG_LEG_COLS} row {BTN_ROWS[1]}", f"GND bus (row {GND_ROWS[1]})", COL[i]))
     for i, (n, g, d) in enumerate(ANS_INFO):
         rows.append((f"{n} ({d})", f"leg col {ANS_COL0[i]} row {ANS_ROWS[0]}", f"GPIO {g}", ANSC[i]))
         rows.append(("", f"leg col {ANS_COL0[i]+SMALL_LEG} row {ANS_ROWS[1]}", f"GND bus (row {GND_ROWS[1]})", ANSC[i]))
