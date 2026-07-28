@@ -153,4 +153,4 @@ An LED bar graph was designed and coded (74HC595, `G <0-100>` serial command, ba
 
 **Working end-to-end.** Hardware built and verified: LCD@0x27, 4 LEDs, **7 buttons** (4 select + approve/deny/always-allow). Firmware, daemon, and hooks all confirmed on real hardware: color button → tmux window spawn/focus → hooks → LED state → approve/deny/always button → keystroke lands in the correct pane. Survives unplug/replug of the ESP32.
 
-Next: soldered build on two kit perfboards screwed to a wooden plate — see `BUILD.md`, `SOLDERING.md`, `BREADBOARD.md`. The 3D case is deferred.
+Next: soldered build on **one 30 × 42 double-sided PCB** (control surface in cols 1–28, ESP32 socketed at cols 30–40), screwed to a wooden plate — see `BUILD.md`, `SOLDERING.md`, `BREADBOARD.md`.

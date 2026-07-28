@@ -7,7 +7,7 @@ same layout constants that tools/verify-layout.py checks, so drawings cannot dri
 
     mise exec -- python tools/schematic.py
 """
-import os, subprocess
+import os, re, subprocess
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT  = os.path.join(ROOT, "schematics.html")
@@ -140,7 +140,7 @@ def fig_pinmap():
 PITCH, OX, OY = 22, 74, 62
 
 def board(stage=99, side="top"):
-    """Draw board A as it will actually look: copper pads, real part bodies, bus wires."""
+    """Draw the board as it will actually look: copper pads, real part bodies, buses, wires."""
     W = OX + COLS*PITCH + 250
     H = OY + ROWS*PITCH + 120
     X = lambda c: OX + (c-1)*PITCH
@@ -215,38 +215,89 @@ def board(stage=99, side="top"):
             # ESP32 socket, same board
             ex0, ey0 = X(HDR_COLS[0]), Y(HDR_ROWS[0])
             ex1, ey1 = X(HDR_COLS[1]), Y(HDR_ROWS[1])
+            o.append(f'<rect x="{ex0-20}" y="{ey0-30}" width="{ex1-ex0+40}" height="{ey1-ey0+60}" rx="8" '
+                     f'fill="#2b2b33" opacity="0.30" stroke="#8ecbff" stroke-width="2" stroke-dasharray="7 5"/>')
+            o.append(f'<rect x="{ex0-20}" y="{ey0-56}" width="{ex1-ex0+40}" height="22" rx="4" fill="#0e3f22"/>')
+            lab((ex0+ex1)/2, ey0-40, "ESP32 module sits ON TOP \u2014 outline only", "#bfe4ff", 11.5, "middle", 700)
             for c in HDR_COLS:
                 o.append(f'<rect x="{X(c)-11}" y="{ey0-11}" width="22" height="{ey1-ey0+22}" rx="5" fill="#15181c"/>')
-            o.append(f'<rect x="{ex0-20}" y="{ey0-30}" width="{ex1-ex0+40}" height="{ey1-ey0+60}" rx="8" fill="#2b2b33" opacity="0.82" stroke="#8ecbff" stroke-width="2"/>')
-            lab((ex0+ex1)/2, (ey0+ey1)/2-6, "ESP32", "#fff", 15, "middle", 700)
-            lab((ex0+ex1)/2, (ey0+ey1)/2+14, "in its socket", "#9fd6ff", 11)
-            lab((ex0+ex1)/2, ey1+50, "USB overhangs this edge", "#9fd6ff", 10)
+            used = {p for _, _, p, _, _, _, _ in harness()}
+            for sd, names in (("LEFT", ESP_LEFT), ("RIGHT", ESP_RIGHT)):
+                for i, nm in enumerate(names):
+                    c, r = socket_hole(sd, i+1)
+                    hot = nm in used
+                    o.append(f'<circle cx="{X(c)}" cy="{Y(r)}" r="{PITCH*0.26}" '
+                             f'fill="{"#f0c419" if hot else "#5a6068"}"/>')
+                    lab(X(c) + (13 if sd == "LEFT" else 14), Y(r)+3.5, nm,
+                        "#fff" if hot else "#7d848d", 8.5,
+                        "start", 700 if hot else 400)
+            o.append(f'<rect x="{(ex0+ex1)/2-92}" y="{ey1+38}" width="184" height="20" rx="4" fill="#0e3f22"/>')
+            lab((ex0+ex1)/2, ey1+52, "USB overhangs this edge", "#bfe4ff", 10.5, "middle", 700)
         if stage >= 2:
             for i, c in enumerate(LED_COLS):
                 resistor(c); led(c, COL[i], i+1)
-                o.append(f'<line x1="{X(c)}" y1="{Y(LED_ROWS[0])}" x2="{X(c)}" y2="{OY-52}" stroke="{COL[i]}" stroke-width="3" stroke-dasharray="6 4"/>')
-                lab(X(c), OY-58, f"GPIO {LED_GPIO[i]}", COL[i], 10, "middle", 700)
+                pass
         if stage >= 3:
             for i, c0 in enumerate(BTN_COL0):
                 bigbtn(c0, COL[i], i+1)
-                o.append(f'<line x1="{X(c0)}" y1="{Y(BTN_ROWS[0])}" x2="{X(c0)-18}" y2="{Y(BTN_ROWS[0])}" stroke="{COL[i]}" stroke-width="2.5" stroke-dasharray="5 3"/>')
-                lab(X(c0)-22, Y(BTN_ROWS[0])+4, f"{BTN_GPIO[i]}", COL[i], 9, "end", 700)
+                pass
+                pass
         if stage >= 4:
             for (n, g, d), c0, cc in zip(ANS_INFO, ANS_COL0, ANSC):
                 smallbtn(c0, cc, n)
-                o.append(f'<line x1="{X(c0)}" y1="{Y(ANS_ROWS[0])}" x2="{X(c0)-18}" y2="{Y(ANS_ROWS[0])}" stroke="{cc}" stroke-width="2.5" stroke-dasharray="5 3"/>')
-                lab(X(c0)-22, Y(ANS_ROWS[0])+4, f"{g}", cc, 9, "end", 700)
+                pass
+                pass
         if stage >= 5:
+            # Every signal wire on its real route: right along its own row to the riser
+            # lane at col 29 (clear of the buses, which stop at col 28), along the lane,
+            # then into its socket hole. Wires to the RIGHT column pass UNDER the ESP32
+            # module on the copper face — drawn dashed where they do.
+            SPINE = HDR_COLS[0] - 1
+            wires = [w for w in harness() if w[2] != "GND"]
+            groups = {LED_ROWS[0]: (LED_COLS, COL),
+                      BTN_ROWS[0]: (BTN_COL0, COL),
+                      ANS_ROWS[0]: (ANS_COL0, ANSC)}
+            for n, (lbl, src, pin, sd, pos, col, row) in enumerate(wires, 1):
+                m = re.match(r"col (\d+), row (\d+)", src)
+                if not m: continue
+                sc, sr = int(m.group(1)), int(m.group(2))
+                cols_, pal = groups.get(sr, ([], COL))
+                cc2 = pal[cols_.index(sc)] if sc in cols_ else "#555"
+                # fan the risers out so 11 strands read as 11, not as one line
+                dx = (n - len(wires)/2) * 1.7
+                dy = (n - len(wires)/2) * 1.9
+                xs, ys, xl = X(sc), Y(sr), X(SPINE) + dx
+                o.append(f'<path d="M {xs} {ys} V {ys+dy} H {xl} V {Y(row)} H {X(HDR_COLS[0])}" '
+                         f'stroke="{cc2}" stroke-width="2.2" fill="none" opacity="0.9" '
+                         f'stroke-linejoin="round"/>')
+                if sd == "RIGHT":   # continues underneath the module to the far column
+                    o.append(f'<path d="M {X(HDR_COLS[0])} {Y(row)} H {X(col)}" stroke="{cc2}" '
+                             f'stroke-width="2.2" fill="none" stroke-dasharray="5 4" opacity="0.9"/>')
+                o.append(f'<circle cx="{X(col)}" cy="{Y(row)}" r="4.5" fill="{cc2}" stroke="#fff" stroke-width="1.2"/>')
+                o.append(f'<circle cx="{xs}" cy="{ys}" r="4.5" fill="{cc2}" stroke="#fff" stroke-width="1.2"/>')
+                o.append(f'<circle cx="{xs}" cy="{ys-15}" r="7.5" fill="#fff" stroke="{cc2}" stroke-width="1.6"/>')
+                lab(xs, ys-11.5, str(n), cc2, 9, "middle", 700)
+            # the single ground wire: bus at col 28 -> the socket's GND pad
+            gc, gr = socket_hole(*esp_position("GND"))
+            o.append(f'<path d="M {X(BUS_COLS[1])} {Y(GND_ROWS[1])} H {X(SPINE)+14} V {Y(gr)} H {X(gc)}" '
+                     f'stroke="#111" stroke-width="3" fill="none" stroke-linejoin="round"/>')
+            o.append(f'<circle cx="{X(gc)}" cy="{Y(gr)}" r="4.5" fill="#111" stroke="#fff" stroke-width="1.2"/>')
+            lab(OX-34, OY+ROWS*PITCH+36, "wire 12: GND bus (col 28) \u2192 the ESP32's GND pad \u2014 the only ground wire on the board", "#111", 11, "start", 700)
+
             lab(OX + COLS*PITCH/2, OY+ROWS*PITCH+56,
-                f"dashed = the {len(harness())} wires to the ESP32 socket · the LCD clips onto its pins with F-M jumpers", "#666", 12)
+                f"{len(wires)} signal wires + 1 ground, numbered as in BUILD.md \u00a7 wire list \u00b7 "
+                f"dashed = runs under the ESP32 on the copper face \u00b7 the LCD clips onto the module's "
+                f"own pins with F-M jumpers, nothing soldered", "#666", 11.5)
     else:
         lab(OX + COLS*PITCH/2, OY-52, "UNDERSIDE — mirrored. ALL copper and ALL solder joints are on this face.", "#c33", 13, "middle", 700)
         for r in GND_ROWS: bus(r)
         o.append(f'<line x1="{X(COLS)}" y1="{Y(GND_ROWS[0])}" x2="{X(COLS)}" y2="{Y(GND_ROWS[-1])}" stroke="#8c9099" stroke-width="7"/>')
         for i, c in enumerate(LED_COLS):
-            o.append(f'<circle cx="{X(c)}" cy="{Y(LED_ROWS[1])}" r="{PITCH*0.34}" fill="none" stroke="#ffd76b" stroke-width="3"/>')
-            lab(X(c), Y(LED_ROWS[1])-24, "2 leads share", "#ffd76b", 9)
-            lab(X(c), Y(LED_ROWS[1])-13, "this hole", "#ffd76b", 9)
+            o.append(f'<path d="M {X(c)} {Y(LED_ROWS[1])} L {X(c)} {Y(RES_ROWS[0])}" stroke="#ffd76b" stroke-width="4" fill="none"/>')
+            o.append(f'<circle cx="{X(c)}" cy="{Y(LED_ROWS[1])}" r="{PITCH*0.30}" fill="none" stroke="#ffd76b" stroke-width="2.5"/>')
+            o.append(f'<circle cx="{X(c)}" cy="{Y(RES_ROWS[0])}" r="{PITCH*0.30}" fill="none" stroke="#ffd76b" stroke-width="2.5"/>')
+            lab(X(c), Y(LED_ROWS[1])-26, "cathode leg bent", "#ffd76b", 9)
+            lab(X(c), Y(LED_ROWS[1])-15, "flat onto row 4", "#ffd76b", 9)
         lab(OX + COLS*PITCH/2, OY+ROWS*PITCH+56,
             "Each ground leg lands directly on a bus — no ground jumpers anywhere.", "#444", 12)
     o.append(f'<text x="{OX-34}" y="{OY+ROWS*PITCH+86}" font-size="11.5" fill="#888">ONE board · {ROWS} rows x {COLS} cols · double-sided · ESP32 socketed at cols {HDR_COLS[0]}-{HDR_COLS[1]}</text>')
@@ -259,87 +310,52 @@ USED = {"VIN":"5V -> LCD","GND":"ground","D13":"LED 1 red","D14":"LED 2 green","
         "D26":"LED 4 yellow","D32":"button 1","D33":"button 2","D25":"button 3","D4":"button 4",
         "D23":"AA","D18":"no","D19":"yes","D21":"LCD SDA","D22":"LCD SCL"}
 
-def fig_boardB():
-    P2, ox, oy = 30, 150, 110
-    W, H = 900, oy + 18*P2 + 120
-    X = lambda c: ox + (c-1)*P2
-    Y = lambda r: oy + (r-1)*P2
-    o = []
-    o.append(f'<text x="40" y="34" font-size="15" font-weight="700" fill="#222">Board B — the ESP32 carrier</text>')
-    o.append(f'<text x="40" y="56" font-size="12" fill="#666">Same 18x24 kit board. Two 15-socket strips, 10 holes apart. Nothing else on it.</text>')
-    o.append(f'<rect x="{ox-34}" y="{oy-30}" width="{24*P2+22}" height="{18*P2+22}" rx="8" fill="#1d6b3d" stroke="#0e3f22" stroke-width="2"/>')
-    for c in range(1, 25):
-        for r in range(1, 19):
-            o.append(f'<circle cx="{X(c)}" cy="{Y(r)}" r="{P2*0.30}" fill="#c9962e"/>')
-            o.append(f'<circle cx="{X(c)}" cy="{Y(r)}" r="{P2*0.14}" fill="#123a1f"/>')
-    # two header strips: columns 5-19, rows 4 and 14 (10 apart)
-    HR = HDR_ROWS; HC0, HC1 = HDR_COLS
-    for r in HR:
-        o.append(f'<rect x="{X(HC0)-11}" y="{Y(r)-11}" width="{(HC1-HC0)*P2+22}" height="22" rx="5" fill="#15181c"/>')
-        for c in range(HC0, HC1+1):
-            o.append(f'<circle cx="{X(c)}" cy="{Y(r)}" r="6" fill="#3a3f47" stroke="#000"/>')
-    # ESP32 body ghosted on top
-    o.append(f'<rect x="{X(HC0)-16}" y="{Y(HR[0])-34}" width="{(HC1-HC0)*P2+32}" height="{(HR[1]-HR[0])*P2+68}" rx="8" fill="#2b2b33" opacity="0.80" stroke="#8ecbff" stroke-width="2"/>')
-    o.append(f'<text x="{(X(HC0)+X(HC1))/2}" y="{Y(9)-6}" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">ESP32 plugs in on TOP</text>')
-    o.append(f'<text x="{(X(HC0)+X(HC1))/2}" y="{Y(9)+14}" text-anchor="middle" font-size="11" fill="#9fd6ff">pin rows 10 holes apart · USB faces the board edge</text>')
-    o.append(f'<rect x="{(X(HC0)+X(HC1))/2-26}" y="{Y(HR[1])+34}" width="52" height="16" rx="4" fill="#888"/>')
-    o.append(f'<text x="{(X(HC0)+X(HC1))/2}" y="{Y(HR[1])+64}" text-anchor="middle" font-size="11" fill="#444">USB-C</text>')
-    # labelled pins
-    for i, nm in enumerate(ESP_LEFT):
-        if nm in USED:
-            o.append(f'<line x1="{X(HC0+i)}" y1="{Y(HR[0])}" x2="{X(HC0+i)}" y2="{Y(1)-30}" stroke="#c8862a" stroke-width="2"/>')
-    o.append(f'<text x="{ox-46}" y="{Y(HR[0])+5}" text-anchor="end" font-size="11" font-weight="700" fill="#333">row {HR[0]}</text>')
-    o.append(f'<text x="{ox-46}" y="{Y(HR[1])+5}" text-anchor="end" font-size="11" font-weight="700" fill="#333">row {HR[1]}</text>')
-    o.append(f'<text x="{ox}" y="{Y(18)+52}" font-size="12" fill="#444">15 wires from board A + 4 from the LCD land on the pads under these sockets — on the UNDERSIDE.</text>')
-    return svg(W, H, "".join(o))
-
 def fig_assembly():
-    W, H = 1000, 640
+    """One board + the LCD, screwed to the wooden plate."""
+    W, H = 1020, 620
     o = []
-    o.append(f'<text x="40" y="34" font-size="15" font-weight="700" fill="#222">How it all sits on the wood</text>')
-    o.append(f'<rect x="60" y="60" width="880" height="520" rx="10" fill="#c8a06a" stroke="#8a6a3a" stroke-width="3"/>')
-    o.append(f'<text x="80" y="88" font-size="12" fill="#6a4a20">plywood backing plate — everything screws down, nothing is loose</text>')
+    o.append(f'<text x="40" y="34" font-size="15" font-weight="700" fill="#222">How it sits on the wood</text>')
+    o.append(f'<rect x="55" y="58" width="910" height="510" rx="10" fill="#c8a06a" stroke="#8a6a3a" stroke-width="3"/>')
+    o.append(f'<text x="76" y="86" font-size="12" fill="#6a4a20">plywood plate — two pieces screw down: the board, and the LCD</text>')
     # LCD
-    o.append(f'<rect x="300" y="110" width="380" height="110" rx="6" fill="#1d3b2a" stroke="#4a7" stroke-width="2"/>')
-    o.append(f'<rect x="330" y="140" width="320" height="50" rx="3" fill="#2f6b4a"/>')
-    o.append(f'<text x="490" y="163" text-anchor="middle" font-size="13" fill="#bdf3cf">A3 BLOCKED 4:21</text>')
-    o.append(f'<text x="490" y="182" text-anchor="middle" font-size="13" fill="#bdf3cf">1w 2i 3B 4d  34%</text>')
-    o.append(f'<text x="700" y="150" font-size="12" font-weight="700" fill="#333">LCD1602</text>')
-    o.append(f'<text x="700" y="168" font-size="11" fill="#555">own 4 x M3 holes</text>')
-    o.append(f'<text x="700" y="184" font-size="11" fill="#a60">NOT soldered — F-M jumpers</text>')
-    for x,y in ((310,120),(670,120),(310,210),(670,210)):
+    o.append(f'<rect x="300" y="108" width="380" height="108" rx="6" fill="#1d3b2a" stroke="#4a7" stroke-width="2"/>')
+    o.append(f'<rect x="330" y="136" width="320" height="50" rx="3" fill="#2f6b4a"/>')
+    o.append(f'<text x="490" y="159" text-anchor="middle" font-size="13" fill="#bdf3cf">A3 BLOCKED 4:21</text>')
+    o.append(f'<text x="490" y="178" text-anchor="middle" font-size="13" fill="#bdf3cf">1w 2i 3B 4d  34%</text>')
+    for x, y in ((312,118),(668,118),(312,206),(668,206)):
         o.append(f'<circle cx="{x}" cy="{y}" r="5" fill="#777" stroke="#444"/>')
-    # board A
-    o.append(f'<rect x="200" y="270" width="470" height="250" rx="8" fill="#1d6b3d" stroke="#0e3f22" stroke-width="2"/>')
-    o.append(f'<text x="435" y="296" text-anchor="middle" font-size="13" font-weight="700" fill="#cfe">BOARD A — control surface</text>')
-    for i,cc in enumerate(COL):
-        o.append(f'<circle cx="{250+i*105}" cy="{330}" r="13" fill="{cc}" stroke="#111"/>')
-        o.append(f'<rect x="{250+i*105-24}" y="{362}" width="48" height="48" rx="5" fill="{cc}" stroke="#111"/>')
-    for i,(n,g,d) in enumerate(ANS_INFO):
-        o.append(f'<rect x="{250+i*105-14}" y="{450}" width="28" height="28" rx="4" fill="{ANSC[i]}" stroke="#111"/>')
-        o.append(f'<text x="{250+i*105}" y="{494}" text-anchor="middle" font-size="10" fill="#cfe">{n}</text>')
-    for x,y in ((215,285),(655,505)):
+    o.append(f'<text x="700" y="140" font-size="12" font-weight="700" fill="#333">LCD1602</text>')
+    o.append(f'<text x="700" y="158" font-size="11" fill="#555">its own 4 × M3 holes</text>')
+    o.append(f'<text x="700" y="176" font-size="11" fill="#a60">NEVER soldered — 4 F-M jumpers</text>')
+    o.append(f'<text x="700" y="192" font-size="11" fill="#555">straight onto the ESP32 pins</text>')
+    # the one board
+    bx, by, bw, bh = 150, 268, 690, 262
+    o.append(f'<rect x="{bx}" y="{by}" width="{bw}" height="{bh}" rx="8" fill="#1d6b3d" stroke="#0e3f22" stroke-width="2"/>')
+    o.append(f'<text x="{bx+16}" y="{by+26}" font-size="12.5" font-weight="700" fill="#cfe">ONE BOARD — 30 × 42 holes, double-sided</text>')
+    for i, cc in enumerate(COL):
+        o.append(f'<circle cx="{bx+70+i*105}" cy="{by+62}" r="12" fill="{cc}" stroke="#111"/>')
+        o.append(f'<rect x="{bx+70+i*105-24}" y="{by+92}" width="48" height="48" rx="5" fill="{cc}" stroke="#111"/>')
+    for i, (n, g, d) in enumerate(ANS_INFO):
+        o.append(f'<rect x="{bx+70+i*105-14}" y="{by+178}" width="28" height="28" rx="4" fill="{ANSC[i]}" stroke="#111"/>')
+        o.append(f'<text x="{bx+70+i*105}" y="{by+222}" text-anchor="middle" font-size="10" fill="#cfe">{n}</text>')
+    o.append(f'<text x="{bx+30}" y="{by+250}" font-size="10.5" fill="#9c9">control surface — cols 1–28</text>')
+    # ESP32 on the same board
+    ex = bx + 470
+    o.append(f'<rect x="{ex}" y="{by+50}" width="150" height="170" rx="7" fill="#2b2b33" stroke="#8ecbff" stroke-width="2"/>')
+    o.append(f'<text x="{ex+75}" y="{by+128}" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">ESP32</text>')
+    o.append(f'<text x="{ex+75}" y="{by+148}" text-anchor="middle" font-size="10" fill="#9fd6ff">socketed, cols 30–40</text>')
+    o.append(f'<text x="{ex+75}" y="{by+164}" text-anchor="middle" font-size="10" fill="#9fd6ff">unplugs any time</text>')
+    o.append(f'<rect x="{ex+56}" y="{by+220}" width="38" height="14" rx="3" fill="#888"/>')
+    o.append(f'<path d="M {ex+75} {by+234} V {by+272} H {W-70}" stroke="#333" stroke-width="5" fill="none"/>')
+    o.append(f'<text x="{W-160}" y="{by+292}" font-size="11" fill="#333">USB to the Mac</text>')
+    for x, y in ((bx+16, by+bh-16), (bx+bw-16, by+bh-16), (bx+bw-16, by+16)):
         o.append(f'<circle cx="{x}" cy="{y}" r="5" fill="#777" stroke="#444"/>')
-    # board B
-    o.append(f'<rect x="720" y="300" width="180" height="200" rx="8" fill="#1d6b3d" stroke="#0e3f22" stroke-width="2"/>')
-    o.append(f'<text x="810" y="326" text-anchor="middle" font-size="12" font-weight="700" fill="#cfe">BOARD B</text>')
-    o.append(f'<rect x="748" y="340" width="124" height="120" rx="6" fill="#2b2b33" stroke="#8ecbff" stroke-width="2"/>')
-    o.append(f'<text x="810" y="396" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">ESP32</text>')
-    o.append(f'<text x="810" y="414" text-anchor="middle" font-size="9.5" fill="#9fd6ff">in its socket</text>')
-    o.append(f'<rect x="792" y="460" width="36" height="14" rx="3" fill="#888"/>')
-    o.append(f'<path d="M 810 474 V 545 H 960" stroke="#333" stroke-width="5" fill="none"/>')
-    o.append(f'<text x="880" y="566" font-size="11" fill="#333">USB to the Mac</text>')
-    for x,y in ((735,315),(885,485)):
-        o.append(f'<circle cx="{x}" cy="{y}" r="5" fill="#777" stroke="#444"/>')
-    # harness A -> B
-    for i in range(6):
-        o.append(f'<path d="M 670 {310+i*30} C 700 {310+i*30}, 700 {350+i*22}, 720 {350+i*22}" stroke="#b0863a" stroke-width="2.5" fill="none"/>')
-    o.append(f'<text x="695" y="290" text-anchor="middle" font-size="11" font-weight="700" fill="#8a5a12">15 wires</text>')
-    # LCD -> B
+    # LCD jumpers
     for i in range(4):
-        o.append(f'<path d="M {620+i*14} 220 C {660+i*14} 260, 740 260, 760 {336}" stroke="#c60" stroke-width="2.2" fill="none"/>')
-    o.append(f'<text x="700" y="248" font-size="11" font-weight="700" fill="#c60">LCD: 4 wires</text>')
-    o.append(f'<text x="80" y="560" font-size="12" fill="#5a3a10">The LCD and the ESP32 both stay removable — only board A is permanent.</text>')
+        o.append(f'<path d="M {600+i*16} 216 C {640+i*16} 250, {ex+40} 250, {ex+40+i*12} {by+50}" '
+                 f'stroke="#c60" stroke-width="2.2" fill="none"/>')
+    o.append(f'<text x="700" y="212" font-size="11" font-weight="700" fill="#c60">4 F-M jumpers down to the ESP32</text>')
+    o.append(f'<text x="76" y="556" font-size="12" fill="#5a3a10">Only the board is permanent. The LCD and the ESP32 both unplug.</text>')
     return svg(W, H, "".join(o))
 
 # ====================================================== 4. COMPONENT DETAILS
@@ -392,30 +408,30 @@ def fig_wires():
     rows = []
     for i, c in enumerate(LED_COLS):
         rows.append((f"LED {i+1} {NAME[i]}", f"anode col {c} row {LED_ROWS[0]}",
-                     f"wire to D{LED_GPIO[i]} on board B", COL[i]))
+                     f"wire to the D{LED_GPIO[i]} socket pad", COL[i]))
         rows.append(("", f"cathode col {c} row {LED_ROWS[1]}",
                      f"lead bends to the 220R pad at row {RES_ROWS[0]}", COL[i]))
         rows.append(("", f"220R bottom col {c} row {RES_ROWS[1]}",
                      f"lands ON the GND bus", COL[i]))
     for i, c0 in enumerate(BTN_COL0):
         rows.append((f"Button {i+1} {NAME[i]}", f"signal leg col {c0} row {BTN_ROWS[0]}",
-                     f"wire to D{BTN_GPIO[i]} on board B", COL[i]))
+                     f"wire to the D{BTN_GPIO[i]} socket pad", COL[i]))
         rows.append(("", f"gnd leg col {c0+BIG_LEG_COLS} row {BTN_ROWS[1]}",
                      "lands ON the GND bus", COL[i]))
     for i, ((n, g, d), c0) in enumerate(zip(ANS_INFO, ANS_COL0)):
         rows.append((f"{n} ({d})", f"signal leg col {c0} row {ANS_ROWS[0]}",
-                     f"wire to D{g} on board B", ANSC[i]))
+                     f"wire to the D{g} socket pad", ANSC[i]))
         rows.append(("", f"gnd leg col {c0+SMALL_LEG} row {ANS_ROWS[1]}",
                      "lands ON the GND bus", ANSC[i]))
     rows.append(("Ground", f"any GND bus (rows {', '.join(map(str, GND_ROWS))})",
-                 "one wire to GND on board B", "#111"))
+                 "one wire to the GND socket pad", "#111"))
     for a_, b_ in LCD_PINS:
         rows.append((f"LCD {a_}", "F-M jumper on the LCD's own header",
-                     f"board B pad {b_} — never board A", "#c60"))
+                     f"F-M jumper onto the ESP32's own {b_} pin — never soldered", "#c60"))
     W, H = 940, 74 + len(rows)*22 + 30
     o = [f'<text x="24" y="30" font-size="15" font-weight="700" fill="#222">Every connection, in order</text>',
-         f'<text x="24" y="50" font-size="11" fill="#888">generated from tools/layout.py — {len(harness())} wires to board B plus {len(LCD_PINS)} from the LCD</text>']
-    for x, h in zip([30, 250, 560], ["PART", "BOARD A HOLE", "GOES TO"]):
+         f'<text x="24" y="50" font-size="11" fill="#888">generated from tools/layout.py — {len(harness())} soldered wires plus {len(LCD_PINS)} LCD jumpers</text>']
+    for x, h in zip([30, 250, 560], ["PART", "BOARD HOLE", "GOES TO"]):
         o.append(f'<text x="{x}" y="72" font-size="10.5" font-weight="700" fill="#999">{h}</text>')
     for i, (part, frm, to, c) in enumerate(rows):
         y = 94 + i*22
@@ -436,12 +452,9 @@ FIGS = [
  ("3 · Board layout — top side, finished", board(99, "top"),
   "One 18×24 kit board. Dashed lines leaving the top edge are the jumpers to the ESP32, which "
   "sits on its own carrier board rather than on this one."),
- ("3b · Board B — the ESP32 carrier", fig_boardB(),
-  "Two 15-socket strips, 10 holes apart. The ESP32 plugs in on top; its USB faces the board "
-  "edge so the cable can reach it. All 19 wires land on the pads underneath."),
- ("3c · How it all sits on the wood", fig_assembly(),
-  "LCD at the top on its own M3 holes, board A below it, board B off to the side with the USB "
-  "facing out. Only board A is permanent — the LCD and ESP32 both unplug."),
+ ("3b · How it sits on the wood", fig_assembly(),
+  "Two pieces screw to the plate: the board, and the LCD. The ESP32 is socketed on the board "
+  "itself, USB facing an edge. Only the board is permanent."),
  ("4 · Underside — where every joint lives", board(99, "under"),
   "The board is SINGLE-SIDED: all the copper, and therefore every solder joint, is on this face. "
   "Components sit on the other side; only their legs and the jumper pins come through."),
@@ -450,21 +463,31 @@ FIGS = [
   "the switch, not along a permanently-joined pair."),
  ("6 · Connection list", fig_wires(),
   "Tick these off as you go. Label both ends of every jumper before soldering the male end."),
- ("Step 1 — the buses", board(1, "top"),
-  "Bare wire across row 1 (5V), rows 5 and 17 (GND), linked down column 24. "
-  "Test: every point on a bus beeps; 5V↔GND must NOT beep."),
- ("Step 2 — LEDs and resistors", board(2, "top"),
-  "Anode row 3, cathode row 4 straight down to the GND bus at row 5. 220Ω lies flat in row 2. "
-  "Test: clip the ESP32 on with jumpers and run firmware/ledtest — all four cycle."),
+ ("Step 1 — the buses and the ESP32 socket", board(1, "top"),
+  f"Bare wire along rows {', '.join(map(str, GND_ROWS))} (all GND), spanning columns "
+  f"{BUS_COLS[0]}-{BUS_COLS[1]} and linked down column {GND_LINK_COL}. Then the two 15-way "
+  f"socket strips at columns {HDR_COLS[0]} and {HDR_COLS[1]}, rows {HDR_ROWS[0]}-{HDR_ROWS[1]}. "
+  f"Test: every point on a bus beeps to every other; no bus beeps to a signal row."),
+ (f"Step 2 — LEDs and resistors", board(2, "top"),
+  f"Anode row {LED_ROWS[0]}, cathode row {LED_ROWS[1]}; the cathode lead bends flat on the copper "
+  f"face onto the row-{RES_ROWS[0]} pad, where the 220R starts. The resistor's other lead sits in "
+  f"row {RES_ROWS[1]} — a GND bus — so it grounds itself. Columns {', '.join(map(str, LED_COLS))}. "
+  f"Test: plug the ESP32 in, run firmware/ledtest — all four cycle."),
  ("Step 3 — the four colored buttons", board(3, "top"),
-  "Legs in rows 7 and 12, columns 2-4 / 8-10 / 14-16 / 20-22. Top-left leg takes its jumper, "
-  "bottom-right leg goes to the GND bus. Test: firmware/btntest prints button 0–3."),
+  f"Legs in rows {BTN_ROWS[0]} and {BTN_ROWS[1]}, left columns {', '.join(map(str, BTN_COL0))} "
+  f"(each button spans {BIG_LEG_COLS} columns). The row-{BTN_ROWS[0]} leg takes its signal wire; "
+  f"the diagonally opposite leg lands straight on the row-{BTN_ROWS[1]} bus. "
+  f"Test: firmware/btntest prints button 0-3."),
  ("Step 4 — AA / no / yes", board(4, "top"),
-  "Small 3×3 buttons, legs rows 14 and 16. Same diagonal rule. "
-  "Test: btntest now prints button 0–6. Several dead at once means the GND bus, not the switches."),
- ("Step 5 — LCD leads", board(5, "top"),
-  "Four F-M jumpers from the LCD's own header straight to board B — never to board A. "
-  "Test: firmware/lcdtest prints 'found device at 0x27'."),
+  f"Small 3x3 buttons, legs in rows {ANS_ROWS[0]} and {ANS_ROWS[1]}, left columns "
+  f"{', '.join(map(str, ANS_COL0))}. Same diagonal rule; the row-{ANS_ROWS[1]} leg is on the bus. "
+  f"Test: btntest now prints button 0-6. Several dead at once means the GND bus, not the switches."),
+ ("Step 5 — the 12 wires, then the LCD", board(5, "top"),
+  f"Every signal wire runs along its own row to the riser lane at column {HDR_COLS[0]-1}, then into "
+  f"its socket pad; the four that serve right-hand pins carry on underneath the module. Last, four "
+  f"F-M jumpers from the LCD clip straight onto the ESP32's own pins — nothing about the LCD is "
+  f"soldered. Test: firmware/lcdtest prints 'found device at 0x27'."),
+
 ]
 
 CSS = """
@@ -489,11 +512,11 @@ page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <h1>Schematics &amp; board layout</h1>
 <p class="sub">Circuit, pin map, both sides of the board, component detail, every wire, then one figure per solder step.</p>
 <nav>{nav}</nav>
-<div class="key"><strong>Single-sided board.</strong> All the copper is on one face, so every
-solder joint is on the underside and every component sits on top. The ESP32 gets
-<strong>its own carrier board</strong> — not because it could not be soldered here, but because
-board A's 18 rows are already spent. Both screw to a wooden plate; the ESP32 unplugs and stays
-removable.<br><br>
+<div class="key"><strong>One double-sided board, 30 × 42 holes.</strong> Everything lives on it:
+the control surface in columns 1–28, the ESP32 in a socket at columns 30–40 with its USB
+overhanging the edge. All soldering is done on <em>one</em> face, so the design works whether or
+not the holes are plated through. The ESP32 and the LCD both unplug — only the board is
+permanent.<br><br>
 <strong>Verified in millimetres, not hole counts.</strong> Every figure here is generated from
 <code>tools/layout.py</code>, the same file <code>tools/verify-layout.py</code> checks — so a drawing
 cannot disagree with the spec. Re-check with

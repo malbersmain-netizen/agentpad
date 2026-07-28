@@ -11,11 +11,13 @@ Two classes of error this catches that hole-counting does not:
 MEASURED on the actual kit parts:
   colored buttons: pins 3 holes ACROSS (2 pitches) x 6 holes LONG (5 pitches)
   small buttons:   3x3 holes (2 pitches both ways)
-  ESP32:           11 holes across (pin rows 1.0in apart) x 15 long -- lives on board B
+  ESP32:           11 holes across (pin rows 1.0in apart) x 15 long -- socketed on the
+                   same board at cols 30-40
 
-BOARD IS SINGLE-SIDED: copper on one face, so every joint is on the underside and
-components sit on top. Board A carries no 5V at all -- only the LCD needs it, and the
-LCD wires straight to board B. That keeps 5V away from the 3.3V signal rows entirely.
+ONE DOUBLE-SIDED BOARD. All soldering is done on a single face regardless, so the design
+does not depend on the holes being plated through. The control surface carries no 5V at
+all -- only the LCD needs it, and the LCD jumpers straight onto the ESP32's own pins.
+That keeps 5V away from the 3.3V signal rows entirely.
 
     mise exec -- python tools/verify-layout.py
 """
@@ -130,7 +132,7 @@ for q in parts[:-1]:
 if BUS_COLS[1] >= HDR_COLS[0]:
     fails.append(f"GND buses run to col {BUS_COLS[1]} but the ESP32 starts at col {HDR_COLS[0]}")
 
-# --- 5. keep 5V off board A
+# --- 5. keep 5V off the control surface
 if LCD_SOLDERED:
     fails.append("the LCD must stay on F-M jumpers so it remains a reusable part")
 
@@ -149,7 +151,7 @@ print(f"  button -> answer row    {parts[-3]['y0']-b[0]['y1']:>6.2f} mm")
 print(f"  resistor body {RES_BODY}mm in a {span:.2f}mm lead span")
 
 used = set(LED_ROWS)|set(RES_ROWS)|set(BTN_ROWS)|set(ANS_ROWS)|set(GND_ROWS)
-print(f"\nrow plan: {LED_ROWS[0]} LED anode+GPIO | {LED_ROWS[1]} LED cathode + resistor top | "
+print(f"\nrow plan: {LED_ROWS[0]} LED anode+GPIO | {LED_ROWS[1]} LED cathode (leg bends to row {RES_ROWS[0]}) | {RES_ROWS[0]} resistor top | "
       f"{GND_ROWS[0]} GND bus | {BTN_ROWS[0]}+{BTN_ROWS[1]} button legs | "
       f"{ANS_ROWS[0]}+{ANS_ROWS[1]} answer legs | {GND_ROWS[1]} GND bus")
 print(f"spare rows: {sorted(set(range(1, ROWS+1)) - used)}")

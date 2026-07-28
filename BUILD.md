@@ -3,7 +3,7 @@
 Takes you from loose parts to a working, mounted device. Read section 4 before you touch
 the iron; everything else follows in order.
 
-**Scope:** 1 LCD + 4 LEDs + 7 buttons on two kit perfboards, screwed to a wooden backing
+**Scope:** 1 LCD + 4 LEDs + 7 buttons on **one 30 × 42 double-sided PCB**, screwed to a wooden backing
 
 **Done means:** press a color button → a tinted `claude` window opens and focuses; its LED
 heartbeats; ask it something needing permission → LED blinks fast → press `yes` → the
@@ -158,20 +158,20 @@ The USB connector overhangs the board edge, so the cable can reach it.
 <!-- GEN:wiretable -->
 **12 wires**, each from a component pad to the pad of the ESP32 socket pin it serves. All on the same board — short runs, no inter-board loom.
 
-| # | Signal | From — hole | To — ESP32 pin | Socket side | Position |
-|---:|---|---|---|---|---:|
-| 1 | LED 1 red | col 4, row 2 | **D13** | LEFT | 3 |
-| 2 | LED 2 green | col 11, row 2 | **D14** | LEFT | 5 |
-| 3 | LED 3 blue | col 18, row 2 | **D27** | LEFT | 6 |
-| 4 | LED 4 yellow | col 25, row 2 | **D26** | LEFT | 7 |
-| 5 | button 1 red | col 3, row 11 | **D32** | LEFT | 10 |
-| 6 | button 2 green | col 10, row 11 | **D33** | LEFT | 9 |
-| 7 | button 3 blue | col 17, row 11 | **D25** | LEFT | 8 |
-| 8 | button 4 yellow | col 24, row 11 | **D4** | RIGHT | 5 |
-| 9 | AA (always allow) | col 4, row 19 | **D23** | RIGHT | 15 |
-| 10 | no (deny) | col 13, row 19 | **D18** | RIGHT | 9 |
-| 11 | yes (approve) | col 22, row 19 | **D19** | RIGHT | 10 |
-| 12 | ground | any GND bus (rows 8, 16, 21) | **GND** | LEFT | 2 |
+| # | Signal | From — component hole | To — socket hole | ESP32 pin |
+|---:|---|---|---|---|
+| 1 | LED 1 red | col 4, row 2 | **col 30, row 10** | D13 (LEFT 3) |
+| 2 | LED 2 green | col 11, row 2 | **col 30, row 12** | D14 (LEFT 5) |
+| 3 | LED 3 blue | col 18, row 2 | **col 30, row 13** | D27 (LEFT 6) |
+| 4 | LED 4 yellow | col 25, row 2 | **col 30, row 14** | D26 (LEFT 7) |
+| 5 | button 1 red | col 3, row 11 | **col 30, row 17** | D32 (LEFT 10) |
+| 6 | button 2 green | col 10, row 11 | **col 30, row 16** | D33 (LEFT 9) |
+| 7 | button 3 blue | col 17, row 11 | **col 30, row 15** | D25 (LEFT 8) |
+| 8 | button 4 yellow | col 24, row 11 | **col 40, row 12** | D4 (RIGHT 5) |
+| 9 | AA (always allow) | col 4, row 19 | **col 40, row 22** | D23 (RIGHT 15) |
+| 10 | no (deny) | col 13, row 19 | **col 40, row 16** | D18 (RIGHT 9) |
+| 11 | yes (approve) | col 22, row 19 | **col 40, row 17** | D19 (RIGHT 10) |
+| 12 | ground | any GND bus (rows 8, 16, 21) | **col 30, row 9** | GND (LEFT 2) |
 
 Plus the LCD's **4** F-M jumpers, which clip straight onto the ESP32's pins and are never soldered:
 

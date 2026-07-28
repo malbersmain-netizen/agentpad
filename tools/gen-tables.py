@@ -45,16 +45,16 @@ def wiretable():
     h = harness()
     out = [f"**{len(h)} wires**, each from a component pad to the pad of the ESP32 socket pin it "
            f"serves. All on the same board — short runs, no inter-board loom.", "",
-           "| # | Signal | From — hole | To — ESP32 pin | Socket side | Position |",
-           "|---:|---|---|---|---|---:|"]
-    for i, (lbl, src, pin, side, pos) in enumerate(h, 1):
-        out.append(f"| {i} | {lbl} | {src} | **{pin}** | {side} | {pos} |")
+           "| # | Signal | From — component hole | To — socket hole | ESP32 pin |",
+           "|---:|---|---|---|---|"]
+    for i, (lbl, src, pin, side, pos, col, row) in enumerate(h, 1):
+        out.append(f"| {i} | {lbl} | {src} | **col {col}, row {row}** | {pin} ({side} {pos}) |")
     out += ["", f"Plus the LCD's **{len(LCD_PINS)}** F-M jumpers, which clip straight onto the ESP32's pins "
                 f"and are never soldered:", "",
             "| Signal | From | To — ESP32 pin |", "|---|---|---|"]
     for a, b in LCD_PINS:
         out.append(f"| LCD {a} | F-M jumper onto the LCD's own header | **{b}** |")
-    left  = sum(1 for *_ , s, p in h if s == "LEFT")
+    left  = sum(1 for r in h if r[3] == "LEFT")
     right = len(h) - left
     out += ["", f"That is **{left} on the left column, {right} on the right**, plus "
                 f"{len(LCD_PINS)} LCD jumpers — **{len(h)+len(LCD_PINS)} landing on the socket** in total.",

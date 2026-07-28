@@ -51,6 +51,14 @@ LCD_SOLDERED = False
 # ---- ESP32, same board, columns 30-40 -------------------------------------
 HDR_COLS = (30, 40)         # 10 apart = the ESP32's 1.0in pin rows
 HDR_ROWS = (8, 22)          # 15 sockets running down
+# The ESP32's LEFT silkscreen column sits at board column 30 -- the side nearest the
+# controls -- so the 8 left-hand signals get the short runs.
+HDR_SIDE_COL = {"LEFT": HDR_COLS[0], "RIGHT": HDR_COLS[1]}
+
+
+def socket_hole(side, pos):
+    """Board hole for an ESP32 pin: position 1 is the top of the socket."""
+    return HDR_SIDE_COL[side], HDR_ROWS[0] + (pos - 1)
 
 # ---- electrical -----------------------------------------------------------
 LED_GPIO  = [13, 14, 27, 26]
@@ -84,7 +92,12 @@ def harness():
     for (n, g, d), c0 in zip(ANS_INFO, ANS_COL0):
         out.append((f"{n} ({d})", f"col {c0}, row {ANS_ROWS[0]}", f"D{g}"))
     out.append(("ground", f"any GND bus (rows {', '.join(map(str, GND_ROWS))})", "GND"))
-    return [(lbl, src, pin) + esp_position(pin) for lbl, src, pin in out]
+    rows = []
+    for lbl, src, pin in out:
+        side, pos = esp_position(pin)
+        col, row = socket_hole(side, pos)
+        rows.append((lbl, src, pin, side, pos, col, row))
+    return rows
 
 
 def lcd_harness():
