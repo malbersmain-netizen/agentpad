@@ -1,6 +1,6 @@
 # Agent Pad
 
-Physical control surface for Claude Code — a self-contained "code micro" clone. Four LEDs + an LCD show what four agents are doing. Six buttons on the board do everything: the four color buttons each **launch a color-tinted tmux `claude` session (if not running) and focus it**; two more buttons **approve / deny** the on-screen agent's permission prompt. **Single device — there is no game controller.** Don't reintroduce one.
+Physical control surface for Claude Code — a self-contained "code micro" clone. Four LEDs + an LCD show what four agents are doing. Seven buttons on the board do everything: the four color buttons each **launch a color-tinted tmux `claude` session (if not running) and focus it**; three more **approve / deny / always-allow** the on-screen agent's permission prompt. **Single device — there is no game controller.** Don't reintroduce one.
 
 Full build guide: `agentpad-build-guide.md`. Soldered build: `BUILD.md` + `SOLDERING.md`. **Rebuilding the breadboard prototype: `BREADBOARD.md`.**
 
@@ -16,7 +16,7 @@ Full build guide: `agentpad-build-guide.md`. Soldered build: `BUILD.md` + `SOLDE
 
 ```
 Claude Code hooks → events.jsonl → daemon → serial → ESP32 (LEDs, LCD)
-                                    daemon ← serial ← ESP32 (6 buttons)
+                                    daemon ← serial ← ESP32 (7 buttons)
                                     daemon → tmux new-window/select-window/send-keys
                                     daemon → tmux capture-pane (has the prompt cleared?)
 ```
@@ -89,7 +89,7 @@ D1 <up to 16 chars>
 
 **ESP32 → Mac**
 ```
-B <0-5>     # 0-3 = select/launch agent, 4 = approve, 5 = deny
+B <0-6>     # 0-3 select/launch agent, 4 approve, 5 deny, 6 always-allow
 ```
 
 Do not replace this with a binary or JSON protocol.
@@ -142,4 +142,4 @@ An LED bar graph was designed and coded (74HC595, `G <0-100>` serial command, ba
 
 **Working end-to-end.** Hardware built and verified: LCD@0x27, 4 LEDs, **7 buttons** (4 select + approve/deny/always-allow). Firmware, daemon, and hooks all confirmed on real hardware: color button → tmux window spawn/focus → hooks → LED state → approve/deny/always button → keystroke lands in the correct pane. Survives unplug/replug of the ESP32.
 
-Next: soldered build in a 3D-printed case — checklist in `BUILD.md`.
+Next: soldered build on two kit perfboards screwed to a wooden plate — see `BUILD.md`, `SOLDERING.md`, `BREADBOARD.md`. The 3D case is deferred.

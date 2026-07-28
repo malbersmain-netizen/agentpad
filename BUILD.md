@@ -378,6 +378,20 @@ out to the ESP32 (GPIO 21 and 22). Long enough to set the LCD down beside the bo
 ✅ Serial prints `found device at 0x27` and text appears. Backlit but blank = turn the
 contrast pot on its back.
 
+> **The 3.3V vs 5V question — settled, don't relitigate.**
+>
+> The LCD1602 is a 5V part and the ESP32's GPIOs are not 5V tolerant. That sounds like a
+> problem but isn't, because **I²C is open-drain**: devices only pull the line *down*,
+> never drive it up. The only 5V path into the ESP32 is through the backpack's pull-ups,
+> leaking **~0.36mA** (4.7kΩ) or **~0.17mA** (10kΩ) into the clamp diodes — far below
+> anything harmful, and how most ESP32 + LCD1602 projects are wired. The breadboard
+> prototype ran exactly this for hours with a stable display.
+>
+> **Optional free upgrade:** try LCD VCC on **3V3** instead of VIN. If it's readable, keep
+> it and the out-of-spec condition disappears at no cost. 1602 modules often dim at 3.3V —
+> adjust the contrast pot; if it washes out, move back to VIN, no worse off. A level
+> shifter is the textbook fix but adds a part you don't have and another failure mode.
+
 ### Step 7 — real firmware, then mount it
 
 ```bash
