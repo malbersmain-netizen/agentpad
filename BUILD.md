@@ -430,7 +430,7 @@ Do **LED 1 completely, including its wire and the test**, before starting LED 2.
 | 3 blue | col 18, row 2 | col 18, row 3 | col 18, row 4 | col 18, row 8 | **3** → col 40, row 17 (D27) |
 | 4 yellow | col 25, row 2 | col 25, row 3 | col 25, row 4 | col 25, row 8 | **4** → col 40, row 16 (D26) |
 
-1. **Resistor first** — it is the lower part. Legs into rows 4 and 8 of the same column; bend them so the 6.3mm body sits centred in the 10.2mm span. Solder both, trim.
+1. **Resistor first** — it is the lower part. Legs into rows 4 and 8 of the same column; bend them so the 6.3mm body sits centred in the 10.2mm span. Solder both, trim. **Resistors are not polarised** — either way round works — but fit all four the same way, gold band at the bottom. Four identical-reading resistors can be checked at a glance; four in random orientations is how a stray 2.2kΩ survives inspection.
 2. **LED next** — long leg into row 2, short leg into row 3. Solder the **anode only**. Leave the cathode leg full length.
 3. **Move 3 — the bent leg.** On the underside, bend the cathode's leftover length flat until it lies on the **row-4 pad**, where the resistor's top lead already is. Solder it into that same joint. *Now* trim both.
 4. The resistor's bottom lead is already in row 8 — the bus. It is grounded; there is nothing else to do.

@@ -282,7 +282,10 @@ def steps():
     o.extend([
         f"1. **Resistor first** — it is the lower part. Legs into rows {RES_ROWS[0]} and "
         f"{RES_ROWS[1]} of the same column; bend them so the {RES_BODY}mm body sits centred in the "
-        f"{(RES_ROWS[1]-RES_ROWS[0])*P:.1f}mm span. Solder both, trim.",
+        f"{(RES_ROWS[1]-RES_ROWS[0])*P:.1f}mm span. Solder both, trim. **Resistors are not "
+        f"polarised** — either way round works — but fit all four the same way, gold band at the "
+        f"bottom. Four identical-reading resistors can be checked at a glance; four in random "
+        f"orientations is how a stray 2.2k\u03a9 survives inspection.",
         f"2. **LED next** — long leg into row {LED_ROWS[0]}, short leg into row {LED_ROWS[1]}. "
         f"Solder the **anode only**. Leave the cathode leg full length.",
         f"3. **Move 3 — the bent leg.** On the underside, bend the cathode's leftover length flat "
