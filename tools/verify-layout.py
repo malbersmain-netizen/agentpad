@@ -19,38 +19,13 @@ LCD wires straight to board B. That keeps 5V away from the 3.3V signal rows enti
 
     mise exec -- python tools/verify-layout.py
 """
-P = 2.54
-ROWS, COLS = 18, 24
-BOARD_W, BOARD_H = 70.0, 50.0
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from layout import *          # single source of truth -- see tools/layout.py
+
 BX = (BOARD_W - (COLS-1)*P)/2
 BY = (BOARD_H - (ROWS-1)*P)/2
 def xy(col, row): return BX + (col-1)*P, BY + (row-1)*P
-
-# ---- footprints (mm) ------------------------------------------------------
-BIG_LEG_COLS, BIG_LEG_ROWS = 2, 5
-SMALL_LEG   = 2
-BIG_BODY    = 12.0
-SMALL_BODY  = 6.0
-LED_D       = 6.0    # 5mm LED INCLUDING its base flange -- the flange is what collides
-RES_BODY    = 6.3    # 1/4W body length
-RES_W       = 2.5
-HOLE_D      = 1.0    # kit perfboard hole; one lead each, never two
-BEND        = 1.5    # straight lead needed between body seal and bend, per end
-
-# ---- layout ---------------------------------------------------------------
-LED_COLS = [3, 9, 15, 21]   # each LED, its resistor and its button share one column
-LED_ROWS = (1, 2)           # anode row 1 (takes the GPIO wire), cathode row 2
-RES_ROWS = (3, 7)           # resistor stands in the CATHODE path. Its top lead is the ONLY
-                            # thing in row 3; the LED's cathode lead is bent over on the
-                            # copper face to meet that pad. One lead per hole, always --
-                            # a 1.0mm hole cannot take two 0.5-0.6mm leads plus solder.
-BTN_COL0 = [c-1 for c in LED_COLS]
-BTN_ROWS = (9, 14)   # bottom leg lands directly ON a GND bus
-ANS_COL0 = [3, 11, 19]
-ANS_ROWS = (16, 18)  # bottom leg lands directly ON a GND bus
-GND_ROWS = (7, 14, 18)      # one bus per bank, so NO ground jumpers are needed at all;
-                            # all three link together down column 24
-LCD_ON_BOARD_A = False      # LCD's 4 wires go straight to board B
 
 parts, fails, notes = [], [], []
 def add(name, cx, cy, w, h, where):

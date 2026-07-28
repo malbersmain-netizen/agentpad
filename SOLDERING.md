@@ -74,10 +74,19 @@ blob, press the iron on top, watch the solder wick into the braid.
 *Learning:* mistakes are undoable. This removes most of the fear.
 
 ### Exercise 4 — a bus (×1, the important one)
-Lay a bare wire across ten holes in a row. Tack it at one end, check it's straight, then
-solder it at every second pad.
+Lay a bare wire across ten holes in a row — **beside the hole centres, not over them**,
+tangent to the pads. Tack one end, check it's straight, solder every second pad.
 *Pass:* multimeter beeps between all ten holes.
-*This is exactly what you'll do on the real board in Step 2.*
+
+Now the part that matters: **push a component lead down through one of those holes from
+the top.** It must reach the copper face and sit alongside the wire. If your bus is lying
+*over* the hole, the lead stops at the board and connects to nothing — and the joint still
+looks perfect from underneath. That single mistake would hit **18 joints** on the real
+board.
+
+> On the real board, rows that carry a bus get their **components inserted first**. Bend
+> the ground leads flat along the row on the copper face, lay the bus wire on top of them,
+> and solder once. Bus-first only works on rows with nothing else in them.
 
 ### Exercise 5 — a resistor and an LED (×2)
 Stand a resistor in two holes, bend the leads to hold it, solder, trim. Then an LED:
@@ -127,12 +136,14 @@ cold, then fail intermittently. If something works when you press on it, it's a 
 
 ## 7. Habits that prevent most problems
 
-- **Solder the lowest parts first** so the board still lies flat: header → buses →
-  resistors → LEDs → buttons.
+- **Solder the lowest parts first** so the board still lies flat — but see the bus rule
+  below: on a row that carries a bus, the components go in *before* the bus wire.
 - **Tack one leg, verify, then finish.** Applies to every multi-leg part.
 - **Beep every new joint** with the multimeter before moving on.
-- **Check GND↔5V after every stage.** It should never beep. If it does, you've bridged
-  something — find it now, not after ten more joints.
+- **After every stage, beep each GND bus against the neighbouring signal rows.** They must
+  never beep. If they do you've bridged something — find it now, not ten joints later.
+  (Board A has no 5V at all, so the classic GND↔5V check belongs on board B, between its
+  VIN and GND pads.)
 - **Trim leads as you go.** Long leads touch each other and create shorts you can't see.
 - Wipe the tip before every joint. Two seconds, saves minutes.
 
@@ -146,7 +157,7 @@ cold, then fail intermittently. If something works when you press on it, it's a 
 | Joint dull and lumpy | Not enough heat *on the pad* — you heated only the lead |
 | Part falls out while soldering | Bend the leads out slightly to hold it before soldering |
 | Two things connected that shouldn't be | Bridge — braid it off |
-| Nothing works after adding one part | Check GND↔5V continuity first, always |
+| Nothing works after adding one part | Beep the GND bus against its neighbouring signal row |
 | Several buttons dead at once | The **ground bus**, not the switches (this happened twice on the breadboard) |
 | A joint works when pressed | Cold joint — reflow it |
 
@@ -173,6 +184,5 @@ Open the figures alongside it:
 
 ```bash
 mise exec -- python tools/schematic.py        # schematic + a figure per solder step
-mise exec -- python tools/assembly-figures.py # how the parts physically relate
 mise exec -- python tools/view-plan.py        # tickable checklist
 ```

@@ -2,7 +2,8 @@
 
 Physical control surface for Claude Code — a self-contained "code micro" clone. Four LEDs + an LCD show what four agents are doing. Seven buttons on the board do everything: the four color buttons each **launch a color-tinted tmux `claude` session (if not running) and focus it**; three more **approve / deny / always-allow** the on-screen agent's permission prompt. **Single device — there is no game controller.** Don't reintroduce one.
 
-Full build guide: `agentpad-build-guide.md`. Soldered build: `BUILD.md` + `SOLDERING.md`. **Rebuilding the breadboard prototype: `BREADBOARD.md`.**
+**Soldered build: `BUILD.md` + `SOLDERING.md`. Breadboard prototype: `BREADBOARD.md`.**
+`docs-archive-breadboard-era.md` is the superseded milestone guide — do not build from it.
 
 ## Platform
 
@@ -48,7 +49,14 @@ Screen reading survives only to notice the prompt has been **answered**, and mat
 | `hooks/agentpad.sh` | Source of truth for the hook script — **copy to `~/.claude/agentpad.sh`** (see Install) |
 | `firmware/agentpad/agentpad.ino` | The real firmware. Folder name matches the `.ino` so `arduino-cli` can build it. |
 | `firmware/{blink,lcdtest,ledtest,btntest}/` | Milestone test sketches, kept for hardware debugging |
-| `agentpad-build-guide.md` | Full build guide (hardware + software) |
+| `BUILD.md` | The soldered build — parts, board layout, wiring, steps. Tables between `<!-- GEN:… -->` markers are GENERATED |
+| `SOLDERING.md` | From-zero soldering course with practice exercises |
+| `BREADBOARD.md` | Rebuilding the breadboard prototype |
+| `tools/layout.py` | **Single source of truth** for every row, column and GPIO |
+| `tools/verify-layout.py` | Checks bodies, overlaps, hole occupancy and connectivity |
+| `tools/gen-tables.py` | Regenerates BUILD.md's tables from `layout.py` |
+| `tools/schematic.py` | Generates `schematics.html` from `layout.py` |
+| `docs-archive-breadboard-era.md` | Superseded milestone guide — do not build from it |
 | `mise.toml` | Python 3.13 venv definition |
 | `events.jsonl`, `daemon.log` | Runtime state; both gitignored |
 | `~/.claude/agentpad.sh` | Installed copy of the hook script (appends one JSON line per event) |
@@ -104,7 +112,7 @@ Do not replace this with a binary or JSON protocol.
 | Deny button | 18 |
 | Always-allow button ("yes, don't ask again") | 23 |
 | LCD I²C SDA / SCL | 21, 22 |
-| *reserved, not wired* — 74HC595 gauge (data/clock/latch) | 5, 16, 17 |
+| *free* | 5, 16, 17 |
 
 GPIO 34-39 are input-only with no internal pull-up. GPIO 0, 2, 12, 15 are boot strapping pins. Avoid all of them.
 
@@ -124,13 +132,15 @@ You cannot see the hardware. You cannot confirm an LED lit, the LCD shows text, 
 
 Serial port name is measured on real hardware, not guessed (this build: `/dev/cu.usbserial-0001`).
 
-Firmware *compilation* can be verified without hardware via `arduino-cli compile --fqbn esp32:esp32:esp32 firmware/agentpad`. Uploading is done here with `arduino-cli upload -p <port> --fqbn esp32:esp32:esp32 firmware/agentpad`.
+Firmware *compilation* can be verified without hardware via `arduino-cli compile --fqbn esp32:esp32:esp32 firmware/agentpad`. Upload with `arduino-cli compile -u -p <port> --fqbn esp32:esp32:esp32 <sketch>` — bare `upload` does not compile and fails on a clean cache.
+
+**Never hand-edit a row, column or GPIO in BUILD.md or schematic.py.** Change `tools/layout.py`, then run `verify-layout.py`, `gen-tables.py` and `schematic.py`. The docs drifted from the layout four times; the last time the wire table would have shorted seven buttons to ground. That is why the tables are generated.
 
 **Stop the daemon before uploading.** Only one process can hold the serial port; uploading while the daemon runs fails with "Serial data stream stopped: Possible serial noise or corruption", which reads like a hardware fault but isn't.
 
 ## Testing note
 
-Permission prompts only fire for commands that escape the sandbox. **`curl -sI https://example.com` prompts reliably; `date` and `df -h` do not** (this machine runs `acceptEdits`). Use curl when demoing or testing the interlock — otherwise the LED just goes solid "working" and never blinks.
+Permission prompts only fire for commands that escape the sandbox. **`curl -sI https://example.com` prompts reliably; `date` and `df -h` do not** (this machine runs `bypassPermissions` globally, and the daemon launches agent windows with `--permission-mode manual` so they still prompt). Use curl when demoing or testing the interlock — otherwise the LED just goes solid "working" and never blinks.
 
 ## Context usage
 

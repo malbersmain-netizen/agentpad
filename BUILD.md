@@ -4,7 +4,6 @@ Takes you from loose parts to a working, mounted device. Read section 4 before y
 the iron; everything else follows in order.
 
 **Scope:** 1 LCD + 4 LEDs + 7 buttons on two kit perfboards, screwed to a wooden backing
-plate. No 3D-printed case — it isn't needed and won't be ready.
 
 **Done means:** press a color button → a tinted `claude` window opens and focuses; its LED
 heartbeats; ask it something needing permission → LED blinks fast → press `yes` → the
@@ -72,7 +71,6 @@ tack the first pin) · a second ESP32 if you ever see one in stock.
 LCD, screwed to a wooden plate. That is a solid object you can hand to someone, and it
 needs no printer.
 
-`case/agentpad-case.scad` stays in the repo, parametric and unused. Once the boards exist
 and are measured, regenerate the case *from* them rather than building to it.
 
 ---
@@ -118,32 +116,28 @@ face. Sockets face up, the ESP32 plugs in from above. No orientation trickery.
 This uses 2 of your 3 kit boards — the third is for the practice exercises in
 `SOLDERING.md`.
 
-The two boards are joined by **15 wires**. The ESP32 still unplugs from its socket, so
-`BREADBOARD.md` stays a live fallback.
+The two boards are joined by a wire harness (exact count and destinations are generated
+below). The ESP32 still unplugs from its socket, so it can always go back to a breadboard.
 
-| Row | What | Columns |
-|---|---|---|
-| 2 | LED anodes (+) — each also takes that LED's wire to the ESP32 | 3, 9, 15, 21 |
-| 3 | LED cathodes (−) **sharing the hole with the resistor's top lead** | 3, 9, 15, 21 |
-| 3 → 7 | 220Ω standing in the LED's **own column**, body pushed to the bottom | 3, 9, 15, 21 |
-| **7** | **GND bus** | 1 → 24 |
-| **9 and 14** | **Colored button legs** — bottom leg lands *on* the row-14 bus | 2-4, 8-10, 14-16, 20-22 |
-| **14** | **GND bus** | 1 → 24 |
-| **16 and 18** | **AA / no / yes legs** — bottom leg lands *on* the row-18 bus | 3-5, 11-13, 19-21 |
-| **18** | **GND bus** | 1 → 24 |
+<!-- GEN:rowplan -->
+| Row | What |
+|---:|---|
+| **1** | **LED anodes (+)** — each also takes that LED's wire to board B · cols 3, 9, 15, 21 |
+| **2** | **LED cathodes (−)** — lead bends over on the copper face to the row-3 pad |
+| **3** | 220Ω top lead (the only thing in this hole) |
+| **7** | 220Ω bottom lead — lands on the bus · **GND bus** — bare wire, cols 1 → 24 |
+| **9** | **Colored button signal legs** · cols 2, 8, 14, 20 |
+| **14** | **GND bus** — bare wire, cols 1 → 24 · **Colored button ground legs** · cols 4, 10, 16, 22 |
+| **16** | **AA / no / yes signal legs** · cols 3, 11, 19 |
+| **18** | **GND bus** — bare wire, cols 1 → 24 · **AA / no / yes ground legs** · cols 5, 13, 21 |
 
-All three GND buses link together **down column 24**.
+The 3 GND buses join together down **column 24**.
 
-**No 5V anywhere on board A.** Only the LCD needs 5V, and its four wires go straight to
-board B — so 5V never runs beside a 3.3V signal row.
+Genuinely free rows (no lead *and* no component body above them): **8, 15**.
+<!-- /GEN:rowplan -->
 
-**Zero ground jumpers.** Every ground leg lands directly on a bus row. That was worth
-shifting the button banks by a row or two to achieve.
-
-Verified clearances: **3.2mm** between button bodies, 2.1mm LED→resistor, 5.4mm
-resistor→button, 5.0mm between banks. Spare rows: 1, 4, 5, 6, 8, 10, 11, 12, 13, 15, 17.
-Re-check with `mise exec -- python tools/verify-layout.py`.
-
+Verified clearances and spare rows come straight from `tools/verify-layout.py`; re-run it
+after any change.
 
 ### Board B — the ESP32 carrier
 
@@ -160,7 +154,7 @@ the 16th). Then:
 Soldering the strips separately and *then* trying to seat the ESP32 is how people end up
 desoldering a 15-pin strip. Let the ESP32 hold them.
 
-Leave a clear edge on board B for the 15 wires and room for two mounting screws.
+Leave a clear edge on board B for the incoming wires and room for two mounting screws.
 
 ### Board B — your ESP32's actual pinout
 
@@ -168,8 +162,8 @@ Measured from the silkscreen. **Position 1 = top, USB connector at the bottom.**
 
 | Pos | LEFT column | | Pos | RIGHT column |
 |---:|---|---|---:|---|
-| 1 | **VIN** → 5V bus | | 1 | 3V3 |
-| 2 | **GND** → GND bus | | 2 | GND |
+| 1 | **VIN** → LCD VCC | | 1 | 3V3 |
+| 2 | **GND** → board A ground | | 2 | GND |
 | 3 | **D13** → LED 1 red | | 3 | D15 |
 | 4 | D12 | | 4 | D2 |
 | 5 | **D14** → LED 2 green | | 5 | **D4** → button 4 yellow |
@@ -184,7 +178,7 @@ Measured from the silkscreen. **Position 1 = top, USB connector at the bottom.**
 | 14 | VP | | 14 | **D22** → LCD SCL |
 | 15 | EN | | 15 | **D23** → *AA* (always allow) |
 
-**8 wires on the left, 7 on the right** — a convenient balance.
+(The generated wire table below is authoritative for how many land on each side.)
 
 > **Never wire to RX0 or TX0** (right, positions 12–13). Those are the USB serial link.
 > Touching them breaks uploads *and* the daemon, and the symptom looks like a dead board.
@@ -192,31 +186,51 @@ Measured from the silkscreen. **Position 1 = top, USB connector at the bottom.**
 Verified against the pin rules: none of the 15 is input-only (D34/D35/VN/VP) or a boot
 strapping pin (D12, D15, D2). Every GPIO the firmware needs is broken out on this board.
 
-### The 15 wires between the boards
+### The wires between the boards
 
-Each solders to the pad under the corresponding header pin on board B.
+<!-- GEN:wiretable -->
+**12 wires from board A to board B.** Each one's far end solders to the pad of the header pin it serves.
 
-| Wire | Board A | ESP32 pin |
+| # | Signal | From — board A hole | To — ESP32 pin | Header side | Position |
+|---:|---|---|---|---|---:|
+| 1 | LED 1 red | col 3, row 1 | **D13** | LEFT | 3 |
+| 2 | LED 2 green | col 9, row 1 | **D14** | LEFT | 5 |
+| 3 | LED 3 blue | col 15, row 1 | **D27** | LEFT | 6 |
+| 4 | LED 4 yellow | col 21, row 1 | **D26** | LEFT | 7 |
+| 5 | button 1 red | col 2, row 9 | **D32** | LEFT | 10 |
+| 6 | button 2 green | col 8, row 9 | **D33** | LEFT | 9 |
+| 7 | button 3 blue | col 14, row 9 | **D25** | LEFT | 8 |
+| 8 | button 4 yellow | col 20, row 9 | **D4** | RIGHT | 5 |
+| 9 | AA (always allow) | col 3, row 16 | **D23** | RIGHT | 15 |
+| 10 | no (deny) | col 11, row 16 | **D18** | RIGHT | 9 |
+| 11 | yes (approve) | col 19, row 16 | **D19** | RIGHT | 10 |
+| 12 | ground | any GND bus (row 7/14/18) | **GND** | LEFT | 2 |
+
+Plus the LCD's **4** wires, which go to board B directly and never touch board A:
+
+| Signal | From | To — ESP32 pin |
 |---|---|---|
-| LED 1 red | resistor end, col 6 row 2 | GPIO 13 |
-| LED 2 green | resistor end, col 12 row 2 | GPIO 14 |
-| LED 3 blue | resistor end, col 18 row 2 | GPIO 27 |
-| LED 4 yellow | resistor end, col 24 row 2 | GPIO 26 |
-| Button 1 red | leg col 2 row 7 | GPIO 32 |
-| Button 2 green | leg col 8 row 7 | GPIO 33 |
-| Button 3 blue | leg col 14 row 7 | GPIO 25 |
-| Button 4 yellow | leg col 20 row 7 | GPIO 4 |
-| AA | leg col 3 row 14 | GPIO 23 |
-| no | leg col 11 row 14 | GPIO 18 |
-| yes | leg col 19 row 14 | GPIO 19 |
-| 5V | 5V bus (row 1) | VIN |
-| GND | GND bus (row 5 or 17) | GND |
-| SDA | LCD connector, row 18 | GPIO 21 |
-| SCL | LCD connector, row 18 | GPIO 22 |
+| LCD GND | F-M jumper onto the LCD's own header | **GND** |
+| LCD VCC | F-M jumper onto the LCD's own header | **VIN** |
+| LCD SDA | F-M jumper onto the LCD's own header | **21** |
+| LCD SCL | F-M jumper onto the LCD's own header | **22** |
 
-**Label both ends before soldering the second end.** Fifteen identical wires get confusing
-fast. Leave them long enough that the two boards can lie side by side while you work —
-you can always dress them shorter once it's mounted.
+That is **8 on the left column, 4 on the right**, plus 4 LCD wires — **16 arriving at board B** in total.
+
+> **Never wire to RX0 or TX0** (right column, positions 12–13). Those carry the USB serial link; touching them breaks uploads *and* the daemon, and looks like a dead board.
+<!-- /GEN:wiretable -->
+
+**Label both ends before soldering the second end.** Identical wires get confusing fast.
+
+### How much soldering this is
+
+<!-- GEN:joints -->
+| Board | Joints | What |
+|---|---:|---|
+| A | ~86 | 30 bus + 44 component legs + 12 wire ends |
+| B | 30 | two 15-socket strips; 16 of those pads also take a wire |
+| **total** | **~116** | at 1–2 min each including inspection, that is **3–5 hours** |
+<!-- /GEN:joints -->
 
 ### Mounting to wood
 
@@ -295,7 +309,9 @@ Header → buses → resistors → LEDs → buttons.
 Each step ends with a test. **Do not proceed past a failing test** — one new joint is
 easy to debug, thirty is an all-nighter.
 
-Before every power-up: **beep the new joints, and check GND↔5V does NOT beep.**
+Before every power-up: **beep the new joints, and check each GND bus does NOT beep against
+any signal row.** (There is no 5V on board A, so the old GND↔5V check does not apply here —
+do that one on board B, between the VIN and GND pads.)
 
 ### Step 0 — drill the mounting holes FIRST
 
@@ -402,8 +418,9 @@ rule.
 
 ### Step 6 — the LCD
 
-Four **stranded** wires from the row-18 connector: GND → GND bus, VCC → 5V bus, SDA and SCL
-out to the ESP32 (GPIO 21 and 22). Long enough to set the LCD down beside the board.
+Four **F-M jumpers** — female end onto the LCD's own 4-pin header, male end soldered to
+**board B**, at the pads for GND, VIN, D21 (SDA) and D22 (SCL). The LCD is never soldered
+to and never touches board A, so it stays a reusable part.
 
 **Test:** `firmware/lcdtest`
 ✅ Serial prints `found device at 0x27` and text appears. Backlit but blank = turn the
@@ -510,7 +527,7 @@ corruption"*, which reads like a hardware fault but isn't.
 | One LED never lights | It's backwards — flip it |
 | **Several buttons dead at once** | **GND bus break — not the switches** |
 | One button always pressed | Both wires on the same internal pair; rotate 90° |
-| Everything dead after adding a part | Solder bridge — check GND↔5V continuity |
+| Everything dead after adding a part | Solder bridge — beep each GND bus against the neighbouring signal rows |
 | LCD flashes `not blocked` | Interlock refused: no live prompt, or you're not on an agent window. Check `daemon.log` |
 | `pane` empty in events.jsonl | Claude Code isn't running inside tmux |
 | Port name changed | Update `PORT` in `daemon.py` |

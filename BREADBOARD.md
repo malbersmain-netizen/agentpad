@@ -124,7 +124,7 @@ LCD and 7 M-M for button grounds. The kit only has 10 F-M, so you'll need the ex
 ```bash
 ls /dev/cu.*                     # expect /dev/cu.usbserial-0001
 cd ~/projects/agentpad
-arduino-cli upload -p /dev/cu.usbserial-0001 --fqbn esp32:esp32:esp32 firmware/agentpad
+arduino-cli compile -u -p /dev/cu.usbserial-0001 --fqbn esp32:esp32:esp32 firmware/agentpad
 mise exec -- python daemon.py
 ```
 
@@ -157,4 +157,4 @@ Then in another terminal: `tmux attach -t agentpad`
 | Everything dead | Missing GND jumper (Step 1) |
 | LCD flashes `not blocked` | The interlock refused: no live prompt, or you're not on an agent window |
 
-Full detail in `agentpad-build-guide.md`; live state in `daemon.log`.
+Full detail in `BUILD.md`; live state in `daemon.log`.

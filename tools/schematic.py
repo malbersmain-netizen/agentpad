@@ -13,25 +13,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT  = os.path.join(ROOT, "schematics.html")
 FF   = 'font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif"'
 
-# ---- layout (mirrors verify-layout.py) ------------------------------------
-ROWS, COLS = 18, 24
-BIG_LEG_COLS, BIG_LEG_ROWS, SMALL_LEG = 2, 5, 2
-LED_COLS = [3, 9, 15, 21]
-BTN_COL0 = [c-1 for c in LED_COLS]
-BTN_ROWS = (9, 14)
-RES_COLS = LED_COLS   # resistor stands in the LED's own column, rows 3-7
-ANS_COL0 = [3, 11, 19]
-ANS_ROWS = (16, 18)
-ANS_ROWS_NOTE = 'off-board ESP32'
-GND_ROWS = (7, 14, 18)
-LED_ROWS = (1, 2)
-RES_ROWS = (3, 7)
-LED_GPIO = [13, 14, 27, 26]
-BTN_GPIO = [32, 33, 25, 4]
-ANS_INFO = [("AA", 23, "always allow"), ("no", 18, "deny"), ("yes", 19, "approve")]
-COL  = ["#c0392b", "#2e7d32", "#1565c0", "#b8860b"]
-NAME = ["red", "green", "blue", "yellow"]
-ANSC = ["#8a5a12", "#37474f", "#0f6b52"]
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from layout import *          # single source of truth -- see tools/layout.py
+NAME = LED_NAME
 
 def svg(w, h, body, bg="#fff"):
     return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" '
@@ -279,7 +264,7 @@ def fig_boardB():
             o.append(f'<circle cx="{X(c)}" cy="{Y(r)}" r="{P2*0.30}" fill="#c9962e"/>')
             o.append(f'<circle cx="{X(c)}" cy="{Y(r)}" r="{P2*0.14}" fill="#123a1f"/>')
     # two header strips: columns 5-19, rows 4 and 14 (10 apart)
-    HR = (4, 14); HC0, HC1 = 5, 19
+    HR = HDR_ROWS; HC0, HC1 = HDR_COLS
     for r in HR:
         o.append(f'<rect x="{X(HC0)-11}" y="{Y(r)-11}" width="{(HC1-HC0)*P2+22}" height="22" rx="5" fill="#15181c"/>')
         for c in range(HC0, HC1+1):
@@ -294,8 +279,8 @@ def fig_boardB():
     for i, nm in enumerate(ESP_LEFT):
         if nm in USED:
             o.append(f'<line x1="{X(HC0+i)}" y1="{Y(HR[0])}" x2="{X(HC0+i)}" y2="{Y(1)-30}" stroke="#c8862a" stroke-width="2"/>')
-    o.append(f'<text x="{ox-46}" y="{Y(HR[0])+5}" text-anchor="end" font-size="11" font-weight="700" fill="#333">row 4</text>')
-    o.append(f'<text x="{ox-46}" y="{Y(HR[1])+5}" text-anchor="end" font-size="11" font-weight="700" fill="#333">row 14</text>')
+    o.append(f'<text x="{ox-46}" y="{Y(HR[0])+5}" text-anchor="end" font-size="11" font-weight="700" fill="#333">row {HR[0]}</text>')
+    o.append(f'<text x="{ox-46}" y="{Y(HR[1])+5}" text-anchor="end" font-size="11" font-weight="700" fill="#333">row {HR[1]}</text>')
     o.append(f'<text x="{ox}" y="{Y(18)+52}" font-size="12" fill="#444">15 wires from board A + 4 from the LCD land on the pads under these sockets — on the UNDERSIDE.</text>')
     return svg(W, H, "".join(o))
 
@@ -369,58 +354,67 @@ def fig_detail():
     o.append(f'<rect x="{ox+4*p-7}" y="{oy-8}" width="14" height="{1*p+16}" rx="4" fill="#c8862a" stroke="#8a5a12"/>')
     o.append(f'<line x1="{ox+2*p}" y1="{oy+2*p}" x2="{ox+2*p}" y2="{oy+4*p}" stroke="#444" stroke-width="3"/>')
     o.append(f'<line x1="{ox-10}" y1="{oy+4*p}" x2="{ox+5.4*p}" y2="{oy+4*p}" stroke="#111" stroke-width="7"/>')
-    for t, x, y in (("anode +  row 3", ox+2*p, oy+1*p-24), ("cathode −  row 4", ox+2*p+26, oy+2*p+6),
-                    ("220Ω  rows 1-3", ox+4*p+16, oy+10), ("GND bus  row 5", ox+5.4*p+14, oy+4*p+4)):
+    for t, x, y in ((f"anode +  row {LED_ROWS[0]}", ox+2*p, oy+1*p-24), (f"cathode -  row {LED_ROWS[1]}", ox+2*p+26, oy+2*p+6),
+                    (f"220R rows {RES_ROWS[0]}-{RES_ROWS[1]}", ox+4*p+16, oy+10), (f"GND bus row {GND_ROWS[0]}", ox+5.4*p+14, oy+4*p+4)):
         anchor = "start" if x > ox+2*p else "middle"
         o.append(f'<text x="{x}" y="{y}" text-anchor="{anchor}" font-size="10.5" fill="#333">{t}</text>')
     # button
     ox2 = 560
-    o.append(grid(ox2, oy, 7, 7))
-    o.append(f'<text x="{ox2-14}" y="{oy-16}" font-size="12" font-weight="700" fill="#333">Colored button — legs 5 holes apart BOTH ways</text>')
+    o.append(grid(ox2, oy, BIG_LEG_COLS+2, BIG_LEG_ROWS+2))
+    o.append(f'<text x="{ox2-14}" y="{oy-16}" font-size="12" font-weight="700" fill="#333">Colored button — legs {BIG_LEG_COLS} pitches ACROSS, {BIG_LEG_ROWS} LONG</text>')
     s = 12*p/2.54*0.42
-    cx, cy = ox2+2.5*p, oy+2.5*p
+    cx, cy = ox2+BIG_LEG_COLS/2*p, oy+BIG_LEG_ROWS/2*p
     o.append(f'<rect x="{cx-s/2}" y="{cy-s/2}" width="{s}" height="{s}" rx="6" fill="#c0392b" stroke="#111" stroke-width="1.5" opacity="0.35"/>')
-    for (dc, dr) in ((0, 0), (5, 0), (0, 5), (5, 5)):
+    for (dc, dr) in ((0,0), (BIG_LEG_COLS,0), (0,BIG_LEG_ROWS), (BIG_LEG_COLS,BIG_LEG_ROWS)):
         o.append(f'<circle cx="{ox2+dc*p}" cy="{oy+dr*p}" r="11" fill="none" stroke="#777" stroke-width="2"/>')
     o.append(f'<circle cx="{ox2}" cy="{oy}" r="11" fill="none" stroke="#2f7d4f" stroke-width="3.5"/>')
-    o.append(f'<circle cx="{ox2+5*p}" cy="{oy+5*p}" r="11" fill="none" stroke="#2f7d4f" stroke-width="3.5"/>')
+    o.append(f'<circle cx="{ox2+BIG_LEG_COLS*p}" cy="{oy+BIG_LEG_ROWS*p}" r="11" fill="none" stroke="#2f7d4f" stroke-width="3.5"/>')
     o.append(f'<line x1="{ox2}" y1="{oy}" x2="{ox2}" y2="{oy-26}" stroke="#c0392b" stroke-width="3"/>')
     o.append(f'<text x="{ox2}" y="{oy-32}" text-anchor="middle" font-size="10.5" fill="#c0392b">to GPIO</text>')
-    o.append(f'<line x1="{ox2+5*p}" y1="{oy+5*p}" x2="{ox2+6.2*p}" y2="{oy+5*p}" stroke="#111" stroke-width="3"/>')
-    o.append(f'<text x="{ox2+6.4*p}" y="{oy+5*p+4}" font-size="10.5" fill="#111">to GND bus</text>')
-    o.append(f'<text x="{ox2}" y="{oy+6.4*p}" font-size="10.5" fill="#2f7d4f">green = the two legs you actually wire (diagonal)</text>')
-    o.append(f'<text x="{ox2}" y="{oy+6.4*p+18}" font-size="10.5" fill="#777">grey = the other two; leave them, or clip flush</text>')
+    o.append(f'<line x1="{ox2+BIG_LEG_COLS*p}" y1="{oy+BIG_LEG_ROWS*p}" x2="{ox2+(BIG_LEG_COLS+1.2)*p}" y2="{oy+BIG_LEG_ROWS*p}" stroke="#111" stroke-width="3"/>')
+    o.append(f'<text x="{ox2+(BIG_LEG_COLS+1.4)*p}" y="{oy+BIG_LEG_ROWS*p+4}" font-size="10.5" fill="#111">lands ON the GND bus</text>')
+    o.append(f'<text x="{ox2}" y="{oy+(BIG_LEG_ROWS+1.4)*p}" font-size="10.5" fill="#2f7d4f">green = the two legs you wire (diagonal)</text>')
+    o.append(f'<text x="{ox2}" y="{oy+(BIG_LEG_ROWS+1.4)*p+18}" font-size="10.5" fill="#777">grey = solder these too: same net, double the anchoring</text>')
     return svg(W, H, "".join(o))
 
 # ======================================================= 5. CONNECTION LIST
 def fig_wires():
+    """Connection list, derived from layout.harness() so it cannot drift."""
     rows = []
-    for i in range(4):
-        rows.append((f"LED {i+1} {NAME[i]}", f"anode, col {LED_COLS[i]} row 3", f"220Ω (col {RES_COLS[i]}) → GPIO {LED_GPIO[i]}", COL[i]))
-        rows.append(("", f"cathode, col {LED_COLS[i]} row 4", f"GND bus (row {GND_ROWS[0]})", COL[i]))
-    for i in range(4):
-        rows.append((f"Button {i+1} {NAME[i]}", f"leg col {BTN_COL0[i]} row {BTN_ROWS[0]}", f"GPIO {BTN_GPIO[i]}", COL[i]))
-        rows.append(("", f"leg col {BTN_COL0[i]+BIG_LEG_COLS} row {BTN_ROWS[1]}", f"GND bus (row {GND_ROWS[1]})", COL[i]))
-    for i, (n, g, d) in enumerate(ANS_INFO):
-        rows.append((f"{n} ({d})", f"leg col {ANS_COL0[i]} row {ANS_ROWS[0]}", f"GPIO {g}", ANSC[i]))
-        rows.append(("", f"leg col {ANS_COL0[i]+SMALL_LEG} row {ANS_ROWS[1]}", f"GND bus (row {GND_ROWS[1]})", ANSC[i]))
-    for lab, dest, c in (("LCD GND", "board B GND pad", "#111"), ("LCD VCC", "board B VIN pad", "#c0392b"),
-                         ("LCD SDA", "GPIO 21", "#ef6c00"), ("LCD SCL", "GPIO 22", "#6d4c41")):
-        rows.append((lab, "flying lead", dest, c))
-    rows.append(("ESP32 GND", "header pin", f"GND bus", "#111"))
-    rows.append(("ESP32 VIN", "header pin", f"5V bus", "#c0392b"))
-    W, H = 900, 70 + len(rows)*22 + 30
-    o = [f'<text x="24" y="30" font-size="15" font-weight="700" fill="#222">Every connection, in order</text>']
-    for x, h in zip([30, 210, 470], ["PART", "FROM", "TO"]):
-        o.append(f'<text x="{x}" y="56" font-size="10.5" font-weight="700" fill="#999">{h}</text>')
+    for i, c in enumerate(LED_COLS):
+        rows.append((f"LED {i+1} {NAME[i]}", f"anode col {c} row {LED_ROWS[0]}",
+                     f"wire to D{LED_GPIO[i]} on board B", COL[i]))
+        rows.append(("", f"cathode col {c} row {LED_ROWS[1]}",
+                     f"lead bends to the 220R pad at row {RES_ROWS[0]}", COL[i]))
+        rows.append(("", f"220R bottom col {c} row {RES_ROWS[1]}",
+                     f"lands ON the GND bus", COL[i]))
+    for i, c0 in enumerate(BTN_COL0):
+        rows.append((f"Button {i+1} {NAME[i]}", f"signal leg col {c0} row {BTN_ROWS[0]}",
+                     f"wire to D{BTN_GPIO[i]} on board B", COL[i]))
+        rows.append(("", f"gnd leg col {c0+BIG_LEG_COLS} row {BTN_ROWS[1]}",
+                     "lands ON the GND bus", COL[i]))
+    for i, ((n, g, d), c0) in enumerate(zip(ANS_INFO, ANS_COL0)):
+        rows.append((f"{n} ({d})", f"signal leg col {c0} row {ANS_ROWS[0]}",
+                     f"wire to D{g} on board B", ANSC[i]))
+        rows.append(("", f"gnd leg col {c0+SMALL_LEG} row {ANS_ROWS[1]}",
+                     "lands ON the GND bus", ANSC[i]))
+    rows.append(("Ground", f"any GND bus (rows {', '.join(map(str, GND_ROWS))})",
+                 "one wire to GND on board B", "#111"))
+    for a_, b_ in LCD_PINS:
+        rows.append((f"LCD {a_}", "F-M jumper on the LCD's own header",
+                     f"board B pad {b_} — never board A", "#c60"))
+    W, H = 940, 74 + len(rows)*22 + 30
+    o = [f'<text x="24" y="30" font-size="15" font-weight="700" fill="#222">Every connection, in order</text>',
+         f'<text x="24" y="50" font-size="11" fill="#888">generated from tools/layout.py — {len(harness())} wires to board B plus {len(LCD_PINS)} from the LCD</text>']
+    for x, h in zip([30, 250, 560], ["PART", "BOARD A HOLE", "GOES TO"]):
+        o.append(f'<text x="{x}" y="72" font-size="10.5" font-weight="700" fill="#999">{h}</text>')
     for i, (part, frm, to, c) in enumerate(rows):
-        y = 78 + i*22
-        if part:
-            o.append(f'<rect x="20" y="{y-14}" width="{W-40}" height="{44 if not part else 22}" fill="#f7f6f2" opacity="0.6"/>')
+        y = 94 + i*22
+        if part: o.append(f'<rect x="20" y="{y-14}" width="{W-40}" height="20" fill="#f7f6f2" opacity="0.7"/>')
         o.append(f'<rect x="22" y="{y-10}" width="3" height="14" fill="{c}"/>')
         o.append(f'<text x="30" y="{y}" font-size="11" font-weight="{700 if part else 400}" fill="#222">{part}</text>')
-        o.append(f'<text x="210" y="{y}" font-size="11" fill="#555">{frm}</text>')
-        o.append(f'<text x="470" y="{y}" font-size="11" fill="#555">→ {to}</text>')
+        o.append(f'<text x="250" y="{y}" font-size="11" fill="#555">{frm}</text>')
+        o.append(f'<text x="560" y="{y}" font-size="11" fill="#555">{to}</text>')
     return svg(W, H, "".join(o))
 
 FIGS = [
@@ -428,7 +422,7 @@ FIGS = [
   "Three functional groups. LEDs: GPIO → 220Ω → LED → GND. Buttons: GPIO → switch → GND, "
   "with the ESP32's internal pull-up doing the rest. LCD: I²C on GPIO 21/22, powered from 5V."),
  ("2 · Pin map", fig_pinmap(),
-  "Fifteen connections. Every GPIO is safe: none are input-only (34-39) or boot strapping "
+  f"{len(harness())+len(LCD_PINS)} connections. Every GPIO is safe: none are input-only (34-39) or boot strapping "
   "pins (0, 2, 12, 15). Each one is an F-M jumper — female on the ESP32, male soldered in."),
  ("3 · Board layout — top side, finished", board(99, "top"),
   "One 18×24 kit board. Dashed lines leaving the top edge are the jumpers to the ESP32, which "
@@ -460,7 +454,8 @@ FIGS = [
   "Small 3×3 buttons, legs rows 14 and 16. Same diagonal rule. "
   "Test: btntest now prints button 0–6. Several dead at once means the GND bus, not the switches."),
  ("Step 5 — LCD leads", board(5, "top"),
-  "Four stranded wires off row 18. Test: firmware/lcdtest prints 'found device at 0x27'."),
+  "Four F-M jumpers from the LCD's own header straight to board B — never to board A. "
+  "Test: firmware/lcdtest prints 'found device at 0x27'."),
 ]
 
 CSS = """
@@ -486,12 +481,14 @@ page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <p class="sub">Circuit, pin map, both sides of the board, component detail, every wire, then one figure per solder step.</p>
 <nav>{nav}</nav>
 <div class="key"><strong>Single-sided board.</strong> All the copper is on one face, so every
-solder joint is on the underside and every component sits on top. The ESP32 cannot be socketed
-here — its socket body would cover the pads — so it gets <strong>its own carrier board</strong>,
-joined by 15 wires. Both screw to a wooden plate; the ESP32 unplugs and stays removable.<br><br>
-<strong>Verified in millimetres, not hole counts:</strong> 7 buttons, 4 LEDs and 4 resistors fit
-with 3.2mm between button bodies, 6.7mm LED→button and 5.0mm between banks — and 7 spare rows.
-Re-check with <code>mise exec -- python tools/verify-layout.py</code>.</div>
+solder joint is on the underside and every component sits on top. The ESP32 gets
+<strong>its own carrier board</strong> — not because it could not be soldered here, but because
+board A's 18 rows are already spent. Both screw to a wooden plate; the ESP32 unplugs and stays
+removable.<br><br>
+<strong>Verified in millimetres, not hole counts.</strong> Every figure here is generated from
+<code>tools/layout.py</code>, the same file <code>tools/verify-layout.py</code> checks — so a drawing
+cannot disagree with the spec. Re-check with
+<code>mise exec -- python tools/verify-layout.py</code>.</div>
 {body}</body></html>"""
 open(OUT, "w").write(page)
 print(OUT)

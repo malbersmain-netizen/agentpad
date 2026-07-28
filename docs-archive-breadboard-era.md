@@ -1,3 +1,10 @@
+> **ARCHIVED — do not build from this.**
+> This is the original breadboard-era milestone guide, written before the two-board
+> soldered design. It is kept only for the hardware bring-up history. The current
+> documents are `BUILD.md`, `SOLDERING.md` and `BREADBOARD.md`.
+
+---
+
 # Agent Pad — Complete Build Guide (macOS)
 
 A physical control surface for Claude Code. Four LEDs show what four agents are doing and an LCD shows detail. Six buttons on the board do everything: four color buttons each launch a color-tinted tmux `claude` session (if it isn't running yet) and focus it, and two more buttons approve or deny that agent's permission prompt. No game controller — the device is self-contained.
