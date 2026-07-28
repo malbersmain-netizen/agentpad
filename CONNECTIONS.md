@@ -9,8 +9,9 @@ below, repeated. If these make sense, the build is just following a list.
 
 **A perfboard hole is an island.**
 
-Each hole has a ring of copper around it on ONE face — the underside. That ring is called
-a **pad**. Pads are not connected to each other. Not to the one next door, not to the one
+Each hole has a ring of copper around it — a **pad**. (Your board is double-sided, so
+there is a pad on each face; we solder on one face throughout, which keeps things simple
+and means the design works whether or not the holes are plated through.) Pads are not connected to each other. Not to the one next door, not to the one
 across the board. **Nothing is connected to anything until you connect it.**
 
 That's the whole difference from a breadboard, where the plastic hides little metal clips
@@ -26,9 +27,9 @@ that join each row of five holes for you. Perfboard has none of that. You are th
      plain board, no copper               every pad isolated
 ```
 
-So when the build sheet says *"LED 1 anode, col 3 row 1 → D13"*, that means: the LED's long
-leg goes through the hole at column 3, row 1, and **you** run a wire from that pad to the
-D13 pad on board B. Nothing happens automatically.
+So when the build sheet says *"LED 1 anode, col 4 row 2 → D13"*, that means: the LED's long
+leg goes through the hole at column 4, row 2, and **you** run a wire from that pad to the
+D13 pad at the ESP32 socket. Nothing happens automatically.
 
 ---
 
@@ -66,7 +67,7 @@ Ground has to reach ~15 different places. Running 15 separate wires would be mis
 instead you lay **one bare wire along a row of pads and solder it to each one**. That turns
 a row of islands into a single connected node. That node is called a **bus**.
 
-This board has **three GND buses**, joined to each other down column 24. Anything that needs
+This board has **three GND buses**, joined to each other down column 28. Anything that needs
 ground just has to reach the nearest bus.
 
 **How to lay one:**
@@ -79,7 +80,7 @@ ground just has to reach the nearest bus.
 4. Tack one end. Check it's straight. Solder it to every second or third pad.
 
 ```
-   underside, looking at row 7
+   underside, looking at a bus row
 
    ◎───◎───◎───◎───◎───◎     ← RIGHT: wire runs beside the pads, holes clear
    ═══════════════════════
@@ -92,15 +93,15 @@ ground just has to reach the nearest bus.
 never reaches the copper — but solder still bridges the gap and **the joint looks perfect
 from underneath**. Eighteen joints on this board could fail that way, invisibly.
 
-**Consequence for the build order:** rows 14 and 18 carry a bus *and* button legs. On those
+**Consequence for the build order:** rows 16 and 21 carry a bus *and* button legs. On those
 rows, **fit the buttons first**, bend their ground legs flat along the row, then lay the bus
-on top of the bent legs and solder once. Only row 7 is empty enough to bus first.
+on top of the bent legs and solder once. Only row 8 is empty enough to bus first.
 
 ---
 
 ## Move 3 — bending a leg to reach a neighbouring pad
 
-Used once per LED. The LED's cathode is in row 2 and its resistor's top lead is in row 3 —
+Used once per LED. The LED's cathode is in row 3 and its resistor's top lead is in row 4 —
 next-door pads that must be joined.
 
 Rather than adding a wire, **use the LED's own leg**:
@@ -113,10 +114,10 @@ Rather than adding a wire, **use the LED's own leg**:
 ```
    underside
 
-   row 2  ◎  ← LED cathode soldered here
+   row 3  ◎  ← LED cathode soldered here
           │
           ╰──╮   leg bent flat along the copper face
-   row 3  ◎◄─╯  ← and soldered onto this pad, where the resistor already sits
+   row 4  ◎◄─╯  ← and soldered onto this pad, where the resistor already sits
 ```
 
 An LED leg is ~20mm; you need 2.54mm. There's plenty.
@@ -126,16 +127,16 @@ An LED leg is ~20mm; you need 2.54mm. There's plenty.
 
 ---
 
-## Move 4 — a wire from one board to the other
+## Move 4 — a signal wire across the board
 
-Twelve of these, plus four from the LCD. All identical:
+Twelve of these, plus four F-M jumpers for the LCD. All identical:
 
 1. Cut 22AWG solid wire, generously long — you can always shorten.
 2. **Strip ~4mm** off each end.
 3. **Tin both ends**: melt a little solder into the bare copper so it turns silver. Tinned
    wire slides into a joint predictably; untinned wire frays and wanders.
-4. Push one end down through its hole on board A **from the top**, solder underneath, snip.
-5. Do the same at the board B end, into the pad under the header pin it serves.
+4. Push one end down through its hole **from the top**, solder underneath, snip.
+5. Do the same at the far end, into the pad under the ESP32 socket pin it serves.
 
 > **Label both ends before you solder the second one.** Twelve identical wires become
 > indistinguishable the moment they're in a bundle. Masking-tape flags with the signal
@@ -145,7 +146,7 @@ Twelve of these, plus four from the LCD. All identical:
 
 ## Move 5 — soldering a wire onto a pad that already has a pin in it
 
-On board B, each wire lands on a pad that already holds a header pin. You don't need a free
+Each signal wire lands on a pad that already holds a socket pin. You don't need a free
 hole — **you solder the wire onto the pin's existing joint**:
 
 1. Do all 30 header joints first.
@@ -163,11 +164,11 @@ Every part of the build is these moves in sequence. Here's LED 1 in full:
 
 | # | Move | What you do |
 |---|---|---|
-| 1 | Move 1 | LED long leg (+) into **col 3, row 1**; short leg (−) into **col 3, row 2** |
-| 2 | Move 1 | 220Ω into **col 3, row 3** and **col 3, row 7** |
-| 3 | Move 3 | Bend the LED's cathode leg from row 2 onto the row-3 pad and solder |
-| 4 | Move 2 | The resistor's bottom lead is in row 7 — **that row is a GND bus**, so it's grounded the moment the bus is on |
-| 5 | Move 4 | Wire from **col 3, row 1** to the **D13** pad on board B |
+| 1 | Move 1 | LED long leg (+) into **col 4, row 2**; short leg (−) into **col 4, row 3** |
+| 2 | Move 1 | 220Ω into **col 4, row 4** and **col 4, row 8** |
+| 3 | Move 3 | Bend the LED's cathode leg from row 3 onto the row-4 pad and solder |
+| 4 | Move 2 | The resistor's bottom lead is in row 8 — **that row is a GND bus**, so it's grounded the moment the bus is on |
+| 5 | Move 4 | Wire from **col 4, row 2** to the **D13** pad at the ESP32 socket |
 
 Follow the current: **D13 → wire → LED anode → through the LED → cathode → bent leg →
 resistor → GND bus → back to the ESP32's GND.** Every step is a connection you made.

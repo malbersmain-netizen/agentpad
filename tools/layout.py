@@ -9,13 +9,16 @@ MEASURED on the actual kit parts (calipers, not datasheets):
   colored buttons  pins 3 holes ACROSS (2 pitches) x 6 holes LONG (5 pitches)
   small buttons    3x3 holes (2 pitches both ways)
   ESP32            11 holes across (pin rows 1.0in apart) x 15 long
-  perfboard        18 rows x 24 cols, 50x70mm, SINGLE-SIDED, 1.0mm holes
+  perfboard        30 rows x 42 cols, ~79x109mm, DOUBLE-SIDED, 1.0mm holes.
+                   Everything fits ONE board now, with the ESP32 socketed beside the
+                   controls. All joints stay on one face, so the design does not depend
+                   on whether the holes are plated through.
 """
 
 # ---- board ----------------------------------------------------------------
 P            = 2.54
-ROWS, COLS   = 18, 24
-BOARD_W, BOARD_H = 70.0, 50.0
+ROWS, COLS   = 30, 42          # the double-sided board: 42 across, 30 down
+BOARD_W, BOARD_H = 109.0, 79.0
 HOLE_D       = 1.0     # one lead per hole, never two
 BEND         = 1.5     # straight lead between body seal and bend, per end
 
@@ -28,22 +31,26 @@ LED_D        = 6.0     # 5mm LED INCLUDING its base flange
 RES_BODY     = 6.3     # 1/4W body
 RES_W        = 2.5
 
-# ---- board A layout -------------------------------------------------------
-LED_COLS = [3, 9, 15, 21]   # LED, its resistor and its button share a column
-LED_ROWS = (1, 2)           # anode row 1 (takes the wire), cathode row 2
-RES_ROWS = (3, 7)           # resistor in the CATHODE path; the cathode lead bends
-                            # over on the copper face to reach the row-3 pad
+# ---- control surface ------------------------------------------------------
+# Control surface lives in columns 1-28; the ESP32 sits in columns 30-40.
+LED_COLS = [4, 11, 18, 25]  # 7-col pitch -> 5.8mm between button bodies
+LED_ROWS = (2, 3)           # anode row 2 (takes the wire), cathode row 3
+RES_ROWS = (4, 8)           # resistor in the CATHODE path; the cathode lead bends
+                            # over on the copper face to reach the row-4 pad
 BTN_COL0 = [c-1 for c in LED_COLS]
-BTN_ROWS = (9, 14)          # ground leg lands directly ON the row-14 bus
-ANS_COL0 = [3, 11, 19]
-ANS_ROWS = (16, 18)         # ground leg lands directly ON the row-18 bus
-GND_ROWS = (7, 14, 18)      # one bus per bank -> zero ground jumpers
-GND_LINK_COL = 24           # the three buses join down this column
-LCD_ON_BOARD_A = False      # LCD wires straight to board B; no 5V on board A
+BTN_ROWS = (11, 16)         # ground leg lands directly ON the row-16 bus
+ANS_COL0 = [4, 13, 22]
+ANS_ROWS = (19, 21)         # ground leg lands directly ON the row-21 bus
+GND_ROWS = (8, 16, 21)      # one bus per bank -> zero ground jumpers
+GND_LINK_COL = 28           # the three buses join down this column
+BUS_COLS = (1, 28)          # buses span the control surface only, not under the ESP32
+# The LCD connects by 4 F-M jumpers straight onto the ESP32's own pins — it is never
+# soldered, so it stays a reusable part and no 5V ever runs across the control surface.
+LCD_SOLDERED = False
 
-# ---- board B --------------------------------------------------------------
-HDR_ROWS = (4, 14)          # 10 apart = the ESP32's 1.0in pin rows
-HDR_COLS = (5, 19)          # 15 sockets
+# ---- ESP32, same board, columns 30-40 -------------------------------------
+HDR_COLS = (30, 40)         # 10 apart = the ESP32's 1.0in pin rows
+HDR_ROWS = (8, 22)          # 15 sockets running down
 
 # ---- electrical -----------------------------------------------------------
 LED_GPIO  = [13, 14, 27, 26]
@@ -68,7 +75,7 @@ def esp_position(pin):
 
 
 def harness():
-    """Every wire from board A to board B: (label, board-A hole, ESP32 pin, side, pos)."""
+    """Every wire from the control surface to the ESP32's socket, all on one board."""
     out = []
     for i, c in enumerate(LED_COLS):
         out.append((f"LED {i+1} {LED_NAME[i]}", f"col {c}, row {LED_ROWS[0]}", f"D{LED_GPIO[i]}"))
@@ -76,11 +83,11 @@ def harness():
         out.append((f"button {i+1} {LED_NAME[i]}", f"col {c0}, row {BTN_ROWS[0]}", f"D{BTN_GPIO[i]}"))
     for (n, g, d), c0 in zip(ANS_INFO, ANS_COL0):
         out.append((f"{n} ({d})", f"col {c0}, row {ANS_ROWS[0]}", f"D{g}"))
-    out.append(("ground", f"any GND bus (row {GND_ROWS[0]}/{GND_ROWS[1]}/{GND_ROWS[2]})", "GND"))
+    out.append(("ground", f"any GND bus (rows {', '.join(map(str, GND_ROWS))})", "GND"))
     return [(lbl, src, pin) + esp_position(pin) for lbl, src, pin in out]
 
 
 def lcd_harness():
-    """The LCD's four wires — they go to board B, never to board A."""
+    """The LCD's four wires — F-M jumpers onto the ESP32's pins, never soldered."""
     return [(f"LCD {a}", "F-M jumper onto the LCD's own header", b if b == "GND" else
              ("VIN" if b == "VIN" else f"D{b}")) for a, b in LCD_PINS]

@@ -133,8 +133,8 @@ cold, then fail intermittently. If something works when you press on it, it's a 
 - **Beep every new joint** with the multimeter before moving on.
 - **After every stage, beep each GND bus against the neighbouring signal rows.** They must
   never beep. If they do you've bridged something — find it now, not ten joints later.
-  (Board A has no 5V at all, so the classic GND↔5V check belongs on board B, between its
-  VIN and GND pads.)
+  (The control surface carries no 5V at all, so the classic GND↔5V check belongs at the
+  ESP32 socket, between its VIN and GND pads.)
 - **Trim leads as you go.** Long leads touch each other and create shorts you can't see.
 - Wipe the tip before every joint. Two seconds, saves minutes.
 

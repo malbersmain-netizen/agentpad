@@ -52,6 +52,7 @@ Screen reading survives only to notice the prompt has been **answered**, and mat
 | `BUILD.md` | The soldered build — parts, board layout, wiring, steps. Tables between `<!-- GEN:… -->` markers are GENERATED |
 | `SOLDERING.md` | From-zero soldering course with practice exercises |
 | `BREADBOARD.md` | Rebuilding the breadboard prototype |
+| `CONNECTIONS.md` | **How you physically join two points on perfboard** — read first |
 | `tools/layout.py` | **Single source of truth** for every row, column and GPIO |
 | `tools/verify-layout.py` | Checks bodies, overlaps, hole occupancy and connectivity |
 | `tools/gen-tables.py` | Regenerates BUILD.md's tables from `layout.py` |

@@ -137,7 +137,7 @@ def fig_pinmap():
     return svg(W, H, "".join(o))
 
 # =========================================================== 3. BOARD FIGURES
-PITCH, OX, OY = 34, 86, 74
+PITCH, OX, OY = 22, 74, 62
 
 def board(stage=99, side="top"):
     """Draw board A as it will actually look: copper pads, real part bodies, bus wires."""
@@ -163,9 +163,9 @@ def board(stage=99, side="top"):
         o.append(f'<text x="{x}" y="{y}" text-anchor="{anc}" font-size="{sz}" font-weight="{w}" fill="{col}">{s}</text>')
 
     def bus(r):
-        o.append(f'<line x1="{X(1)}" y1="{Y(r)}" x2="{X(COLS)}" y2="{Y(r)}" stroke="#8c9099" stroke-width="9" stroke-linecap="round"/>')
-        o.append(f'<line x1="{X(1)}" y1="{Y(r)-2}" x2="{X(COLS)}" y2="{Y(r)-2}" stroke="#d6dae0" stroke-width="2.5" opacity="0.8"/>')
-        lab(X(COLS)+52, Y(r)+4, "GND bus", "#333", 11, "start", 700)
+        o.append(f'<line x1="{X(BUS_COLS[0])}" y1="{Y(r)}" x2="{X(BUS_COLS[1])}" y2="{Y(r)}" stroke="#8c9099" stroke-width="9" stroke-linecap="round"/>')
+        o.append(f'<line x1="{X(BUS_COLS[0])}" y1="{Y(r)-2}" x2="{X(BUS_COLS[1])}" y2="{Y(r)-2}" stroke="#d6dae0" stroke-width="2.5" opacity="0.8"/>')
+        lab(X(BUS_COLS[1])+14, Y(r)+4, "GND", "#333", 11, "start", 700)
 
     def resistor(c):
         x = X(c); y0 = Y(RES_ROWS[0]); y1 = Y(RES_ROWS[1])
@@ -210,8 +210,17 @@ def board(stage=99, side="top"):
     if side == "top":
         if stage >= 1:
             for r in GND_ROWS: bus(r)
-            o.append(f'<line x1="{X(COLS)}" y1="{Y(GND_ROWS[0])}" x2="{X(COLS)}" y2="{Y(GND_ROWS[-1])}" stroke="#8c9099" stroke-width="7"/>')
-            lab(X(COLS)+52, Y(GND_ROWS[0])-20, "linked down col 24", "#666", 10, "start")
+            o.append(f'<line x1="{X(GND_LINK_COL)}" y1="{Y(GND_ROWS[0])}" x2="{X(GND_LINK_COL)}" y2="{Y(GND_ROWS[-1])}" stroke="#8c9099" stroke-width="7"/>')
+            lab(X(GND_LINK_COL)+8, Y(GND_ROWS[0])-20, f"linked down col {GND_LINK_COL}", "#666", 10, "start")
+            # ESP32 socket, same board
+            ex0, ey0 = X(HDR_COLS[0]), Y(HDR_ROWS[0])
+            ex1, ey1 = X(HDR_COLS[1]), Y(HDR_ROWS[1])
+            for c in HDR_COLS:
+                o.append(f'<rect x="{X(c)-11}" y="{ey0-11}" width="22" height="{ey1-ey0+22}" rx="5" fill="#15181c"/>')
+            o.append(f'<rect x="{ex0-20}" y="{ey0-30}" width="{ex1-ex0+40}" height="{ey1-ey0+60}" rx="8" fill="#2b2b33" opacity="0.82" stroke="#8ecbff" stroke-width="2"/>')
+            lab((ex0+ex1)/2, (ey0+ey1)/2-6, "ESP32", "#fff", 15, "middle", 700)
+            lab((ex0+ex1)/2, (ey0+ey1)/2+14, "in its socket", "#9fd6ff", 11)
+            lab((ex0+ex1)/2, ey1+50, "USB overhangs this edge", "#9fd6ff", 10)
         if stage >= 2:
             for i, c in enumerate(LED_COLS):
                 resistor(c); led(c, COL[i], i+1)
@@ -220,16 +229,16 @@ def board(stage=99, side="top"):
         if stage >= 3:
             for i, c0 in enumerate(BTN_COL0):
                 bigbtn(c0, COL[i], i+1)
-                o.append(f'<line x1="{X(c0)}" y1="{Y(BTN_ROWS[0])}" x2="{X(c0)-26}" y2="{Y(BTN_ROWS[0])}" stroke="{COL[i]}" stroke-width="3" stroke-dasharray="6 4"/>')
-                lab(X(c0)-30, Y(BTN_ROWS[0])+4, f"{BTN_GPIO[i]}", COL[i], 10, "end", 700)
+                o.append(f'<line x1="{X(c0)}" y1="{Y(BTN_ROWS[0])}" x2="{X(c0)-18}" y2="{Y(BTN_ROWS[0])}" stroke="{COL[i]}" stroke-width="2.5" stroke-dasharray="5 3"/>')
+                lab(X(c0)-22, Y(BTN_ROWS[0])+4, f"{BTN_GPIO[i]}", COL[i], 9, "end", 700)
         if stage >= 4:
             for (n, g, d), c0, cc in zip(ANS_INFO, ANS_COL0, ANSC):
                 smallbtn(c0, cc, n)
-                o.append(f'<line x1="{X(c0)}" y1="{Y(ANS_ROWS[0])}" x2="{X(c0)-26}" y2="{Y(ANS_ROWS[0])}" stroke="{cc}" stroke-width="3" stroke-dasharray="6 4"/>')
-                lab(X(c0)-30, Y(ANS_ROWS[0])+4, f"{g}", cc, 10, "end", 700)
+                o.append(f'<line x1="{X(c0)}" y1="{Y(ANS_ROWS[0])}" x2="{X(c0)-18}" y2="{Y(ANS_ROWS[0])}" stroke="{cc}" stroke-width="2.5" stroke-dasharray="5 3"/>')
+                lab(X(c0)-22, Y(ANS_ROWS[0])+4, f"{g}", cc, 9, "end", 700)
         if stage >= 5:
             lab(OX + COLS*PITCH/2, OY+ROWS*PITCH+56,
-                "dashed = the 15 wires to board B · the LCD never touches this board", "#666", 12)
+                f"dashed = the {len(harness())} wires to the ESP32 socket · the LCD clips onto its pins with F-M jumpers", "#666", 12)
     else:
         lab(OX + COLS*PITCH/2, OY-52, "UNDERSIDE — mirrored. ALL copper and ALL solder joints are on this face.", "#c33", 13, "middle", 700)
         for r in GND_ROWS: bus(r)
@@ -240,7 +249,7 @@ def board(stage=99, side="top"):
             lab(X(c), Y(LED_ROWS[1])-13, "this hole", "#ffd76b", 9)
         lab(OX + COLS*PITCH/2, OY+ROWS*PITCH+56,
             "Each ground leg lands directly on a bus — no ground jumpers anywhere.", "#444", 12)
-    o.append(f'<text x="{OX-34}" y="{OY+ROWS*PITCH+86}" font-size="11.5" fill="#888">board A · 18 rows x 24 cols · single-sided</text>')
+    o.append(f'<text x="{OX-34}" y="{OY+ROWS*PITCH+86}" font-size="11.5" fill="#888">ONE board · {ROWS} rows x {COLS} cols · double-sided · ESP32 socketed at cols {HDR_COLS[0]}-{HDR_COLS[1]}</text>')
     return svg(W, H, "".join(o))
 
 # ============================================== 3b. BOARD B + WHOLE ASSEMBLY

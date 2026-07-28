@@ -18,11 +18,11 @@ DOC  = os.path.join(ROOT, "BUILD.md")
 def rowplan():
     rows = {}
     def put(r, s): rows.setdefault(r, []).append(s)
-    put(LED_ROWS[0], f"**LED anodes (+)** — each also takes that LED's wire to board B · cols {', '.join(map(str, LED_COLS))}")
+    put(LED_ROWS[0], f"**LED anodes (+)** — each also takes that LED's wire to the socket · cols {', '.join(map(str, LED_COLS))}")
     put(LED_ROWS[1], f"**LED cathodes (−)** — lead bends over on the copper face to the row-{RES_ROWS[0]} pad")
     put(RES_ROWS[0], f"220Ω top lead (the only thing in this hole)")
     put(RES_ROWS[1], f"220Ω bottom lead — lands on the bus")
-    for r in GND_ROWS: put(r, f"**GND bus** — bare wire, cols 1 → {COLS}")
+    for r in GND_ROWS: put(r, f"**GND bus** — bare wire, cols {BUS_COLS[0]} → {BUS_COLS[1]}")
     put(BTN_ROWS[0], f"**Colored button signal legs** · cols {', '.join(str(c) for c in BTN_COL0)}")
     put(BTN_ROWS[1], f"**Colored button ground legs** · cols {', '.join(str(c+BIG_LEG_COLS) for c in BTN_COL0)}")
     put(ANS_ROWS[0], f"**AA / no / yes signal legs** · cols {', '.join(map(str, ANS_COL0))}")
@@ -43,21 +43,21 @@ def rowplan():
 
 def wiretable():
     h = harness()
-    out = [f"**{len(h)} wires from board A to board B.** Each one's far end solders to the pad of "
-           f"the header pin it serves.", "",
-           "| # | Signal | From — board A hole | To — ESP32 pin | Header side | Position |",
+    out = [f"**{len(h)} wires**, each from a component pad to the pad of the ESP32 socket pin it "
+           f"serves. All on the same board — short runs, no inter-board loom.", "",
+           "| # | Signal | From — hole | To — ESP32 pin | Socket side | Position |",
            "|---:|---|---|---|---|---:|"]
     for i, (lbl, src, pin, side, pos) in enumerate(h, 1):
         out.append(f"| {i} | {lbl} | {src} | **{pin}** | {side} | {pos} |")
-    out += ["", f"Plus the LCD's **{len(LCD_PINS)}** wires, which go to board B directly and never "
-                f"touch board A:", "",
+    out += ["", f"Plus the LCD's **{len(LCD_PINS)}** F-M jumpers, which clip straight onto the ESP32's pins "
+                f"and are never soldered:", "",
             "| Signal | From | To — ESP32 pin |", "|---|---|---|"]
     for a, b in LCD_PINS:
         out.append(f"| LCD {a} | F-M jumper onto the LCD's own header | **{b}** |")
     left  = sum(1 for *_ , s, p in h if s == "LEFT")
     right = len(h) - left
     out += ["", f"That is **{left} on the left column, {right} on the right**, plus "
-                f"{len(LCD_PINS)} LCD wires — **{len(h)+len(LCD_PINS)} arriving at board B** in total.",
+                f"{len(LCD_PINS)} LCD jumpers — **{len(h)+len(LCD_PINS)} landing on the socket** in total.",
             "", "> **Never wire to RX0 or TX0** (right column, positions 12–13). Those carry the USB "
                 "serial link; touching them breaks uploads *and* the daemon, and looks like a dead board."]
     return "\n".join(out)
@@ -69,8 +69,8 @@ def joints():
     a = bus + comp + len(harness())
     return "\n".join([
         "| Board | Joints | What |", "|---|---:|---|",
-        f"| A | ~{a} | {bus} bus + {comp} component legs + {len(harness())} wire ends |",
-        f"| B | {hdr} | two {HDR_COLS[1]-HDR_COLS[0]+1}-socket strips; {len(harness())+len(LCD_PINS)} of those pads also take a wire |",
+        f"| control surface | ~{a} | {bus} bus + {comp} component legs + {len(harness())} wire ends |",
+        f"| ESP32 socket | {hdr} | two 15-socket strips; {len(harness())+len(LCD_PINS)} of those pads also take a wire |",
         f"| **total** | **~{a+hdr}** | at 1–2 min each including inspection, that is **3–5 hours** |",
     ])
 
@@ -83,7 +83,7 @@ def steps():
              f"**{', '.join(str(r) for r in GND_ROWS[1:])}** also carry button legs — those buses go on "
              f"*after* their buttons (steps C and D).")
     o.append("")
-    o.append(f"1. Lay bare 24AWG along row **{GND_ROWS[0]}**, cols 1 → {COLS}, **beside the pads, not over the holes**.")
+    o.append(f"1. Lay bare 24AWG along row **{GND_ROWS[0]}**, cols {BUS_COLS[0]} → {BUS_COLS[1]}, **beside the pads, not over the holes**.")
     o.append(f"2. Tack one end, check straight, solder every 2nd–3rd pad.")
     o.append(f"3. Leave a tail at column {GND_LINK_COL} — the other two buses will join it there.")
     o.append("")
@@ -132,9 +132,9 @@ def steps():
     o.append("")
     o.append(f"✅ **Test:** all three ground legs beep to row {GND_ROWS[0]}. No signal leg beeps to a bus.")
     o.append("")
-    o.append(f"#### Step E — the {len(harness())} wires to board B  ·  *Moves 4 and 5*")
+    o.append(f"#### Step E — the {len(harness())} wires to the ESP32 socket  ·  *Moves 4 and 5*")
     o.append("")
-    o.append("Strip 4mm, tin both ends, label both ends, then solder. Full destinations in the wire table above.")
+    o.append("Strip 4mm, tin both ends, label both ends, then solder. Full destinations in the wire table above. All runs stay on this board.")
     o.append("")
     o.append(f"✅ **Test:** beep each wire end-to-end, then beep it against the nearest GND bus — must not beep.")
     return "\n".join(o)

@@ -16,12 +16,11 @@ command runs. One USB cable to the Mac.
 **1. You have ONE ESP32 — it must stay removable.** That's why it goes in a socket rather
 than being soldered down.
 
-**Be clear-eyed about the fallback, though.** Once board A is soldered you will have
-**zero colored buttons and zero LCDs left** (the kit has exactly 4 and 1; LEDs, resistors
-and small buttons do have spares). So `BREADBOARD.md` is only a true fallback if you either
-buy 4 spare 12mm tactile switches, or keep the LCD pluggable — which costs nothing:
-**connect the LCD with 4 F-M jumpers**, female onto its own header, male soldered into
-board B. Never solder directly to the LCD.
+**Be clear-eyed about the fallback.** Once the board is soldered you will have **zero
+colored buttons and zero LCDs left** (the kit has exactly 4 and 1; LEDs, resistors and
+small buttons do have spares). `BREADBOARD.md` is only a true fallback if you buy 4 spare
+12mm tactile switches. The LCD is already safe: it is **never soldered** — 4 F-M jumpers,
+female onto its own header, so it unplugs and moves.
 
 **2. Solder nothing you haven't already proven on the breadboard.** Everything here is
 validated. Don't add features and solder them the same day.
@@ -75,138 +74,106 @@ and are measured, regenerate the case *from* them rather than building to it.
 
 ---
 
-## 3. The two boards
+## 3. The board
 
-Each kit board is **18 rows × 24 columns** (43.2 × 58.4mm of hole field). Orient them
-**24 columns across, 18 rows down**; grid reference col 1, row 1 = top-left.
+One **30 × 42 hole double-sided board** (~79 × 109mm), oriented **42 columns across,
+30 rows down**. Grid reference: col 1, row 1 = top-left.
 
-| Board | Holds |
-|---|---|
-| **A — control surface** | 4 LEDs + resistors, 7 buttons, three GND buses |
-| **B — ESP32 carrier** | Two 15-socket header strips, and nothing else |
+Everything lives on it — the control surface in **columns 1–28**, the ESP32's socket in
+**columns 30–40**. There is no second board and no inter-board loom.
 
-**Measured footprints** (confirmed on the real parts with calipers):
+**Measured footprints** (calipers, on the real parts):
 
 | Part | Pins across | Pins long |
 |---|---|---|
 | Colored button | **3 holes** (1 between) | **6 holes** (4 between) |
 | Small button | **3 holes** | **3 holes** |
-| ESP32 | **11 holes** (pin rows 10 apart) | **15 holes** |
+| ESP32 | **11 holes** (pin rows 1.0″ apart) | **15 holes** |
 
-A colored button's legs sit in columns `c−1` and `c+1`, rows **9 and 14**. Its 12mm body is
-wider than its legs and overhangs them.
+### Why this board changed the design
 
-### The board is SINGLE-SIDED — this shapes everything
+The previous plan used two of the kit's small single-sided boards, because a single-sided
+board cannot socket the ESP32 underneath and there was no room for it on top. At 30 × 42
+the question disappears: the ESP32 simply sits **beside** the controls in its own socket,
+mounted the ordinary way — body on top, pins down, soldered underneath.
 
-Copper is on **one face only**, so **every solder joint is on the underside** and every
-component sits on top. That is completely normal for LEDs, buttons, resistors and buses.
+That drops the second board, the 12-wire inter-board loom and ~30 joints, **and** roughly
+doubles every clearance:
 
-The ESP32 could mount here the same way it does on board B — body on top, pins down,
-soldered underneath. **The reason it doesn't is space, not soldering:** board A's 18 rows
-are already spent on the LEDs, two button banks and three buses. Adding an 11-row ESP32
-footprint on top of that does not fit.
+| | old 18×24 | this board |
+|---|---|---|
+| Between button bodies | 3.24mm | **5.78mm** |
+| Resistor → button | 5.43mm | **9.90mm** |
+| Button → answer row | 4.97mm | **7.51mm** |
+| Spare rows | 10 | **22** |
 
-> **So the ESP32 gets its own small board**, and both boards screw down to a wooden
-> backing plate along with the LCD — one solid object you can hand to someone.
+Because every joint stays on one face, the design does **not** depend on whether your
+holes are plated through. If they are, that's a bonus (sturdier pads); if not, nothing
+changes.
 
-**Board B (ESP32 carrier)** is easy, and single-sided handles it the *normal* way round:
-header body on **top**, pins down through the holes, soldered on the **bottom** copper
-face. Sockets face up, the ESP32 plugs in from above. No orientation trickery.
-
-This uses 2 of your 3 kit boards — the third is for the practice exercises in
-`SOLDERING.md`.
-
-The two boards are joined by a wire harness (exact count and destinations are generated
-below). The ESP32 still unplugs from its socket, so it can always go back to a breadboard.
+> **The LCD is still never soldered.** Four F-M jumpers clip onto its own header at one end
+> and onto the ESP32's pins at the other, so it stays a reusable part — and no 5V ever runs
+> across the control surface.
 
 <!-- GEN:rowplan -->
 | Row | What |
 |---:|---|
-| **1** | **LED anodes (+)** — each also takes that LED's wire to board B · cols 3, 9, 15, 21 |
-| **2** | **LED cathodes (−)** — lead bends over on the copper face to the row-3 pad |
-| **3** | 220Ω top lead (the only thing in this hole) |
-| **7** | 220Ω bottom lead — lands on the bus · **GND bus** — bare wire, cols 1 → 24 |
-| **9** | **Colored button signal legs** · cols 2, 8, 14, 20 |
-| **14** | **GND bus** — bare wire, cols 1 → 24 · **Colored button ground legs** · cols 4, 10, 16, 22 |
-| **16** | **AA / no / yes signal legs** · cols 3, 11, 19 |
-| **18** | **GND bus** — bare wire, cols 1 → 24 · **AA / no / yes ground legs** · cols 5, 13, 21 |
+| **2** | **LED anodes (+)** — each also takes that LED's wire to the socket · cols 4, 11, 18, 25 |
+| **3** | **LED cathodes (−)** — lead bends over on the copper face to the row-4 pad |
+| **4** | 220Ω top lead (the only thing in this hole) |
+| **8** | 220Ω bottom lead — lands on the bus · **GND bus** — bare wire, cols 1 → 28 |
+| **11** | **Colored button signal legs** · cols 3, 10, 17, 24 |
+| **16** | **GND bus** — bare wire, cols 1 → 28 · **Colored button ground legs** · cols 5, 12, 19, 26 |
+| **19** | **AA / no / yes signal legs** · cols 4, 13, 22 |
+| **21** | **GND bus** — bare wire, cols 1 → 28 · **AA / no / yes ground legs** · cols 6, 15, 24 |
 
-The 3 GND buses join together down **column 24**.
+The 3 GND buses join together down **column 28**.
 
-Genuinely free rows (no lead *and* no component body above them): **8, 15**.
+Genuinely free rows (no lead *and* no component body above them): **1, 9, 10, 17, 18, 22, 23, 24, 25, 26, 27, 28, 29, 30**.
 <!-- /GEN:rowplan -->
 
 Verified clearances and spare rows come straight from `tools/verify-layout.py`; re-run it
 after any change.
 
-### Board B — the ESP32 carrier
+### The ESP32 socket
 
 Cut two **15-socket** lengths from the kit's 40-pin stacking header (count 15, cut through
-the 16th). Then:
+the 16th). They go at **columns 30 and 40, rows 8 → 22**.
 
 1. Plug **both strips onto the ESP32's pins** — the ESP32 now holds them at exactly the
    right spacing and squareness
-2. Lower that assembly onto board B **from the top**, pins through the holes
-3. Confirm the pin rows land **10 holes apart** (your ESP32 measures 11 holes across)
+2. Lower that assembly onto the board **from the top**, pins through the holes
+3. Confirm the strips land in columns 30 and 40 (10 apart — your ESP32 measures 11 holes
+   across)
 4. Solder **one pin per strip** on the underside, check it sits flat, then do the rest
 5. Trim the pins flush and pull the ESP32 out
 
 Soldering the strips separately and *then* trying to seat the ESP32 is how people end up
 desoldering a 15-pin strip. Let the ESP32 hold them.
 
-Leave a clear edge on board B for the incoming wires and room for two mounting screws.
+The USB connector overhangs the board edge, so the cable can reach it.
 
-### Board B — your ESP32's actual pinout
-
-Measured from the silkscreen. **Position 1 = top, USB connector at the bottom.**
-
-| Pos | LEFT column | | Pos | RIGHT column |
-|---:|---|---|---:|---|
-| 1 | **VIN** → LCD VCC | | 1 | 3V3 |
-| 2 | **GND** → board A ground | | 2 | GND |
-| 3 | **D13** → LED 1 red | | 3 | D15 |
-| 4 | D12 | | 4 | D2 |
-| 5 | **D14** → LED 2 green | | 5 | **D4** → button 4 yellow |
-| 6 | **D27** → LED 3 blue | | 6 | RX2 |
-| 7 | **D26** → LED 4 yellow | | 7 | TX2 |
-| 8 | **D25** → button 3 blue | | 8 | D5 |
-| 9 | **D33** → button 2 green | | 9 | **D18** → *no* (deny) |
-| 10 | **D32** → button 1 red | | 10 | **D19** → *yes* (approve) |
-| 11 | D35 | | 11 | **D21** → LCD SDA |
-| 12 | D34 | | 12 | RX0 ⚠ |
-| 13 | VN | | 13 | TX0 ⚠ |
-| 14 | VP | | 14 | **D22** → LCD SCL |
-| 15 | EN | | 15 | **D23** → *AA* (always allow) |
-
-(The generated wire table below is authoritative for how many land on each side.)
-
-> **Never wire to RX0 or TX0** (right, positions 12–13). Those are the USB serial link.
-> Touching them breaks uploads *and* the daemon, and the symptom looks like a dead board.
-
-Verified against the pin rules: none of the 15 is input-only (D34/D35/VN/VP) or a boot
-strapping pin (D12, D15, D2). Every GPIO the firmware needs is broken out on this board.
-
-### The wires between the boards
+### The wires
 
 <!-- GEN:wiretable -->
-**12 wires from board A to board B.** Each one's far end solders to the pad of the header pin it serves.
+**12 wires**, each from a component pad to the pad of the ESP32 socket pin it serves. All on the same board — short runs, no inter-board loom.
 
-| # | Signal | From — board A hole | To — ESP32 pin | Header side | Position |
+| # | Signal | From — hole | To — ESP32 pin | Socket side | Position |
 |---:|---|---|---|---|---:|
-| 1 | LED 1 red | col 3, row 1 | **D13** | LEFT | 3 |
-| 2 | LED 2 green | col 9, row 1 | **D14** | LEFT | 5 |
-| 3 | LED 3 blue | col 15, row 1 | **D27** | LEFT | 6 |
-| 4 | LED 4 yellow | col 21, row 1 | **D26** | LEFT | 7 |
-| 5 | button 1 red | col 2, row 9 | **D32** | LEFT | 10 |
-| 6 | button 2 green | col 8, row 9 | **D33** | LEFT | 9 |
-| 7 | button 3 blue | col 14, row 9 | **D25** | LEFT | 8 |
-| 8 | button 4 yellow | col 20, row 9 | **D4** | RIGHT | 5 |
-| 9 | AA (always allow) | col 3, row 16 | **D23** | RIGHT | 15 |
-| 10 | no (deny) | col 11, row 16 | **D18** | RIGHT | 9 |
-| 11 | yes (approve) | col 19, row 16 | **D19** | RIGHT | 10 |
-| 12 | ground | any GND bus (row 7/14/18) | **GND** | LEFT | 2 |
+| 1 | LED 1 red | col 4, row 2 | **D13** | LEFT | 3 |
+| 2 | LED 2 green | col 11, row 2 | **D14** | LEFT | 5 |
+| 3 | LED 3 blue | col 18, row 2 | **D27** | LEFT | 6 |
+| 4 | LED 4 yellow | col 25, row 2 | **D26** | LEFT | 7 |
+| 5 | button 1 red | col 3, row 11 | **D32** | LEFT | 10 |
+| 6 | button 2 green | col 10, row 11 | **D33** | LEFT | 9 |
+| 7 | button 3 blue | col 17, row 11 | **D25** | LEFT | 8 |
+| 8 | button 4 yellow | col 24, row 11 | **D4** | RIGHT | 5 |
+| 9 | AA (always allow) | col 4, row 19 | **D23** | RIGHT | 15 |
+| 10 | no (deny) | col 13, row 19 | **D18** | RIGHT | 9 |
+| 11 | yes (approve) | col 22, row 19 | **D19** | RIGHT | 10 |
+| 12 | ground | any GND bus (rows 8, 16, 21) | **GND** | LEFT | 2 |
 
-Plus the LCD's **4** wires, which go to board B directly and never touch board A:
+Plus the LCD's **4** F-M jumpers, which clip straight onto the ESP32's pins and are never soldered:
 
 | Signal | From | To — ESP32 pin |
 |---|---|---|
@@ -215,7 +182,7 @@ Plus the LCD's **4** wires, which go to board B directly and never touch board A
 | LCD SDA | F-M jumper onto the LCD's own header | **21** |
 | LCD SCL | F-M jumper onto the LCD's own header | **22** |
 
-That is **8 on the left column, 4 on the right**, plus 4 LCD wires — **16 arriving at board B** in total.
+That is **8 on the left column, 4 on the right**, plus 4 LCD jumpers — **16 landing on the socket** in total.
 
 > **Never wire to RX0 or TX0** (right column, positions 12–13). Those carry the USB serial link; touching them breaks uploads *and* the daemon, and looks like a dead board.
 <!-- /GEN:wiretable -->
@@ -227,9 +194,9 @@ That is **8 on the left column, 4 on the right**, plus 4 LCD wires — **16 arri
 <!-- GEN:joints -->
 | Board | Joints | What |
 |---|---:|---|
-| A | ~86 | 30 bus + 44 component legs + 12 wire ends |
-| B | 30 | two 15-socket strips; 16 of those pads also take a wire |
-| **total** | **~116** | at 1–2 min each including inspection, that is **3–5 hours** |
+| control surface | ~86 | 30 bus + 44 component legs + 12 wire ends |
+| ESP32 socket | 22 | two 15-socket strips; 16 of those pads also take a wire |
+| **total** | **~108** | at 1–2 min each including inspection, that is **3–5 hours** |
 <!-- /GEN:joints -->
 
 ### Mounting to wood
@@ -239,10 +206,10 @@ stands off on spacers.
 
 | Item | Hole | Fixing | Spacer |
 |---|---|---|---|
-| Board A | drill 2 diagonal corners to **3.5mm** | #4 × ½″ pan-head wood screw + nylon washer | **6mm** |
-| Board B | same | same | **6mm** |
+| The board | drill 2 diagonal corners to **3.5mm** | #4 × ½″ pan-head wood screw + nylon washer | **6mm** |
+| The ESP32 socket | same | same | **6mm** |
 | LCD | its own 4 × M3 holes — no drilling | M3 × 16mm | **12–15mm** (its I²C backpack sticks ~10mm off the back) |
-| ESP32 | — | none, it plugs into board B | — |
+| ESP32 | — | none, it plugs into the ESP32 socket | — |
 
 - **Pilot-drill the wood at 2mm** or it splits.
 - **Nylon washer under every screw head** — perfboard cracks if you overtighten onto bare
@@ -250,7 +217,7 @@ stands off on spacers.
 - Perfboard drills easily: back it with scrap wood, go slow, let the bit cut.
 - Two diagonal corners per board is plenty and halves the drilling.
 
-Lay it out the way it reads: **LCD at the top, board A below it, board B off to one side**
+Lay it out the way it reads: **LCD at the top, the board below it, the ESP32 socket off to one side**
 with its USB facing an edge so the cable exits cleanly and can be strain-relieved to the
 wood with a cable clip.
 
@@ -310,8 +277,8 @@ Each step ends with a test. **Do not proceed past a failing test** — one new j
 easy to debug, thirty is an all-nighter.
 
 Before every power-up: **beep the new joints, and check each GND bus does NOT beep against
-any signal row.** (There is no 5V on board A, so the old GND↔5V check does not apply here —
-do that one on board B, between the VIN and GND pads.)
+any signal row.** (There is no 5V on the board, so the old GND↔5V check does not apply here —
+do that one on the ESP32 socket, between the VIN and GND pads.)
 
 ### Step 0 — drill the mounting holes FIRST
 
@@ -321,7 +288,7 @@ board cracks joints and rains conductive swarf onto the copper face.
 Put them in the **5.8mm left/right margins**, not the corners — the top and bottom margins
 are only 3.4mm, too narrow for a 3.5mm hole.
 
-### Step 1 — board B, the ESP32 carrier
+### Step 1 — the ESP32 socket, the ESP32 carrier
 
 Do this first: it's the one step that proves the ESP32 and cable still work before
 anything else can be blamed.
@@ -337,13 +304,13 @@ arduino-cli compile -u -p /dev/cu.usbserial-0001 --fqbn esp32:esp32:esp32 firmwa
 ```
 ✅ Onboard LED blinks.
 
-> **Blink does not actually test board B.** The ESP32's own USB carries power and serial,
+> **Blink does not actually test the ESP32 socket.** The ESP32's own USB carries power and serial,
 > so every socket joint could be cold and this would still pass. Test the sockets properly:
 > with the ESP32 seated, **beep from each socket's underside pad to the matching ESP32 pin**,
 > and beep neighbouring pads against each other to catch bridges — *before* the first
 > insertion.
 
-### Steps 2–6 — board A, in order
+### Steps 2–6 — the board, in order
 
 > **Read [`CONNECTIONS.md`](CONNECTIONS.md) first.** Every action below is one of its five
 > moves. If "bend the cathode leg onto the next pad" doesn't mean anything to you yet, that
@@ -352,13 +319,13 @@ arduino-cli compile -u -p /dev/cu.usbserial-0001 --fqbn esp32:esp32:esp32 firmwa
 <!-- GEN:steps -->
 #### Step A — the three GND buses  ·  *Move 2*
 
-Only row **7** is empty enough to bus now. Rows **14, 18** also carry button legs — those buses go on *after* their buttons (steps C and D).
+Only row **8** is empty enough to bus now. Rows **16, 21** also carry button legs — those buses go on *after* their buttons (steps C and D).
 
-1. Lay bare 24AWG along row **7**, cols 1 → 24, **beside the pads, not over the holes**.
+1. Lay bare 24AWG along row **8**, cols 1 → 28, **beside the pads, not over the holes**.
 2. Tack one end, check straight, solder every 2nd–3rd pad.
-3. Leave a tail at column 24 — the other two buses will join it there.
+3. Leave a tail at column 28 — the other two buses will join it there.
 
-✅ **Test:** every pad in row 7 beeps to every other. No other row beeps to it.
+✅ **Test:** every pad in row 8 beeps to every other. No other row beeps to it.
 
 #### Step B — LEDs and resistors  ·  *Moves 1 and 3*
 
@@ -366,49 +333,49 @@ Do one LED completely, test the idea, then repeat. Per LED:
 
 | LED | long leg (+) | short leg (−) | 220Ω top | 220Ω bottom |
 |---|---|---|---|---|
-| 1 red | col 3, row 1 | col 3, row 2 | col 3, row 3 | col 3, row 7 |
-| 2 green | col 9, row 1 | col 9, row 2 | col 9, row 3 | col 9, row 7 |
-| 3 blue | col 15, row 1 | col 15, row 2 | col 15, row 3 | col 15, row 7 |
-| 4 yellow | col 21, row 1 | col 21, row 2 | col 21, row 3 | col 21, row 7 |
+| 1 red | col 4, row 2 | col 4, row 3 | col 4, row 4 | col 4, row 8 |
+| 2 green | col 11, row 2 | col 11, row 3 | col 11, row 4 | col 11, row 8 |
+| 3 blue | col 18, row 2 | col 18, row 3 | col 18, row 4 | col 18, row 8 |
+| 4 yellow | col 25, row 2 | col 25, row 3 | col 25, row 4 | col 25, row 8 |
 
-1. LED in — long leg row 1, short leg row 2. Solder the **anode only**; leave the cathode leg long.
-2. Resistor in rows 3 and 7, same column. Bend its leads so the body sits centred. Solder both.
-3. **Move 3:** bend the LED's cathode leg flat onto the row-3 pad and solder it there too. Now snip both.
-4. The resistor's bottom lead is in row 7 — already the GND bus. Nothing more to do.
+1. LED in — long leg row 2, short leg row 3. Solder the **anode only**; leave the cathode leg long.
+2. Resistor in rows 4 and 8, same column. Bend its leads so the body sits centred. Solder both.
+3. **Move 3:** bend the LED's cathode leg flat onto the row-4 pad and solder it there too. Now snip both.
+4. The resistor's bottom lead is in row 8 — already the GND bus. Nothing more to do.
 
-✅ **Test:** beep col 3 row 2 to col 3 row 3 — must beep (the bent leg). Beep row 1 to the bus — must **not** beep.
+✅ **Test:** beep col 3 row 3 to col 3 row 4 — must beep (the bent leg). Beep row 2 to the bus — must **not** beep.
 
 #### Step C — the four colored buttons  ·  *Moves 1 and 2*
 
 | Button | signal leg | ground leg |
 |---|---|---|
-| 1 red | col 2, row 9 | col 4, row 14 |
-| 2 green | col 8, row 9 | col 10, row 14 |
-| 3 blue | col 14, row 9 | col 16, row 14 |
-| 4 yellow | col 20, row 9 | col 22, row 14 |
+| 1 red | col 3, row 11 | col 5, row 16 |
+| 2 green | col 10, row 11 | col 12, row 16 |
+| 3 blue | col 17, row 11 | col 19, row 16 |
+| 4 yellow | col 24, row 11 | col 26, row 16 |
 
-1. Seat all four buttons — legs span rows 9→14 and 2 columns.
+1. Seat all four buttons — legs span rows 11→16 and 2 columns.
 2. **Solder all four legs of each** (the pairs are internally joined, so it costs nothing and doubles the anchoring).
-3. On the **row-14 legs, leave them long**, bend flat along the row.
-4. Now lay the row-14 bus **on top of those bent legs** and solder through. Link it to row 7 down column 24.
+3. On the **row-16 legs, leave them long**, bend flat along the row.
+4. Now lay the row-16 bus **on top of those bent legs** and solder through. Link it to row 8 down column 28.
 
-✅ **Test:** every row-14 leg beeps to row 7. No row-9 leg beeps to any bus.
+✅ **Test:** every row-16 leg beeps to row 8. No row-11 leg beeps to any bus.
 
 #### Step D — AA / no / yes  ·  *same as step C*
 
 | Button | signal leg | ground leg |
 |---|---|---|
-| AA (always allow) | col 3, row 16 | col 5, row 18 |
-| no (deny) | col 11, row 16 | col 13, row 18 |
-| yes (approve) | col 19, row 16 | col 21, row 18 |
+| AA (always allow) | col 4, row 19 | col 6, row 21 |
+| no (deny) | col 13, row 19 | col 15, row 21 |
+| yes (approve) | col 22, row 19 | col 24, row 21 |
 
-Same sequence: seat, solder all legs, leave the row-18 legs long and bent, then bus over them and link to column 24.
+Same sequence: seat, solder all legs, leave the row-21 legs long and bent, then bus over them and link to column 28.
 
-✅ **Test:** all three ground legs beep to row 7. No signal leg beeps to a bus.
+✅ **Test:** all three ground legs beep to row 8. No signal leg beeps to a bus.
 
-#### Step E — the 12 wires to board B  ·  *Moves 4 and 5*
+#### Step E — the 12 wires to the ESP32 socket  ·  *Moves 4 and 5*
 
-Strip 4mm, tin both ends, label both ends, then solder. Full destinations in the wire table above.
+Strip 4mm, tin both ends, label both ends, then solder. Full destinations in the wire table above. All runs stay on this board.
 
 ✅ **Test:** beep each wire end-to-end, then beep it against the nearest GND bus — must not beep.
 <!-- /GEN:steps -->
@@ -416,8 +383,8 @@ Strip 4mm, tin both ends, label both ends, then solder. Full destinations in the
 ### Step 6 — the LCD
 
 Four **F-M jumpers** — female end onto the LCD's own 4-pin header, male end soldered to
-**board B**, at the pads for GND, VIN, D21 (SDA) and D22 (SCL). The LCD is never soldered
-to and never touches board A, so it stays a reusable part.
+**the ESP32 socket**, at the pads for GND, VIN, D21 (SDA) and D22 (SCL). The LCD is never soldered
+to and never touches the board, so it stays a reusable part.
 
 **Test:** `firmware/lcdtest`
 ✅ Serial prints `found device at 0x27` and text appears. Backlit but blank = turn the

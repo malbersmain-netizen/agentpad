@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the board A layout: real footprints, real overlaps, real connectivity.
+"""Verify the board layout: real footprints, real overlaps, real connectivity.
 
 Two classes of error this catches that hole-counting does not:
   1. BODIES that collide even when the legs sit in free holes.
@@ -118,9 +118,21 @@ if ANS_ROWS[1]-ANS_ROWS[0] != SMALL_LEG:
 notes.append("every ground leg lands directly on a bus — zero ground jumpers needed")
 notes.append(f"{len(holes)} holes used, max 1 lead each")
 
+# --- 4b. the ESP32 block must not overlap the control surface
+esp_x0, esp_y0 = xy(HDR_COLS[0], HDR_ROWS[0])
+esp_x1, esp_y1 = xy(HDR_COLS[1], HDR_ROWS[1])
+add("ESP32", (esp_x0+esp_x1)/2, (esp_y0+esp_y1)/2, 28.0, 55.0,
+    f"cols {HDR_COLS[0]}-{HDR_COLS[1]}, rows {HDR_ROWS[0]}-{HDR_ROWS[1]}")
+esp = parts[-1]
+for q in parts[:-1]:
+    if esp["x1"] > q["x0"] and q["x1"] > esp["x0"] and esp["y1"] > q["y0"] and q["y1"] > esp["y0"]:
+        fails.append(f"ESP32 overlaps {q['name']}")
+if BUS_COLS[1] >= HDR_COLS[0]:
+    fails.append(f"GND buses run to col {BUS_COLS[1]} but the ESP32 starts at col {HDR_COLS[0]}")
+
 # --- 5. keep 5V off board A
-if LCD_ON_BOARD_A:
-    fails.append("5V on board A would sit beside the 3.3V signal rows — route the LCD to board B")
+if LCD_SOLDERED:
+    fails.append("the LCD must stay on F-M jumpers so it remains a reusable part")
 
 print(f"board {BOARD_W}x{BOARD_H}mm · {ROWS} rows x {COLS} cols\n")
 print(f"{'part':<7} {'where':<36} {'x mm':>13}  {'y mm':>13}")
@@ -141,7 +153,8 @@ print(f"\nrow plan: {LED_ROWS[0]} LED anode+GPIO | {LED_ROWS[1]} LED cathode + r
       f"{GND_ROWS[0]} GND bus | {BTN_ROWS[0]}+{BTN_ROWS[1]} button legs | "
       f"{ANS_ROWS[0]}+{ANS_ROWS[1]} answer legs | {GND_ROWS[1]} GND bus")
 print(f"spare rows: {sorted(set(range(1, ROWS+1)) - used)}")
-print("board A carries NO 5V — the LCD's four wires go straight to board B")
+print(f"ONE board. ESP32 socketed at cols {HDR_COLS[0]}-{HDR_COLS[1]}, rows {HDR_ROWS[0]}-{HDR_ROWS[1]}. "
+      f"No 5V on the control surface — the LCD jumpers straight onto the ESP32.")
 for n in notes: print(f"note: {n}")
 print()
 if fails:
