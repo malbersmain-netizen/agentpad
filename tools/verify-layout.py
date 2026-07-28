@@ -4,6 +4,13 @@
 Hole counting is not enough -- parts collide even when their legs sit in free holes.
 This works in millimetres and checks bounding boxes.
 
+BOARD IS SINGLE-SIDED: copper on one face only, so every joint is on the underside and
+components sit on top. That rules out socketing the ESP32 on this board (its socket body
+would have to sit on the copper face, covering the pads). The ESP32 therefore gets its
+OWN board (B), where the header mounts the normal way round -- body on top, pins down,
+soldered on the copper underside. 15 wires join board A to board B. Both screw to a
+wooden backing plate. The ESP32 unplugs from its socket, so it stays fully removable.
+
 MEASURED on the actual kit parts:
   colored buttons: pins 3 holes ACROSS (2 pitches, 5.08mm) and 6 holes LONG
                    (5 pitches, 12.7mm) -- e.g. legs in rows 6 and 11.
@@ -37,11 +44,12 @@ RES_COLS  = [6, 12, 18, 24]             # resistors stand in the gaps between bu
 BTN_COL0  = [c-1 for c in LED_COLS]     # legs at c-1 and c+1
 BTN_ROWS  = (7, 12)   # legs 5 pitches apart (MEASURED: 6 holes long)
 ANS_COL0  = [3, 11, 19]
-ANS_ROWS  = (13, 13+SMALL_LEG)
-HEADER    = (6, 16)   # 10 apart = 1.0in pin rows (MEASURED: 11 holes across)
+ANS_ROWS  = (14, 14+SMALL_LEG)   # room to spare now, so spread the banks out
+# no header on this board -- ESP32 is off-board on F-M jumpers (single-sided)
 GND_ROWS  = (5, 17)
 V5_ROW    = 1
 LCD_ROW   = 18
+ANS_ROWS_OVERRIDE = (14, 16)
 LED_ROWS  = (3, 4)   # anode row 3, cathode row 4 -> straight down to GND at row 5
 RES_ROWS  = (2, 2)   # flat, one row
 
@@ -75,21 +83,10 @@ for i in range(len(parts)):
         a, b = parts[i], parts[j]
         if not (a["x1"] <= b["x0"] or b["x1"] <= a["x0"] or a["y1"] <= b["y0"] or b["y1"] <= a["y0"]):
             fails.append(f"{a['name']} overlaps {b['name']}")
-# 3. header rows clear of every top-side lead, AND not under a button body
+# 3. every signal leg needs a free neighbouring pad for its jumper
 used = set(LED_ROWS)|set(RES_ROWS)|set(BTN_ROWS)|set(ANS_ROWS)|set(GND_ROWS)|{V5_ROW,LCD_ROW}
-under_btn = set(range(BTN_ROWS[0], BTN_ROWS[1]+1))
-for r in HEADER:
-    if r in used:      fails.append(f"header row {r} already carries leads")
-    if r in under_btn: fails.append(f"header row {r} sits under a button body")
-if HEADER[1]-HEADER[0] not in (9, 10):
-    fails.append(f"header rows {HEADER} not 9 or 10 apart")
-
-# 4. ESP32 underneath
-ESP_L, ESP_W = 55.0, 28.0
-x0, _ = xy(5, 1); x1, _ = xy(19, 1)
-_, y0 = xy(1, HEADER[0]); _, y1 = xy(1, HEADER[1])
-ecx, ecy = (x0+x1)/2, (y0+y1)/2
-if ecx-ESP_L/2 < -8 or ecx+ESP_L/2 > BOARD_W+8: fails.append("ESP32 too long for the board")
+free = [r for r in range(1, ROWS+1) if r not in used]
+JUMPERS = 15   # 4 LED + 7 button + SDA + SCL + VIN + GND
 
 print(f"board {BOARD_W}x{BOARD_H}mm  {ROWS} rows x {COLS} cols  field {FIELD_W:.1f}x{FIELD_H:.1f}\n")
 print(f"{'part':<7} {'cols':>8} {'rows':>7}   {'x mm':>14}  {'y mm':>14}")
@@ -105,12 +102,13 @@ led = next(p for p in parts if p["name"] == "LED1")
 print(f"  LED -> button vertical gap: {b[0]['y0']-led['y1']:.2f}mm")
 aa = next(p for p in parts if p["name"] == "AA")
 print(f"  button -> answer row gap  : {aa['y0']-b[0]['y1']:.2f}mm")
-print(f"  ESP32 (under): {ESP_L}x{ESP_W} centred {ecx:.1f},{ecy:.1f}")
-print(f"\nrow plan: {V5_ROW} 5V | {RES_ROWS[0]} resistors | {LED_ROWS[0]}-{LED_ROWS[1]} LEDs | {GND_ROWS[0]} GND | "
-      f"{HEADER[0]} HEADER | {BTN_ROWS[0]}+{BTN_ROWS[1]} buttons | "
-      f"{ANS_ROWS[0]}+{ANS_ROWS[1]} answers | {HEADER[1]} HEADER | {GND_ROWS[1]} GND | {LCD_ROW} LCD")
+print(f"  free rows (spare): {free}")
+print(f"  ESP32: on board B (own carrier), joined by {JUMPERS} wires")
+print(f"\nrow plan: {V5_ROW} 5V | {RES_ROWS[0]} resistors | {LED_ROWS[0]}-{LED_ROWS[1]} LEDs | "
+      f"{GND_ROWS[0]} GND | {BTN_ROWS[0]}+{BTN_ROWS[1]} buttons | {ANS_ROWS[0]}+{ANS_ROWS[1]} answers | "
+      f"{GND_ROWS[1]} GND | {LCD_ROW} LCD")
 print()
 if fails:
     print("FAILS:"); [print("  x", f) for f in fails]
 else:
-    print("PASS — 7 buttons, 4 LEDs, 4 resistors and the ESP32 fit one kit board.")
+    print("PASS — 7 buttons, 4 LEDs and 4 resistors fit board A; ESP32 sits on board B.")

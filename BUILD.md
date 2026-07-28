@@ -1,21 +1,22 @@
 # Agent Pad — complete build manual
 
-Takes you from loose parts to a working device in a case. Read section 4 before you
-touch the iron; everything else you can follow in order.
+Takes you from loose parts to a working, mounted device. Read section 4 before you touch
+the iron; everything else follows in order.
 
-**Scope:** 1 LCD + 4 LEDs + 7 buttons. No bar graph (context usage shows as a number on
-the LCD). Firmware still reserves GPIO 5/16/17 for a gauge if you ever add one.
+**Scope:** 1 LCD + 4 LEDs + 7 buttons on two kit perfboards, screwed to a wooden backing
+plate. No 3D-printed case — it isn't needed and won't be ready.
 
-**Done means:** press a color button → a tinted `claude` window opens and focuses; its
-LED heartbeats; ask it something needing permission → LED blinks fast → press `yes` →
-the command runs. All from the case, with one USB cable to the Mac.
+**Done means:** press a color button → a tinted `claude` window opens and focuses; its LED
+heartbeats; ask it something needing permission → LED blinks fast → press `yes` → the
+command runs. One USB cable to the Mac.
 
 ---
 
 ## Two rules
 
-**1. Build on the SPARE ESP32.** You have two. Leave the breadboard prototype assembled
-and working until the new one passes every test. Never be at zero working devices.
+**1. You have ONE ESP32 — it must stay removable.** That's why it goes in a socket rather
+than being soldered down. If the build stalls, unplug it and rebuild the breadboard from
+`BREADBOARD.md` in twenty minutes; that is always your fallback demo.
 
 **2. Solder nothing you haven't already proven on the breadboard.** Everything here is
 validated. Don't add features and solder them the same day.
@@ -25,162 +26,93 @@ validated. Don't add features and solder them the same day.
 ## 1. Parts and tools
 
 ### From the Freenove kit
-ESP32 (the spare) · I²C LCD1602 · 4 LEDs (R/G/B/Y) · 4× 220Ω · 4 capped push buttons ·
-3 plain push buttons.
+ESP32 · I²C LCD1602 · 4 LEDs (R/G/B/Y) · 4× 220Ω · 4 capped push buttons · 3 plain push
+buttons · **3× PY-5CM\*7CM perfboards** (two used, one for practice) · **40-pin stacking
+header** (cut into two 15-socket strips).
+
+> **The kit's perfboards are SINGLE-SIDED** — copper on one face only. Every solder joint
+> goes on that face; components sit on the other. This is normal and fine, but it's why
+> the ESP32 needs its own board (§3).
 
 ### Buy — tools
 | Item | Notes |
 |---|---|
-| Temperature-controlled soldering iron | ~340°C for leaded solder. A fixed-temp cheapie will cook the LCD header |
+| Temperature-controlled soldering iron | ~340°C for leaded solder |
 | Solder, 60/40 **leaded**, 0.6–0.8mm | Far more forgiving than lead-free for a first build |
 | Flux pen | The difference between clean joints and blobs |
 | **Multimeter with continuity beep** | **Non-negotiable.** Nearly every failure is a cold joint or invisible bridge |
-| Wire strippers | |
-| Flush cutters | Trimming leads flush |
+| Wire strippers · flush cutters | |
 | Helping hands / small vise | You need both hands for iron and solder |
 | Desoldering braid | For when — not if — you bridge two pads |
 
 ### Buy — materials
 | Item | Notes |
 |---|---|
-| Perfboard, **plated through-holes**, 0.1" | **Buy 2.** See the warning below — the kit does **not** include one. Need ≥86 × 127mm (9×15cm ideal, 8×12cm minimum) |
-| Female header strip, 0.1" | ESP32 is 30-pin = **15 per side** |
-| 22AWG solid-core wire | Board runs; holds its shape |
-| 24–26AWG stranded wire | LCD flying leads (it moves — solid core would fatigue and snap) |
+| 22AWG solid-core hookup wire | The 15 board-to-board wires and the buses |
+| 24–26AWG stranded wire | LCD leads — it moves, so solid core would fatigue and snap |
 | Heat-shrink, assorted | |
-| M3 screws, nuts, standoffs | LCD to face, board to case bosses |
-
-> ### The kit's perfboards are 3mm too narrow
->
-> The kit **does** include three `PY-5CM*7CM` perfboards (real perfboard — copper ring
-> around every hole; not to be confused with the white solderless breadboard, which
-> also ships with the kit and cannot be soldered).
->
-> They are just too small for this layout, and it isn't a packing problem:
->
-> | Row | Outer-edge span | Widest kit board | |
-> |---|---|---|---|
-> | 4 select buttons | 73.0mm | 70mm | short by 3mm |
-> | AA / no / yes | 75.5mm | 70mm | short by 5.5mm |
->
-> The button positions are fixed by the case face, so the row is simply wider than the
-> board. Three ways out:
->
-> 1. **Buy one 9×15cm perfboard (~$3).** Single board, this layout unchanged. Recommended.
-> 2. **Narrow the pitch** to 7 holes (17.78mm) instead of 8, and re-render the case —
->    free while nothing is printed, and the cluster then fits a kit board.
-> 3. **Split across 2–3 kit boards** joined by wire looms. Free, but every extra loom is
->    more joints and more places for a cold joint to hide.
+| Wood backing plate | ~150 × 200mm, any offcut |
+| M3 screws + nylon washers/standoffs | Mounting both boards and the LCD |
 
 ### Nice to have
 Isopropyl + brush (clean flux so you can see joints) · Kapton tape (holds parts while you
-tack the first pin) · Dupont/JST connectors (makes the LCD detachable) · **a third ESP32**
-(this build spends your spare).
+tack the first pin) · a second ESP32 if you ever see one in stock.
 
 ---
 
 ## 2. The case — deferred
 
-**The demo does not depend on the case.** Assume it won't be printed in time: the
-deliverable is the three soldered boards plus the LCD on flying leads, mounted to a flat
-backing plate.
+**The demo does not depend on a case.** The deliverable is the two soldered boards plus the
+LCD, screwed to a wooden plate. That is a solid object you can hand to someone, and it
+needs no printer.
 
-The model in `case/agentpad-case.scad` is parametric and stays in the repo. Once the
-boards are actually built and measured, regenerate it *from* them rather than building to
-it. Everything below is reference for that later pass.
-
-<details>
-<summary>Case reference (for later)</summary>
-
-
-
-Case **95 × 140 × 28mm**, USB-C exits the bottom edge.
-
-### Depth — this decides the whole layout
-
-| ESP32 placement | Needs | Verdict |
-|---|---|---|
-| Stacked under the perfboard | 32.7mm | **Won't close** |
-| **Coplanar** (beside components) | 24.2mm | ✅ |
-
-So the ESP32 lies **on the same board plane** as everything else, vertically in the
-bottom-centre with its USB pointing at the bottom edge. `AA` sits to its left, `no`/`yes`
-to its right — which is how you already drew them.
-
-Stack-up: face 2.5 + tallest part 13.6 (ESP32 on header) + board 1.6 + wire room 4 +
-back 2.5 = **24.2mm**.
-
-### LCD cutout — the expensive mistake
-
-The "80 × 36mm" figure is the **module outline**, not the glass. Cut that and the module
-drops straight through.
-
-| Feature | Size |
-|---|---|
-| Cut this — viewing window | **64.5 × 16mm** |
-| Module PCB behind it | 80 × 36mm |
-| M3 mounting holes | ~75 × 31mm centres |
-
-At 80mm wide the module spans **84% of the 95mm case** — margins are only 7.5mm. Measure
-your own module before finalising; these vary a little by supplier.
-
-### Face hole positions
-
-Measured from the **top-left inside corner**. Pitch is a whole number of 0.1" holes so the
-board grid and the case agree by construction.
-
-| Feature | X (mm) | Y (mm) | Hole |
-|---|---|---|---|
-| LCD window (centred) | 15.3 – 79.8 | 30 – 46 | 64.5 × 16 rectangle |
-| LED 1 red | 24.64 | 54.8 | ⌀5.2 |
-| LED 2 green | 39.88 | 54.8 | ⌀5.2 |
-| LED 3 blue | 55.12 | 54.8 | ⌀5.2 |
-| LED 4 yellow | 70.36 | 54.8 | ⌀5.2 |
-| Button 1 red | 24.64 | 72.5 | square, cap size +0.4 |
-| Button 2 green | 39.88 | 72.5 | " |
-| Button 3 blue | 55.12 | 72.5 | " |
-| Button 4 yellow | 70.36 | 72.5 | " |
-| AA | 24.64 | 108.1 | " (under column 1) |
-| no | 55.12 | 108.1 | " (under column 3) |
-| yes | 70.36 | 108.1 | " (under column 4) |
-
-**Pitch is 15.24mm — exactly 6 perfboard holes**, chosen so the row fits the kit's
-18 × 24 hole boards (58.4mm of hole field). Gap between caps is 3.6mm. All seven
-buttons and all four LEDs share the same four columns, so the board grid and the face
-agree by construction. Change `PITCH_HOLES` in the .scad to move everything at once.
-| USB-C slot | centred, ~12 wide | bottom edge | clears the **housing**, not just the plug |
-
-**Button holes are sized to the CAP, not the switch body.** Measure a cap with calipers
-and add ~0.4mm clearance. LED holes ⌀5.2 for a 5mm LED.
-
-Face-to-board gap: **12.5mm** (button cap height). Leave LED legs long so the LEDs can be
-pushed up to meet the face before you solder them.
+`case/agentpad-case.scad` stays in the repo, parametric and unused. Once the boards exist
+and are measured, regenerate the case *from* them rather than building to it.
 
 ---
 
-## 3. The board — everything on ONE kit board
+## 3. The two boards
 
-A kit board is **18 rows × 24 columns** (43.2 × 58.4mm of hole field). It all fits,
-because the **ESP32 hangs underneath on its socket** and only consumes two rows of holes
-instead of a block of top-side space.
+Each kit board is **18 rows × 24 columns** (43.2 × 58.4mm of hole field). Orient them
+**24 columns across, 18 rows down**; grid reference col 1, row 1 = top-left.
 
-Orient the board **24 columns across, 18 rows down**. Grid reference: col 1, row 1 =
-top-left. All four LEDs and the four select buttons share columns **3, 9, 15, 21**
-(6-hole pitch).
+| Board | Holds |
+|---|---|
+| **A — control surface** | 4 LEDs + resistors, 7 buttons, buses, LCD connector |
+| **B — ESP32 carrier** | Two 15-socket header strips, and nothing else |
 
-**Measured footprints** (confirmed on the real parts):
+**Measured footprints** (confirmed on the real parts with calipers):
 
 | Part | Pins across | Pins long |
 |---|---|---|
-| Colored button | **3 holes** (1 hole between) | **6 holes** (4 holes between) |
+| Colored button | **3 holes** (1 between) | **6 holes** (4 between) |
 | Small button | **3 holes** | **3 holes** |
+| ESP32 | **11 holes** (pin rows 10 apart) | **15 holes** |
 
-So a colored button's legs sit in columns `c−1` and `c+1`, rows **6 and 11**. Its 12mm
-body is wider than its legs and overhangs them.
+A colored button's legs sit in columns `c−1` and `c+1`, rows **7 and 12**. Its 12mm body is
+wider than its legs and overhangs them.
 
-**The ESP32 measures 11 holes across × 15 long**, so its pin rows are **10 apart (1.0 inch)**
-and each row is 15 pins. That spacing drives the whole row plan — a solver found only two
-valid arrangements; this is the better one.
+### The board is SINGLE-SIDED — this shapes everything
+
+Copper is on **one face only**, so **every solder joint is on the underside** and every
+component sits on top. That is completely normal for LEDs, buttons, resistors and buses.
+
+What it *does* rule out is socketing the ESP32 here: its socket body would have to sit on
+the copper face, pressed flat against the very pads you need to solder. And it can't go on
+top either — it spans 11 of the 18 rows, leaving 7 where 14 are needed.
+
+> **So the ESP32 gets its own small board**, and both boards screw down to a wooden
+> backing plate along with the LCD — one solid object you can hand to someone.
+
+**Board B (ESP32 carrier)** is easy, and single-sided handles it the *normal* way round:
+header body on **top**, pins down through the holes, soldered on the **bottom** copper
+face. Sockets face up, the ESP32 plugs in from above. No orientation trickery.
+
+This uses 2 of your 3 kit boards — the third is for the practice exercises in
+`SOLDERING.md`.
+
+The two boards are joined by **15 wires**. The ESP32 still unplugs from its socket, so
+`BREADBOARD.md` stays a live fallback.
 
 | Row | What | Columns |
 |---|---|---|
@@ -189,42 +121,74 @@ valid arrangements; this is the better one.
 | 3 | LED anodes (+) | 3, 9, 15, 21 |
 | 4 | LED cathodes (−), straight down to the bus | 3, 9, 15, 21 |
 | **5** | **GND bus** — bare wire across | 1 → 24 |
-| **6** | **ESP32 header, row A** (ESP32 plugs in from BELOW) | 15 pins |
 | **7 and 12** | **Colored button legs** | 2-4, 8-10, 14-16, 20-22 |
-| **13 and 15** | **AA / no / yes legs** | 3-5, 11-13, 19-21 |
-| **16** | **ESP32 header, row B** (10 holes from row A) | 15 pins |
+| **14 and 16** | **AA / no / yes legs** | 3-5, 11-13, 19-21 |
 | **17** | **GND bus** (linked to row 5 down column 24) | 1 → 24 |
 | 18 | LCD 4-pin connector | 1 → 4 |
 
-Verified clearances: **3.2mm** between button bodies, **6.7mm** LED→button, 2.4mm between
-the two button banks. Re-check any time with
+Rows **6, 8-11, 13, 15 are spare** — room to shift things if a part doesn't sit where you
+expect.
+
+Verified clearances: **3.2mm** between button bodies, **6.7mm** LED→button, **5.0mm**
+between the two banks. Re-check any time with
 `mise exec -- python tools/verify-layout.py`.
 
-> Both header rows sit clear of every component body — that matters because the header's
-> solder joints protrude on the top side, and a button sitting on top of them wouldn't lie
-> flat. If you move anything, re-run the verifier.
+### Board B — the ESP32 carrier
 
-### Why this works
+Cut two **15-socket** lengths from the kit's 40-pin stacking header (count 15, cut through
+the 16th). Then:
 
-- **The ESP32 is on the underside.** You solder two 15-pin female strips at rows 2 and
-  11; the ESP32 plugs in from beneath. Its body is 55mm long, so it lies along the 24-col
-  axis and its **USB overhangs the board edge** — which makes the cable easy to reach.
-- **No collision underneath.** Button legs protrude ~3mm below the board; the ESP32 sits
-  8.5mm below on its header, so they clear each other.
-- **Rows 2 and 11 are otherwise empty**, which is exactly why the clusters are placed
-  where they are. If you move a button bank, re-check that both header rows stay free.
-- If your ESP32 measures **1.0 inch** between pin rows rather than 0.9, use rows **1 and
-  11** and move the GND bus to row 3.
+1. Plug **both strips onto the ESP32's pins** — the ESP32 now holds them at exactly the
+   right spacing and squareness
+2. Lower that assembly onto board B **from the top**, pins through the holes
+3. Confirm the pin rows land **10 holes apart** (your ESP32 measures 11 holes across)
+4. Solder **one pin per strip** on the underside, check it sits flat, then do the rest
+5. Trim the pins flush and pull the ESP32 out
 
-### The only off-board wiring
+Soldering the strips separately and *then* trying to seat the ESP32 is how people end up
+desoldering a 15-pin strip. Let the ESP32 hold them.
 
-Four **stranded** wires to the LCD: GND → GND bus, VCC → 5V bus, SDA → GPIO 21,
-SCL → GPIO 22. Leave them long enough to set the LCD down beside the board while you
-work. That is the entire loom.
+Leave a clear edge on board B for the 15 wires and room for two mounting screws.
 
-> Mount the board and the LCD to a flat backing plate (plywood, acrylic, even stiff foam
-> board) with standoffs. That turns two loose pieces into one object you can hand to
-> someone, and needs no 3D printer.
+### The 15 wires between the boards
+
+Each solders to the pad under the corresponding header pin on board B.
+
+| Wire | Board A | ESP32 pin |
+|---|---|---|
+| LED 1 red | resistor end, col 6 row 2 | GPIO 13 |
+| LED 2 green | resistor end, col 12 row 2 | GPIO 14 |
+| LED 3 blue | resistor end, col 18 row 2 | GPIO 27 |
+| LED 4 yellow | resistor end, col 24 row 2 | GPIO 26 |
+| Button 1 red | leg col 2 row 7 | GPIO 32 |
+| Button 2 green | leg col 8 row 7 | GPIO 33 |
+| Button 3 blue | leg col 14 row 7 | GPIO 25 |
+| Button 4 yellow | leg col 20 row 7 | GPIO 4 |
+| AA | leg col 3 row 14 | GPIO 23 |
+| no | leg col 11 row 14 | GPIO 18 |
+| yes | leg col 19 row 14 | GPIO 19 |
+| 5V | 5V bus (row 1) | VIN |
+| GND | GND bus (row 5 or 17) | GND |
+| SDA | LCD connector, row 18 | GPIO 21 |
+| SCL | LCD connector, row 18 | GPIO 22 |
+
+**Label both ends before soldering the second end.** Fifteen identical wires get confusing
+fast. Leave them long enough that the two boards can lie side by side while you work —
+you can always dress them shorter once it's mounted.
+
+### Mounting to wood
+
+| Item | How |
+|---|---|
+| Board A, board B | Drill the **corner holes out to 3mm** (perfboard drills easily), then wood screws with a nylon washer or standoff so the underside joints don't touch the wood |
+| LCD | Its own 4 corner holes, M3 |
+| ESP32 | Nothing — it just plugs into board B |
+
+**Leave a few mm of standoff under each board.** All your solder joints are on the
+underside; pressing them flat against wood risks shorts and stresses the joints.
+
+Lay it out the way it reads: LCD at the top, board A below it, board B off to one side
+with its USB facing an edge so the cable exits cleanly.
 
 ---
 
@@ -283,119 +247,115 @@ easy to debug, thirty is an all-nighter.
 
 Before every power-up: **beep the new joints, and check GND↔5V does NOT beep.**
 
-### Step 1 — ESP32 header
+### Step 1 — board B, the ESP32 carrier
 
-The kit's **40-pin header is a stacking type** — sockets on one face, long pins on the
-other. Cut two **15-socket** lengths (count 15, cut through the 16th; you lose that one).
+Do this first: it's the one step that proves the ESP32 and cable still work before
+anything else can be blamed.
 
-> **Orientation matters and is hard to undo.** Insert the strips from **UNDERNEATH** the
-> board so the pins push **up through** the holes and the **sockets hang below**. Solder
-> on the **top** side, then trim the pins flush.
->
-> Sockets facing *down* is what lets the ESP32 plug in from below — which is the only
-> reason everything fits on one board. Fitted the intuitive way (pins down, sockets up),
-> the ESP32 would have to sit on top, where there is no room beside 7 buttons and 4 LEDs.
+Solder the two 15-socket strips as described above (ESP32 holding them, soldered from the
+underside, pins trimmed).
 
-**The trick that guarantees alignment:**
-
-1. Plug **both strips onto the ESP32's pins** first — the ESP32 now holds them at exactly
-   the right spacing and squareness
-2. Push that whole assembly up into the board from below
-3. Confirm the pins land in **rows 6 and 16**
-4. Solder **one pin per strip**, check it sits flat, then do the rest
-5. Trim the pins flush and pull the ESP32 out
-
-Soldering the strips separately and *then* trying to seat the ESP32 is how people end up
-desoldering a 15-pin strip, which is genuinely miserable.
-
-**Test:** plug in the ESP32 and the USB cable.
+**Test:** plug the ESP32 in, connect USB.
 ```bash
-ls /dev/cu.*                      # a new usbserial port appears
+ls /dev/cu.*                     # a new usbserial port appears
 cd ~/projects/agentpad
 arduino-cli upload -p /dev/cu.usbserial-0001 --fqbn esp32:esp32:esp32 firmware/blink
 ```
-✅ Onboard LED blinks. If no port appears, it's the cable or the header — nothing else is
-connected yet.
+✅ Onboard LED blinks. Nothing else is connected, so a failure here is the cable, the
+socket, or a cold joint.
 
-### Step 2 — the two buses
-Bare solid wire across row 32 (GND) and row 33 (5V). Solder to every 3rd or 4th hole.
-Then one wire from an ESP32 `GND` pin to the GND bus, one from `VIN` to the 5V bus.
+### Step 2 — board A, the buses
 
-**Test:** continuity along each bus end to end; GND↔5V must **not** beep.
-✅ Every point on a bus beeps; the two buses are isolated.
+Bare solid wire straight across: **row 1** (5V), **rows 5 and 17** (GND). Link the two GND
+rows with a wire down **column 24**. Tack each at one end, check it's straight, then solder
+every second or third pad.
 
-> The buses are the perfboard version of the breadboard's power rails. A broken rail
-> section caused most of the prototype's bugs — twice.
+> The board has no traces. A bus is what turns 24 isolated holes into one shared node — it
+> is the single most important thing on the board.
 
-### Step 3 — LCD
-Four **stranded** flying leads, long enough to reach the face and let it hinge open:
+**Test:** multimeter continuity.
+✅ Every point on a bus beeps · **5V ↔ GND does NOT beep**
 
-| LCD | To |
-|---|---|
-| GND | GND bus |
-| VCC | 5V bus |
-| SDA | GPIO 21 |
-| SCL | GPIO 22 |
+Repeat that second check after *every* stage from here. If the buses ever beep together
+you've bridged something — find it before adding another part.
 
-**Test:** `arduino-cli upload ... firmware/lcdtest`
-✅ Serial prints `found device at 0x27` and the screen shows text. Blank but backlit =
-turn the contrast pot on its back.
+### Step 3 — LEDs and resistors
 
-### Step 4 — LEDs and resistors
-Per LED: **long leg (+)** to its GPIO, **short leg (−)** through its own 220Ω to the GND
-bus. Leave legs long so the LED reaches the face.
+Per LED: **anode (long leg)** in row 3, **cathode (short leg)** in row 4, cathode leg bent
+straight down into the **GND bus at row 5**. The **220Ω lies flat in row 2**, one end level
+with the anode column, the other end taking that LED's wire to the ESP32.
 
-| LED | GPIO |
-|---|---|
-| Red | 13 |
-| Green | 14 |
-| Blue | 27 |
-| Yellow | 26 |
+| LED | Column | ESP32 |
+|---|---|---|
+| Red | 3 | GPIO 13 |
+| Green | 9 | GPIO 14 |
+| Blue | 15 | GPIO 27 |
+| Yellow | 21 | GPIO 26 |
 
-**Test:** `arduino-cli upload ... firmware/ledtest`
-✅ All four cycle in order red → green → blue → yellow. One dark = it's backwards; flip it.
+**Test:** temporarily wire the four LED lines plus GND to the ESP32 and upload
+`firmware/ledtest`.
+✅ All four cycle red → green → blue → yellow. One dark = it's backwards; flip it.
 
-### Step 5 — the seven buttons
-Each button straddles nothing here — it just sits in 4 holes. Use **diagonally opposite**
-legs: one to its GPIO, the other to the GND bus. **No resistors** (internal pull-ups).
-Clip the two unused legs flush.
+### Step 4 — the four colored buttons
 
-| Button | GPIO |
-|---|---|
-| 1 red | 32 |
-| 2 green | 33 |
-| 3 blue | 25 |
-| 4 yellow | 4 |
-| yes (approve) | 19 |
-| no (deny) | 18 |
-| AA (always allow) | 23 |
+Legs in **rows 7 and 12**, columns **2-4, 8-10, 14-16, 20-22**. Use **diagonally opposite**
+legs: the top-left one takes its wire to the ESP32, the bottom-right one goes to the GND
+bus. **No resistors** — the firmware enables internal pull-ups. Clip the unused legs flush.
 
-**Test:** `arduino-cli upload ... firmware/btntest`, open a serial monitor, press each.
-✅ `button 0` … `button 6`, one line per press, no repeats.
+| Button | Left leg column | ESP32 |
+|---|---|---|
+| 1 red | 2 | GPIO 32 |
+| 2 green | 8 | GPIO 33 |
+| 3 blue | 14 | GPIO 25 |
+| 4 yellow | 20 | GPIO 4 |
 
-> **If several buttons fail at once, suspect the GND bus — not the switches.** That exact
-> failure happened twice during prototyping and wasted an hour each time.
-> A button that reads *permanently pressed* has both wires on the same internal pair:
-> rotate it 90°.
+**Test:** `firmware/btntest`, serial monitor at 115200.
+✅ `button 0` … `button 3`, one line per press, no repeats.
 
-### Step 6 — real firmware
+### Step 5 — AA / no / yes
+
+Small 3×3 buttons, legs in **rows 14 and 16**, columns **3-5, 11-13, 19-21**. Same diagonal
+rule.
+
+| Button | Left leg column | ESP32 |
+|---|---|---|
+| AA (always allow) | 3 | GPIO 23 |
+| no (deny) | 11 | GPIO 18 |
+| yes (approve) | 19 | GPIO 19 |
+
+**Test:** `firmware/btntest` again.
+✅ `button 0` … `button 6`.
+
+> **Several buttons dead at once means the GND bus, not the switches.** That exact failure
+> happened twice on the breadboard and cost an hour each time.
+> A button reading *permanently pressed* has both wires on the same internal pair — rotate
+> it 90°.
+
+### Step 6 — the LCD
+
+Four **stranded** wires from the row-18 connector: GND → GND bus, VCC → 5V bus, SDA and SCL
+out to the ESP32 (GPIO 21 and 22). Long enough to set the LCD down beside the board.
+
+**Test:** `firmware/lcdtest`
+✅ Serial prints `found device at 0x27` and text appears. Backlit but blank = turn the
+contrast pot on its back.
+
+### Step 7 — real firmware, then mount it
+
 ```bash
 arduino-cli upload -p /dev/cu.usbserial-0001 --fqbn esp32:esp32:esp32 firmware/agentpad
 ```
+
 **Test from a serial monitor at 115200, line ending = Newline:**
 - `L 0 working` → red LED solid
 - `L 1 blocked` → green LED blinks fast
 - `D0 hello` → top LCD row changes
 - press buttons → `B 0` … `B 6`
 
-✅ All of the above. **Hardware is now finished.**
+✅ All of that, and **the hardware is finished.**
 
-### Step 7 — into the case
-1. Mount the LCD to the face with M3 screws
-2. Push each LED up to the face, then solder its legs at final height
-3. Seat the board on its standoffs; check every cap protrudes and springs back
-4. Route and strain-relieve the USB cable at the wall
-5. Close it up, then **re-run steps 3–6 assembled** — assembly is when wires get pinched
+Only then screw everything to the wood. Re-run the tests once mounted — assembly is when
+wires get pinched and joints get stressed.
 
 ---
 

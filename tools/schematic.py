@@ -21,8 +21,8 @@ BTN_COL0 = [c-1 for c in LED_COLS]
 BTN_ROWS = (7, 12)
 RES_COLS = [6, 12, 18, 24]   # flat, row 2
 ANS_COL0 = [3, 11, 19]
-ANS_ROWS = (13, 15)
-HEADER   = (6, 16)
+ANS_ROWS = (14, 16)
+ANS_ROWS_NOTE = 'off-board ESP32'
 GND_ROWS = (5, 17)
 V5_ROW   = 1
 LCD_ROW  = 18
@@ -174,18 +174,13 @@ def board(stage=99, side="top"):
 
     if side == "top":
         if stage >= 1:
-            for r in HEADER:
-                o.append(f'<rect x="{X(5)-11}" y="{Y(r)-11}" width="{14*PITCH+22}" height="22" rx="5" fill="#1a1a1a" opacity="0.9"/>')
-            label(X(12), Y(HEADER[0])+4, "female header — ESP32 plugs in UNDERNEATH", "#8ecbff", 11)
-            label(X(12), Y(HEADER[1])+4, "female header (2nd row)", "#8ecbff", 11)
-        if stage >= 2:
             for r in GND_ROWS:
                 o.append(f'<line x1="{X(1)}" y1="{Y(r)}" x2="{X(COLS)}" y2="{Y(r)}" stroke="#111" stroke-width="7"/>')
                 label(X(COLS)+40, Y(r)+4, "GND bus", "#111", 11, "start")
             o.append(f'<line x1="{X(COLS)}" y1="{Y(GND_ROWS[0])}" x2="{X(COLS)}" y2="{Y(GND_ROWS[1])}" stroke="#111" stroke-width="6"/>')
             o.append(f'<line x1="{X(1)}" y1="{Y(V5_ROW)}" x2="{X(COLS)}" y2="{Y(V5_ROW)}" stroke="#c0392b" stroke-width="7"/>')
             label(X(COLS)+40, Y(V5_ROW)+4, "5V bus", "#c0392b", 11, "start")
-        if stage >= 3:
+        if stage >= 2:
             for i, c in enumerate(LED_COLS):
                 o.append(f'<circle cx="{X(c)}" cy="{Y(3.5)}" r="{5/2*PITCH/2.54}" fill="{COL[i]}" stroke="#111" stroke-width="1.5"/>')
                 label(X(c), Y(3.5)+4, str(i+1), "#fff", 12)
@@ -193,10 +188,10 @@ def board(stage=99, side="top"):
                 o.append(f'<rect x="{X(rc)-2*PITCH-6}" y="{Y(2)-6}" width="{2*PITCH+12}" height="12" rx="4" fill="#c8862a" stroke="#8a5a12"/>')
                 o.append(f'<line x1="{X(c)}" y1="{Y(2)}" x2="{X(rc)}" y2="{Y(2)}" stroke="{COL[i]}" stroke-width="2.5"/>')
                 o.append(f'<line x1="{X(c)}" y1="{Y(3)}" x2="{X(c)}" y2="{Y(GND_ROWS[0])}" stroke="#444" stroke-width="2.5"/>')
-                o.append(f'<line x1="{X(rc)}" y1="{Y(2)}" x2="{X(rc)}" y2="{Y(HEADER[0])}" stroke="{COL[i]}" stroke-width="2" opacity="0.6" stroke-dasharray="4 3"/>')
+                o.append(f'<line x1="{X(rc)}" y1="{Y(2)}" x2="{X(rc)}" y2="{Y(1)-38}" stroke="{COL[i]}" stroke-width="2.5" stroke-dasharray="5 3"/>')
                 label(X(rc)+22, Y(4), f"GPIO {LED_GPIO[i]}", COL[i], 9)
             label(X(2), Y(3.5)-26, "220Ω", "#c8862a", 9.5)
-        if stage >= 4:
+        if stage >= 3:
             for i, c0 in enumerate(BTN_COL0):
                 x0, x1 = X(c0), X(c0+BIG_LEG_COLS)
                 y0, y1 = Y(BTN_ROWS[0]), Y(BTN_ROWS[1])
@@ -206,10 +201,10 @@ def board(stage=99, side="top"):
                 label(cx, cy+6, str(i+1), "#fff", 16)
                 for (lx, ly) in ((x0, y0), (x1, y0), (x0, y1), (x1, y1)):
                     o.append(f'<circle cx="{lx}" cy="{ly}" r="6" fill="none" stroke="#fff" stroke-width="2"/>')
-                o.append(f'<line x1="{x0}" y1="{y0}" x2="{x0}" y2="{Y(1)-22}" stroke="{COL[i]}" stroke-width="2.5" opacity="0.55"/>')
+                o.append(f'<line x1="{x0}" y1="{y0}" x2="{x0}" y2="{Y(1)-38}" stroke="{COL[i]}" stroke-width="2.5" stroke-dasharray="5 3" opacity="0.75"/>')
                 label(cx, cy-s/2-8, f"GPIO {BTN_GPIO[i]}", "#222", 9.5)
                 o.append(f'<line x1="{x1}" y1="{y1}" x2="{x1}" y2="{Y(GND_ROWS[1])}" stroke="#111" stroke-width="2.5" opacity="0.55"/>')
-        if stage >= 5:
+        if stage >= 4:
             for i, c0 in enumerate(ANS_COL0):
                 x0, x1 = X(c0), X(c0+SMALL_LEG)
                 y0, y1 = Y(ANS_ROWS[0]), Y(ANS_ROWS[1])
@@ -218,23 +213,22 @@ def board(stage=99, side="top"):
                 o.append(f'<rect x="{cx-s/2}" y="{cy-s/2}" width="{s}" height="{s}" rx="4" fill="{ANSC[i]}" stroke="#111" stroke-width="1.5"/>')
                 label(cx, cy+s/2+16, ANS_INFO[i][0], "#111", 11)
                 label(cx, cy-s/2-8, f"GPIO {ANS_INFO[i][1]}", "#222", 9.5)
-        if stage >= 6:
+        if stage >= 5:
             o.append(f'<rect x="{X(1)-10}" y="{Y(LCD_ROW)-10}" width="{3*PITCH+20}" height="20" rx="4" fill="#e07b00"/>')
             label(X(6)+40, Y(LCD_ROW)+4, "LCD: GND · 5V · SDA(21) · SCL(22)", "#e07b00", 11, "start")
     else:  # underside
         o.append(f'<text x="{OX-30}" y="{OY-48}" font-size="12" fill="#c33">MIRRORED — this is the view with the board flipped left-to-right</text>')
-        for r in HEADER:
-            o.append(f'<rect x="{X(5)-11}" y="{Y(r)-11}" width="{14*PITCH+22}" height="22" rx="5" fill="#1a1a1a"/>')
-        o.append(f'<rect x="{X(5)-16}" y="{Y(HEADER[0])-20}" width="{14*PITCH+32}" height="{(HEADER[1]-HEADER[0])*PITCH+40}" rx="8" fill="none" stroke="#8ecbff" stroke-width="2" stroke-dasharray="7 5"/>')
-        label((X(5)+X(19))/2, Y(7)+4, "ESP32 sits here, plugged into the two header rows", "#8ecbff", 12)
-        label((X(5)+X(19))/2, Y(8)+4, "USB overhangs the board edge", "#8ecbff", 10.5)
-        for i, c in enumerate(LED_COLS):
-            o.append(f'<path d="M {X(RES_COLS[i])} {Y(1)} V {Y(HEADER[0])}" stroke="{COL[i]}" stroke-width="2.5" fill="none"/>')
-        for i, c0 in enumerate(BTN_COL0):
-            o.append(f'<path d="M {X(c0)} {Y(BTN_ROWS[0])} V {Y(HEADER[1])}" stroke="{COL[i]}" stroke-width="2.5" fill="none" opacity="0.8"/>')
+        o.append(f'<rect x="{X(4)}" y="{Y(8)-30}" width="{16*PITCH}" height="{4*PITCH}" rx="8" fill="#20242b" stroke="#8ecbff" stroke-width="2" stroke-dasharray="7 5"/>')
+        label(X(12), Y(9)-16, "ESP32 lives on BOARD B", "#8ecbff", 14)
+        label(X(12), Y(10)-14, "15 wires join board A to board B;", "#8ecbff", 11)
+        label(X(12), Y(11)-16, "it plugs into a socket there and stays removable", "#8ecbff", 11)
+        for i in range(4):
+            o.append(f'<path d="M {X(RES_COLS[i])} {Y(2)} V {Y(1)-34}" stroke="{COL[i]}" stroke-width="2.5" fill="none"/>')
+            o.append(f'<path d="M {X(BTN_COL0[i])} {Y(BTN_ROWS[0])} V {Y(1)-34}" stroke="{COL[i]}" stroke-width="2.5" fill="none" opacity="0.75"/>')
         for i, c0 in enumerate(ANS_COL0):
-            o.append(f'<path d="M {X(c0)} {Y(ANS_ROWS[0])} V {Y(HEADER[1])}" stroke="{ANSC[i]}" stroke-width="2.5" fill="none" opacity="0.8"/>')
-        label(X(12), Y(ROWS)+46, "Signal jumpers run on the UNDERSIDE, from each part's GPIO leg to its header pin.", "#444", 12)
+            o.append(f'<path d="M {X(c0)} {Y(ANS_ROWS[0])} V {Y(ROWS)+30}" stroke="{ANSC[i]}" stroke-width="2.5" fill="none" opacity="0.75"/>')
+        label(X(12), Y(ROWS)+56, "Every joint is on THIS side — the board is single-sided, so all copper is here.", "#c33", 12.5)
+        label(X(12), Y(ROWS)+76, "Each jumper's male pin solders into the same pad as the leg it serves.", "#444", 12)
     return svg(W, H, "".join(o))
 
 # ====================================================== 4. COMPONENT DETAILS
@@ -317,36 +311,33 @@ FIGS = [
   "Three functional groups. LEDs: GPIO → 220Ω → LED → GND. Buttons: GPIO → switch → GND, "
   "with the ESP32's internal pull-up doing the rest. LCD: I²C on GPIO 21/22, powered from 5V."),
  ("2 · Pin map", fig_pinmap(),
-  "Fifteen connections in total. Every GPIO here is safe: none are input-only (34-39) or boot "
-  "strapping pins (0, 2, 12, 15)."),
+  "Fifteen connections. Every GPIO is safe: none are input-only (34-39) or boot strapping "
+  "pins (0, 2, 12, 15). Each one is an F-M jumper — female on the ESP32, male soldered in."),
  ("3 · Board layout — top side, finished", board(99, "top"),
-  "One 18×24 kit board. The four colored buttons have 5-hole legs and a 6-column pitch, so they "
-  "occupy columns 1-6, 7-12, 13-18, 19-24 — all 24 columns, exactly."),
- ("4 · Board layout — underside wiring", board(99, "under"),
-  "Flip the board left-to-right and this is what you see. The signal jumpers live here, running "
-  "from each part's GPIO leg to its header pin. The ESP32 plugs into the two header rows."),
+  "One 18×24 kit board. Dashed lines leaving the top edge are the jumpers to the ESP32, which "
+  "sits on its own carrier board rather than on this one."),
+ ("4 · Underside — where every joint lives", board(99, "under"),
+  "The board is SINGLE-SIDED: all the copper, and therefore every solder joint, is on this face. "
+  "Components sit on the other side; only their legs and the jumper pins come through."),
  ("5 · Component detail — which holes exactly", fig_detail(),
   "The button has four legs but only two pairs. Use diagonally opposite corners so you're across "
   "the switch, not along a permanently-joined pair."),
  ("6 · Connection list", fig_wires(),
-  "Tick these off as you go. Label both ends of every wire before soldering the second end."),
- ("Step 1 — header only", board(1, "top"),
-  "Two 15-pin female strips, rows 2 and 12, columns 5→19. Tack ONE pin each, check square, then finish. "
-  "Test: firmware/blink uploads and the onboard LED blinks."),
- ("Step 2 — the buses", board(2, "top"),
-  "Bare wire across rows 5 and 17 (GND), row 18 (5V), linked down column 24. "
-  "Test: every point on a bus beeps; GND↔5V must NOT beep."),
- ("Step 3 — LEDs and resistors", board(3, "top"),
-  "Anode row 3, cathode row 4 straight down to the GND bus. Resistor stands in rows 1–3, two columns right. "
-  "Test: firmware/ledtest cycles all four."),
- ("Step 4 — the four colored buttons", board(4, "top"),
-  "Legs in rows 6 and 11. Top-left leg to its GPIO, bottom-right leg to the GND bus. "
-  "Test: firmware/btntest prints button 0–3."),
- ("Step 5 — AA / no / yes", board(5, "top"),
-  "Small buttons, rows 14 and 16. Same diagonal rule. "
+  "Tick these off as you go. Label both ends of every jumper before soldering the male end."),
+ ("Step 1 — the buses", board(1, "top"),
+  "Bare wire across row 1 (5V), rows 5 and 17 (GND), linked down column 24. "
+  "Test: every point on a bus beeps; 5V↔GND must NOT beep."),
+ ("Step 2 — LEDs and resistors", board(2, "top"),
+  "Anode row 3, cathode row 4 straight down to the GND bus at row 5. 220Ω lies flat in row 2. "
+  "Test: clip the ESP32 on with jumpers and run firmware/ledtest — all four cycle."),
+ ("Step 3 — the four colored buttons", board(3, "top"),
+  "Legs in rows 7 and 12, columns 2-4 / 8-10 / 14-16 / 20-22. Top-left leg takes its jumper, "
+  "bottom-right leg goes to the GND bus. Test: firmware/btntest prints button 0–3."),
+ ("Step 4 — AA / no / yes", board(4, "top"),
+  "Small 3×3 buttons, legs rows 14 and 16. Same diagonal rule. "
   "Test: btntest now prints button 0–6. Several dead at once means the GND bus, not the switches."),
- ("Step 6 — LCD leads", board(6, "top"),
-  "Four stranded wires off row 18. Test: firmware/lcdtest prints 'found device at 0x27' and shows text."),
+ ("Step 5 — LCD leads", board(5, "top"),
+  "Four stranded wires off row 18. Test: firmware/lcdtest prints 'found device at 0x27'."),
 ]
 
 CSS = """
@@ -371,10 +362,13 @@ page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <h1>Schematics &amp; board layout</h1>
 <p class="sub">Circuit, pin map, both sides of the board, component detail, every wire, then one figure per solder step.</p>
 <nav>{nav}</nav>
-<div class="key"><strong>Verified in millimetres, not hole counts.</strong> All 7 buttons,
-4 LEDs, 4 resistors and the ESP32 fit one 18×24 kit board, using the measured 5-hole button
-leg pitch. Clearances: 3.2mm between button bodies, 4.2mm LED→button, 7.5mm between banks.
-Re-check any time with <code>mise exec -- python tools/verify-layout.py</code>.</div>
+<div class="key"><strong>Single-sided board.</strong> All the copper is on one face, so every
+solder joint is on the underside and every component sits on top. The ESP32 cannot be socketed
+here — its socket body would cover the pads — so it gets <strong>its own carrier board</strong>,
+joined by 15 wires. Both screw to a wooden plate; the ESP32 unplugs and stays removable.<br><br>
+<strong>Verified in millimetres, not hole counts:</strong> 7 buttons, 4 LEDs and 4 resistors fit
+with 3.2mm between button bodies, 6.7mm LED→button and 5.0mm between banks — and 7 spare rows.
+Re-check with <code>mise exec -- python tools/verify-layout.py</code>.</div>
 {body}</body></html>"""
 open(OUT, "w").write(page)
 print(OUT)
