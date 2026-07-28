@@ -18,14 +18,23 @@ That's the whole difference from a breadboard, where the plastic hides little me
 that join each row of five holes for you. Perfboard has none of that. You are the wiring.
 
 ```
-   TOP  (components live here)          UNDERSIDE (all copper, all solder)
+   TOP  (components live here)          UNDERSIDE (every joint made here)
 
    ┌───────────────────────┐            ┌───────────────────────┐
-   │  o   o   o   o   o    │            │  ◎   ◎   ◎   ◎   ◎    │  ◎ = copper pad
-   │  o   o   o   o   o    │            │  ◎   ◎   ◎   ◎   ◎    │
+   │  ◎   ◎   ◎   ◎   ◎    │            │  ◎   ◎   ◎   ◎   ◎    │  ◎ = copper pad
+   │  ◎   ◎   ◎   ◎   ◎    │            │  ◎   ◎   ◎   ◎   ◎    │
    └───────────────────────┘            └───────────────────────┘
-     plain board, no copper               every pad isolated
+     pads here too — we ignore them       every pad isolated
 ```
+
+> **"The copper face" means nothing on this board.** Yours is **double-sided**: there is a
+> pad on *both* faces of every hole. That phrase was left over from the single-sided kit
+> boards. Throughout these documents, **"the underside" means the face you solder on** —
+> the one facing away from the components — and **every joint in this build is made there**,
+> including all three ground buses. The top pads are simply left bare.
+>
+> Why one face? Because then the design doesn't care whether your holes are plated through.
+> If they are, a joint underneath also reaches the top pad — a bonus, not a requirement.
 
 So when the build sheet says *"LED 1 anode, col 4 row 2 → D13"*, that means: the LED's long
 leg goes through the hole at column 4, row 2, and **you** run a wire from that pad to the
@@ -139,7 +148,7 @@ Rather than adding a wire, **use the LED's own leg**:
 
    row 3  ◎  ← LED cathode soldered here
           │
-          ╰──╮   leg bent flat along the copper face
+          ╰──╮   leg bent flat along the underside
    row 4  ◎◄─╯  ← and soldered onto this pad, where the resistor already sits
 ```
 

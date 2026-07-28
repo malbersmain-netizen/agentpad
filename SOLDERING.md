@@ -78,13 +78,13 @@ tangent to the pads. Tack one end, check it's straight, solder every second pad.
 *Pass:* multimeter beeps between all ten holes.
 
 Now the part that matters: **push a component lead down through one of those holes from
-the top.** It must reach the copper face and sit alongside the wire. If your bus is lying
+the top.** It must reach the underside and sit alongside the wire. If your bus is lying
 *over* the hole, the lead stops at the board and connects to nothing — and the joint still
 looks perfect from underneath. That single mistake would hit **11 joints** on the real
 board.
 
 > On the real board, rows that carry a bus get their **components inserted first**. Bend
-> the ground leads flat along the row on the copper face, lay the bus wire on top of them,
+> the ground leads flat along the row on the underside, lay the bus wire on top of them,
 > and solder once. Bus-first only works on rows with nothing else in them.
 
 ### Exercise 5 — a resistor and an LED (×2)

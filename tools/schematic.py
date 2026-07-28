@@ -285,7 +285,7 @@ def board(stage=99, side="top"):
             # Every signal wire on its real route: right along its own row to the riser
             # lane at col 29 (clear of the buses, which stop at col 28), along the lane,
             # then into its socket hole. Wires to the RIGHT column pass UNDER the ESP32
-            # module on the copper face — drawn dashed where they do.
+            # module on the underside — drawn dashed where they do.
             SPINE = HDR_COLS[0] - 1
             wires = [w for w in harness() if w[2] != "GND"]
             groups = {LED_ROWS[0]: (LED_COLS, COL),
@@ -334,7 +334,7 @@ def board(stage=99, side="top"):
                 "#ff5b5b", 11.5, "middle", 700)
             lab(OX + COLS*PITCH/2, OY+ROWS*PITCH+76,
                 f"{len(wires)} signal wires + 1 ground (numbered as in BUILD.md) + {len(LCD_PINS)} orange LCD-port wires \u00b7 "
-                f"dashed = runs under the ESP32 on the copper face \u00b7 the LCD itself is never "
+                f"dashed = runs under the ESP32 on the underside \u00b7 the LCD itself is never "
                 f"soldered \u2014 it plugs into the orange port with 4 F-F jumpers", "#666", 11.5)
     else:
         lab(OX + COLS*PITCH/2, OY-52, "UNDERSIDE — mirrored. ALL copper and ALL solder joints are on this face.", "#c33", 13, "middle", 700)

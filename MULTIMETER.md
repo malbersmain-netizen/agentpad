@@ -139,7 +139,7 @@ fix; found later it is thirty joints to search.
 > instead of beside them. A lead pushed in from the top stops on the wire and never reaches
 > copper, but the solder bridges the gap and the joint looks perfect from underneath, and
 > beeps. That is why `SOLDERING.md` Exercise 4 has you push a lead through a bussed hole and
-> confirm it reaches the copper face.
+> confirm it reaches the copper on the underside.
 
 ---
 

@@ -44,7 +44,7 @@ RES_W        = 2.5
 LED_COLS = [4, 11, 18, 25]  # 7-col pitch -> 5.8mm between button bodies
 LED_ROWS = (2, 3)           # anode row 2 (takes the wire), cathode row 3
 RES_ROWS = (4, 8)           # resistor in the CATHODE path; the cathode lead bends
-                            # over on the copper face to reach the row-4 pad
+                            # over on the underside to reach the row-4 pad
 BTN_COL0 = [c-1 for c in LED_COLS]
 BTN_ROWS = (11, 16)         # ground leg lands directly ON the row-16 bus
 ANS_COL0 = [4, 13, 22]

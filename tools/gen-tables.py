@@ -26,7 +26,7 @@ def rowplan():
     rows = {}
     def put(r, s): rows.setdefault(r, []).append(s)
     put(LED_ROWS[0], f"**LED anodes (+)** — each also takes that LED's wire to the socket · cols {', '.join(map(str, LED_COLS))}")
-    put(LED_ROWS[1], f"**LED cathodes (−)** — lead bends over on the copper face to the row-{RES_ROWS[0]} pad")
+    put(LED_ROWS[1], f"**LED cathodes (−)** — lead bends over on the underside to the row-{RES_ROWS[0]} pad")
     put(RES_ROWS[0], f"220Ω top lead (the only lead *in* this hole; the cathode lands on its pad)")
     put(RES_ROWS[1], f"220Ω bottom lead — lands straight on the bus")
     for r in GND_ROWS: put(r, f"**GND bus** — bare wire, cols {BUS_COLS[0]} → {BUS_COLS[1]}")
@@ -253,7 +253,7 @@ def steps():
     o.append("")
     o.extend([
         f"1. Cut bare 24AWG a little longer than {BUS_COLS[1]-BUS_COLS[0]+1} holes.",
-        f"2. Lay it on the copper face along row **{GND_ROWS[0]}**, columns {BUS_COLS[0]} → "
+        f"2. Lay it on the underside along row **{GND_ROWS[0]}**, columns {BUS_COLS[0]} → "
         f"{BUS_COLS[1]}, **beside the pad centres, never across them**. A wire lying over a hole "
         f"blocks the lead you push in later, and the joint still looks perfect from underneath.",
         "3. Tack one end. Check it is straight and clear of every hole. Then solder every 2nd–3rd pad.",
@@ -285,7 +285,7 @@ def steps():
         f"{(RES_ROWS[1]-RES_ROWS[0])*P:.1f}mm span. Solder both, trim.",
         f"2. **LED next** — long leg into row {LED_ROWS[0]}, short leg into row {LED_ROWS[1]}. "
         f"Solder the **anode only**. Leave the cathode leg full length.",
-        f"3. **Move 3 — the bent leg.** On the copper face, bend the cathode's leftover length flat "
+        f"3. **Move 3 — the bent leg.** On the underside, bend the cathode's leftover length flat "
         f"until it lies on the **row-{RES_ROWS[0]} pad**, where the resistor's top lead already is. "
         f"Solder it into that same joint. *Now* trim both.",
         f"4. The resistor's bottom lead is already in row {RES_ROWS[1]} — the bus. It is grounded; "

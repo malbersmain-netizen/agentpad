@@ -138,7 +138,7 @@ changes.
 | Row | What |
 |---:|---|
 | **2** | **LED anodes (+)** — each also takes that LED's wire to the socket · cols 4, 11, 18, 25 · **LCD port** — 4 male pins · cols 30–33 |
-| **3** | **LED cathodes (−)** — lead bends over on the copper face to the row-4 pad |
+| **3** | **LED cathodes (−)** — lead bends over on the underside to the row-4 pad |
 | **4** | 220Ω top lead (the only lead *in* this hole; the cathode lands on its pad) |
 | **8** | 220Ω bottom lead — lands straight on the bus · **GND bus** — bare wire, cols 1 → 28 |
 | **11** | **Colored button legs — signal node** · cols 3+5, 10+12, 17+19, 24+26 |
@@ -412,7 +412,7 @@ Two 15-way strips at **columns 30 and 40, rows 8 → 22**. This goes first becau
 Row **8** is the only bus row with nothing else in it, so it can go on now. Rows 16, 21 carry button legs and must wait until those buttons are seated (steps 4 and 5).
 
 1. Cut bare 24AWG a little longer than 28 holes.
-2. Lay it on the copper face along row **8**, columns 1 → 28, **beside the pad centres, never across them**. A wire lying over a hole blocks the lead you push in later, and the joint still looks perfect from underneath.
+2. Lay it on the underside along row **8**, columns 1 → 28, **beside the pad centres, never across them**. A wire lying over a hole blocks the lead you push in later, and the joint still looks perfect from underneath.
 3. Tack one end. Check it is straight and clear of every hole. Then solder every 2nd–3rd pad.
 4. Leave ~10mm of tail at column 1 — the other two buses join it there.
 5. Run wire **12**: from **col 28, row 8** to the socket's **GND** pad at **col 30, row 21**. This is the board's only ground wire.
@@ -432,7 +432,7 @@ Do **LED 1 completely, including its wire and the test**, before starting LED 2.
 
 1. **Resistor first** — it is the lower part. Legs into rows 4 and 8 of the same column; bend them so the 6.3mm body sits centred in the 10.2mm span. Solder both, trim.
 2. **LED next** — long leg into row 2, short leg into row 3. Solder the **anode only**. Leave the cathode leg full length.
-3. **Move 3 — the bent leg.** On the copper face, bend the cathode's leftover length flat until it lies on the **row-4 pad**, where the resistor's top lead already is. Solder it into that same joint. *Now* trim both.
+3. **Move 3 — the bent leg.** On the underside, bend the cathode's leftover length flat until it lies on the **row-4 pad**, where the resistor's top lead already is. Solder it into that same joint. *Now* trim both.
 4. The resistor's bottom lead is already in row 8 — the bus. It is grounded; there is nothing else to do.
 5. Run that LED's wire from **its own column, row 2** to its socket pad. **Both ends are lap joints** (*Move 5*) — the anode hole holds the LED's own leg and the socket hole holds a header pin, so you are soldering onto existing blobs, not into free holes.
 
