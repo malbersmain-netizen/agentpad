@@ -1,0 +1,7 @@
+[tools]
+python = "3.13"
+
+[env]
+# Auto-create and activate a project-local venv on Python 3.13.
+# pygame wheels are known-good here; the global mise Python (3.14) may lack them.
+_.python.venv = { path = ".venv", create = true }
