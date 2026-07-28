@@ -79,7 +79,20 @@ tack the first pin) · Dupont/JST connectors (makes the LCD detachable) · **a t
 
 ---
 
-## 2. The case
+## 2. The case — deferred
+
+**The demo does not depend on the case.** Assume it won't be printed in time: the
+deliverable is the three soldered boards plus the LCD on flying leads, mounted to a flat
+backing plate.
+
+The model in `case/agentpad-case.scad` is parametric and stays in the repo. Once the
+boards are actually built and measured, regenerate it *from* them rather than building to
+it. Everything below is reference for that later pass.
+
+<details>
+<summary>Case reference (for later)</summary>
+
+
 
 Case **95 × 140 × 28mm**, USB-C exits the bottom edge.
 
@@ -145,33 +158,50 @@ pushed up to meet the face before you solder them.
 
 ---
 
-## 3. The perfboard
+## 3. The board — everything on ONE kit board
 
-Cut/snap to **34 × 50 holes** (86.4 × 127mm). Score with a knife along a hole row and
-snap over a table edge; file the cut smooth.
+A kit board is **18 rows × 24 columns** (43.2 × 58.4mm of hole field). It all fits,
+because the **ESP32 hangs underneath on its socket** and only consumes two rows of holes
+instead of a block of top-side space.
 
-Grid reference: **col 1, row 1 = top-left**. Case position = `4.3 + (col−1)×2.54` across,
-`6.5 + (row−1)×2.54` down.
+Orient the board **24 columns across, 18 rows down**. Grid reference: col 1, row 1 =
+top-left. All four LEDs and the four select buttons share columns **3, 9, 15, 21**
+(6-hole pitch).
 
-| What | Columns | Rows |
+| Row | What | Columns |
 |---|---|---|
-| LCD 4-pin connector | 2–5 | 2 |
-| LEDs 1–4 | **6, 14, 22, 30** | 20 |
-| LED resistors | same cols | 21–23 (down to GND bus) |
-| Select buttons 1–4 | centred on **6, 14, 22, 30** | 25–29 |
-| AA button | centred on 6 | 39–43 |
-| no button | centred on 25 | 39–43 |
-| yes button | centred on 31 | 39–43 |
-| **ESP32 header** | **12 and 21** (0.9" apart) | **35–49** |
-| GND bus | 1 → 34 | 32 |
-| 5V bus | 1 → 34 | 33 |
+| **1** | **GND bus** — bare wire straight across | 1 → 24 |
+| **2** | **ESP32 header, row A** (soldered so the ESP32 plugs in from BELOW) | 5 → 19 |
+| 4 | LED cathodes (−) | 3, 9, 15, 21 |
+| 5 | LED anodes (+) | 3, 9, 15, 21 |
+| 4 → 1 | 220Ω per LED, cathode up to the GND bus | same columns |
+| **6 → 10** | **Select buttons 1–4**, centred on row 8 | centred on 3, 9, 15, 21 |
+| **11** | **ESP32 header, row B** (9 holes from row A) | 5 → 19 |
+| **12 → 16** | **AA / no / yes**, centred on row 14 | centred on 4, 12, 20 |
+| **17** | **5V bus** — bare wire straight across | 1 → 24 |
+| 18 | LCD 4-pin connector | 1 → 4 |
 
-**Keep rows 1–16 clear of anything tall** — the LCD hangs down into that space from the
-face.
+### Why this works
 
-> Sanity-check before soldering: dry-fit the ESP32 into loose header strips at cols 12/21
-> and confirm it drops in. If the fit is tight, your board's grid isn't true 0.1" — better
-> to find that now.
+- **The ESP32 is on the underside.** You solder two 15-pin female strips at rows 2 and
+  11; the ESP32 plugs in from beneath. Its body is 55mm long, so it lies along the 24-col
+  axis and its **USB overhangs the board edge** — which makes the cable easy to reach.
+- **No collision underneath.** Button legs protrude ~3mm below the board; the ESP32 sits
+  8.5mm below on its header, so they clear each other.
+- **Rows 2 and 11 are otherwise empty**, which is exactly why the clusters are placed
+  where they are. If you move a button bank, re-check that both header rows stay free.
+- If your ESP32 measures **1.0 inch** between pin rows rather than 0.9, use rows **1 and
+  11** and move the GND bus to row 3.
+
+### The only off-board wiring
+
+Four **stranded** wires to the LCD: GND → GND bus, VCC → 5V bus, SDA → GPIO 21,
+SCL → GPIO 22. Leave them long enough to set the LCD down beside the board while you
+work. That is the entire loom.
+
+> Mount the board and the LCD to a flat backing plate (plywood, acrylic, even stiff foam
+> board) with standoffs. That turns two loose pieces into one object you can hand to
+> someone, and needs no 3D printer.
 
 ---
 
