@@ -132,6 +132,11 @@ def refresh():
     else:
         row0 = f"A{focus+1} --"
     row1 = " ".join(f"{i+1}{letters.get(state_of(i), '?')}" for i in range(4))
+    # "1w 2B 3i 4d" is 11 of 16 chars, so the focused agent's context usage fits in
+    # the tail. Costs no hardware, and doubles as a fallback if the bar graph isn't wired.
+    used = ctx_pct.get(p) if p else None
+    if used is not None:
+        row1 = f"{row1} {used}%"
     send(f"D0 {row0[:16]}")
     send(f"D1 {row1[:16]}")
 
@@ -318,13 +323,19 @@ def watch_prompts():
                 refresh()
 
 def push_gauge():
-    """Show the focused agent's context-window usage on the bar graph."""
+    """Drive the bar graph like a BATTERY: full = fresh context, empty = context spent.
+
+    ctx_pct stores context *used*, so the lit portion is the remainder. An agent we
+    have no reading for yet shows dark rather than falsely full.
+    """
     global gauge_shown
     p = slots[focus]
-    pct = ctx_pct.get(p, 0) if p else 0
-    if pct != gauge_shown:
-        gauge_shown = pct
-        send(f"G {pct}")
+    used = ctx_pct.get(p) if p else None
+    charge = 0 if used is None else max(0, min(100, 100 - used))
+    if charge != gauge_shown:
+        gauge_shown = charge
+        send(f"G {charge}")
+        log(f"gauge slot={focus} used={used} -> charge {charge}%")
 
 def tail_context():
     """Follow context.jsonl, written by the statusLine command in each agent."""

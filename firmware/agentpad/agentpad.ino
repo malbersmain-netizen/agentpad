@@ -45,10 +45,12 @@ void setup() {
   writeGauge(0);           // bar dark until the Mac reports a percentage
 }
 
-// Light the bottom N segments of the bar graph, N proportional to pct (0-100).
+// Bar graph reads like a battery: charge 100 = all segments lit (fresh context),
+// charge 0 = dark (context spent). The Mac sends the remaining percentage.
 // With MSBFIRST the bit at position k lands on output Qk, so a run of low bits
 // lights the segments nearest Q0.
-void writeGauge(int pct) {
+void writeGauge(int charge) {
+  int pct = charge;
   if (pct < 0)   pct = 0;
   if (pct > 100) pct = 100;
   int lit = (pct * SR_SEGS + 50) / 100;
@@ -88,7 +90,7 @@ void handle(String s) {
   else if (s.startsWith("G ")) {
     String v = s.substring(2);
     v.trim();
-    writeGauge(v.toInt());          // context-window usage, 0-100
+    writeGauge(v.toInt());          // battery charge: 100 = fresh, 0 = context spent
   }
   else if (s.startsWith("D0 ") || s.startsWith("D1 ")) {
     int row = s.charAt(1) - '0';

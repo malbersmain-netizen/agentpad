@@ -102,7 +102,9 @@ Do not replace this with a binary or JSON protocol.
 | Agent-select buttons (same color order) | 32, 33, 25, 4 |
 | Approve button | 19 |
 | Deny button | 18 |
+| Always-allow button ("yes, don't ask again") | 23 |
 | LCD I²C SDA / SCL | 21, 22 |
+| *reserved, not wired* — 74HC595 gauge (data/clock/latch) | 5, 16, 17 |
 
 GPIO 34-39 are input-only with no internal pull-up. GPIO 0, 2, 12, 15 are boot strapping pins. Avoid all of them.
 
@@ -124,10 +126,20 @@ Serial port name is measured on real hardware, not guessed (this build: `/dev/cu
 
 Firmware *compilation* can be verified without hardware via `arduino-cli compile --fqbn esp32:esp32:esp32 firmware/agentpad`. Uploading is done here with `arduino-cli upload -p <port> --fqbn esp32:esp32:esp32 firmware/agentpad`.
 
+**Stop the daemon before uploading.** Only one process can hold the serial port; uploading while the daemon runs fails with "Serial data stream stopped: Possible serial noise or corruption", which reads like a hardware fault but isn't.
+
 ## Testing note
 
 Permission prompts only fire for commands that escape the sandbox. **`curl -sI https://example.com` prompts reliably; `date` and `df -h` do not** (this machine runs `acceptEdits`). Use curl when demoing or testing the interlock — otherwise the LED just goes solid "working" and never blinks.
 
+## Context usage
+
+The focused agent's context-window usage shows on the LCD bottom row (`1w 2B 3i 4d 34%`). It comes from Claude Code's **statusLine** payload (`context_window.used_percentage`) — the only place that value is exposed — and is attributed per agent because the statusLine command inherits `$TMUX_PANE` inside a tmux window. See `hooks/agentpad-status.sh`.
+
+An LED bar graph was designed and coded (74HC595, `G <0-100>` serial command, battery semantics: full = fresh) but **deliberately not wired** — see `BUILD.md`. The firmware and daemon support is still present and harmless, so it can be added later without other changes.
+
 ## Status
 
-**Working end-to-end.** Hardware fully built and verified (LCD@0x27, 4 LEDs, 6 buttons). Firmware, daemon, and hooks all confirmed on real hardware: color button → tmux window spawn/focus → hooks → LED state → approve/deny button → keystroke lands in the correct pane.
+**Working end-to-end.** Hardware built and verified: LCD@0x27, 4 LEDs, **7 buttons** (4 select + approve/deny/always-allow). Firmware, daemon, and hooks all confirmed on real hardware: color button → tmux window spawn/focus → hooks → LED state → approve/deny/always button → keystroke lands in the correct pane. Survives unplug/replug of the ESP32.
+
+Next: soldered build in a 3D-printed case — checklist in `BUILD.md`.
