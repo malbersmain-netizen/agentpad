@@ -148,6 +148,46 @@ its own 4-pin male header, wired to the socket pads.
 
 ---
 
+## What actually gets soldered — and what never is
+
+The single most important distinction in the build. Two parts are irreplaceable and
+**neither is ever soldered**:
+
+| Never soldered | Why | How it connects instead |
+|---|---|---|
+| **The ESP32** | you have exactly one | plugs into two **socket strips**. The *strips* are soldered; the module is not |
+| **The LCD** | you have exactly one | 4 F-F jumpers to the **LCD port**, a male header soldered to the board |
+
+Everything soldered falls into four groups, ~149 joints total:
+
+| | Joints | |
+|---|---:|---|
+| **Socket strips** | 30 | two 15-way female strips. The ESP32 plugs in on top afterwards |
+| **Component legs** | 37 | 4 LEDs, 4 resistors, 7 switches (**3 legs each** — one is clipped off) |
+| **Buses** | 46 | bare wire along rows 8, 16, 21, linked down column 1 |
+| **Wires** | 36 | 16 wires × 2 ends, plus the LCD port's 4 male pins |
+
+```
+   the ESP32          ┌───────────────┐   ← plugs in LAST, never soldered
+                      │  ▼ ▼ ▼ ▼ ▼ ▼  │
+   socket strip    ┌──┴───────────────┴──┐
+   (SOLDER THIS)   │ ⌷  ⌷  ⌷  ⌷  ⌷  ⌷  │
+   ════════════════╪══╪══╪══╪══╪══╪══╪═══  ← the board
+                   ▼  ▼  ▼  ▼  ▼  ▼  ▼
+                  the strip's own pins — these are what you solder
+```
+
+**Both ends of every wire are lap joints.** The hole at each end is already full — the
+socket pad holds a header pin, the component pad holds the LED's or switch's leg. So you
+solder the tinned wire end *onto solder that is already there*, never into an empty hole.
+That is why step 1 leaves a 2mm stub on the 16 socket pads that take a wire: something to
+hook the wire around.
+
+**You don't solder every component and then every wire.** Each step fits its own
+components *and* their wires, so the step ends in a test that actually runs.
+
+---
+
 ## What you'll actually do, in order
 
 | | | ends with |

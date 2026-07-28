@@ -38,7 +38,7 @@ hr{border:0;border-top:1px solid var(--line);margin:2.5em 0}
   blockquote{background:#16241c}h4{color:#c4c8d0}
 }
 </style></head><body>
-<nav><h2>Read in this order</h2><a class="doc" href="#start-here-md">Start here<small>how the whole thing fits together</small></a><a href="#start-here-md--what-you-re-building">What you're building</a><a href="#start-here-md--the-whole-loop-once">The whole loop, once</a><a href="#start-here-md--the-three-layers">The three layers</a><a href="#start-here-md--how-the-board-maps-onto-that">How the board maps onto that</a><a href="#start-here-md--the-parts-that-are-not-permanent">The parts that are not permanent</a><a href="#start-here-md--what-you-ll-actually-do-in-order">What you'll actually do, in order</a><a href="#start-here-md--the-things-most-likely-to-bite-you">The things most likely to bite you</a><a href="#start-here-md--everything-is-generated-from-one-file">Everything is generated from one file</a><a class="doc" href="#wiring-md">Wiring reference<small>every wire, every leg, every socket slot</small></a><a href="#wiring-md--a-every-wire">A. Every wire</a><a href="#wiring-md--b-the-esp32-socket-slot-by-slot">B. The ESP32 socket, slot by slot</a><a href="#wiring-md--c-every-component-every-leg">C. Every component, every leg</a><a href="#wiring-md--d-the-buses">D. The buses</a><a class="doc" href="#connections-md">Connections<small>the five moves the build is made of</small></a><a href="#connections-md--the-one-idea-everything-rests-on">The one idea everything rests on</a><a href="#connections-md--move-1-put-a-component-in-and-solder-it">Move 1 — put a component in and solder it</a><a href="#connections-md--move-2-a-bare-wire-that-joins-a-whole-row-a-bus">Move 2 — a bare wire that joins a whole row (a "bus")</a><a href="#connections-md--move-1b-clipping-a-leg-you-must-not-fit">Move 1b — clipping a leg you must NOT fit</a><a href="#connections-md--move-3-bending-a-leg-to-reach-a-neighbouring-pad">Move 3 — bending a leg to reach a neighbouring pad</a><a href="#connections-md--move-4-a-signal-wire-across-the-board">Move 4 — a signal wire across the board</a><a href="#connections-md--move-5-soldering-a-wire-onto-a-pad-that-already-has-a-pin-in-it">Move 5 — soldering a wire onto a pad that already has a pin in it</a><a href="#connections-md--putting-it-together-one-led-start-to-finish">Putting it together — one LED, start to finish</a><a href="#connections-md--the-mental-checklist-for-any-connection">The mental checklist for any connection</a><a class="doc" href="#multimeter-md">Multimeter<small>from zero, incl. the checks you repeat</small></a><a href="#multimeter-md--1-set-it-up-once">1. Set it up — once</a><a href="#multimeter-md--2-prove-the-meter-works-before-you-trust-it">2. Prove the meter works before you trust it</a><a href="#multimeter-md--3-testing-a-tactile-switch-pre-flight-p1">3. Testing a tactile switch — pre-flight P1</a><a href="#multimeter-md--4-testing-an-led-pre-flight-p3">4. Testing an LED — pre-flight P3</a><a href="#multimeter-md--5-testing-a-resistor-pre-flight-p2">5. Testing a resistor — pre-flight P2</a><a href="#multimeter-md--6-the-three-checks-you-will-repeat-all-build">6. The three checks you will repeat all build</a><a href="#multimeter-md--7-what-the-display-is-telling-you">7. What the display is telling you</a><a class="doc" href="#soldering-md">Soldering<small>practice course, do this before the real board</small></a><a href="#soldering-md--1-before-this-how-connections-work">1. Before this: how connections work</a><a href="#soldering-md--1b-and-the-other-tool-you-cannot-skip">1b. And the other tool you cannot skip</a><a href="#soldering-md--2-safety-briefly">2. Safety, briefly</a><a href="#soldering-md--3-setting-up">3. Setting up</a><a href="#soldering-md--4-practice-do-these-on-a-spare-kit-board">4. Practice — do these on a spare kit board</a><a href="#soldering-md--5-the-motion-precisely">5. The motion, precisely</a><a href="#soldering-md--6-reading-a-joint">6. Reading a joint</a><a href="#soldering-md--7-habits-that-prevent-most-problems">7. Habits that prevent most problems</a><a href="#soldering-md--8-when-it-goes-wrong">8. When it goes wrong</a><a href="#soldering-md--9-worth-watching-before-you-start">9. Worth watching before you start</a><a href="#soldering-md--10-then-build">10. Then build</a><a class="doc" href="#build-md">Build manual<small>parts, board, pre-flight, then steps 1-7</small></a><a href="#build-md--two-rules">Two rules</a><a href="#build-md--1-parts-and-tools">1. Parts and tools</a><a href="#build-md--2-the-case-deferred">2. The case — deferred</a><a href="#build-md--3-the-board">3. The board</a><a href="#build-md--4-soldering-if-you-ve-never-done-it">4. Soldering, if you've never done it</a><a href="#build-md--5-build-in-order">5. Build, in order</a><a href="#build-md--6-software">6. Software</a><a href="#build-md--7-final-acceptance-test">7. Final acceptance test</a><a href="#build-md--8-troubleshooting">8. Troubleshooting</a><a href="#build-md--9-if-it-goes-wrong">9. If it goes wrong</a><a class="doc" href="#breadboard-md">Breadboard<small>rebuild the working prototype (fallback)</small></a><a href="#breadboard-md--the-rules-that-make-it-all-work">The rules that make it all work</a><a href="#breadboard-md--step-1-ground-do-this-first">Step 1 — ground (do this first)</a><a href="#breadboard-md--step-2-lcd-4-wires-straight-to-the-esp32">Step 2 — LCD (4 wires, straight to the ESP32)</a><a href="#breadboard-md--step-3-the-four-leds">Step 3 — the four LEDs</a><a href="#breadboard-md--step-4-the-seven-buttons">Step 4 — the seven buttons</a><a href="#breadboard-md--complete-pin-list">Complete pin list</a><a href="#breadboard-md--step-5-bring-it-up">Step 5 — bring it up</a><a href="#breadboard-md--if-something-misbehaves">If something misbehaves</a><a class="doc" href="#claude-md">Architecture<small>software side: hooks, daemon, protocol</small></a><a href="#claude-md--platform">Platform</a><a href="#claude-md--architecture">Architecture</a><a href="#claude-md--files">Files</a><a href="#claude-md--install-the-hooks-live-outside-the-repo">Install (the hooks live outside the repo)</a><a href="#claude-md--serial-protocol">Serial protocol</a><a href="#claude-md--pin-map-do-not-change-without-asking">Pin map — do not change without asking</a><a href="#claude-md--constraints">Constraints</a><a href="#claude-md--what-you-cannot-verify">What you cannot verify</a><a href="#claude-md--testing-note">Testing note</a><a href="#claude-md--context-usage">Context usage</a><a href="#claude-md--status">Status</a>
+<nav><h2>Read in this order</h2><a class="doc" href="#start-here-md">Start here<small>how the whole thing fits together</small></a><a href="#start-here-md--what-you-re-building">What you're building</a><a href="#start-here-md--the-whole-loop-once">The whole loop, once</a><a href="#start-here-md--the-three-layers">The three layers</a><a href="#start-here-md--how-the-board-maps-onto-that">How the board maps onto that</a><a href="#start-here-md--the-parts-that-are-not-permanent">The parts that are not permanent</a><a href="#start-here-md--what-actually-gets-soldered-and-what-never-is">What actually gets soldered — and what never is</a><a href="#start-here-md--what-you-ll-actually-do-in-order">What you'll actually do, in order</a><a href="#start-here-md--the-things-most-likely-to-bite-you">The things most likely to bite you</a><a href="#start-here-md--everything-is-generated-from-one-file">Everything is generated from one file</a><a class="doc" href="#wiring-md">Wiring reference<small>every wire, every leg, every socket slot</small></a><a href="#wiring-md--a-every-wire">A. Every wire</a><a href="#wiring-md--b-the-esp32-socket-slot-by-slot">B. The ESP32 socket, slot by slot</a><a href="#wiring-md--c-every-component-every-leg">C. Every component, every leg</a><a href="#wiring-md--d-the-buses">D. The buses</a><a class="doc" href="#connections-md">Connections<small>the five moves the build is made of</small></a><a href="#connections-md--the-one-idea-everything-rests-on">The one idea everything rests on</a><a href="#connections-md--move-1-put-a-component-in-and-solder-it">Move 1 — put a component in and solder it</a><a href="#connections-md--move-2-a-bare-wire-that-joins-a-whole-row-a-bus">Move 2 — a bare wire that joins a whole row (a "bus")</a><a href="#connections-md--move-1b-clipping-a-leg-you-must-not-fit">Move 1b — clipping a leg you must NOT fit</a><a href="#connections-md--move-3-bending-a-leg-to-reach-a-neighbouring-pad">Move 3 — bending a leg to reach a neighbouring pad</a><a href="#connections-md--move-4-a-signal-wire-across-the-board">Move 4 — a signal wire across the board</a><a href="#connections-md--move-5-soldering-a-wire-onto-a-pad-that-already-has-a-pin-in-it">Move 5 — soldering a wire onto a pad that already has a pin in it</a><a href="#connections-md--putting-it-together-one-led-start-to-finish">Putting it together — one LED, start to finish</a><a href="#connections-md--the-mental-checklist-for-any-connection">The mental checklist for any connection</a><a class="doc" href="#multimeter-md">Multimeter<small>from zero, incl. the checks you repeat</small></a><a href="#multimeter-md--1-set-it-up-once">1. Set it up — once</a><a href="#multimeter-md--2-prove-the-meter-works-before-you-trust-it">2. Prove the meter works before you trust it</a><a href="#multimeter-md--3-testing-a-tactile-switch-pre-flight-p1">3. Testing a tactile switch — pre-flight P1</a><a href="#multimeter-md--4-testing-an-led-pre-flight-p3">4. Testing an LED — pre-flight P3</a><a href="#multimeter-md--5-testing-a-resistor-pre-flight-p2">5. Testing a resistor — pre-flight P2</a><a href="#multimeter-md--6-the-three-checks-you-will-repeat-all-build">6. The three checks you will repeat all build</a><a href="#multimeter-md--7-what-the-display-is-telling-you">7. What the display is telling you</a><a class="doc" href="#soldering-md">Soldering<small>practice course, do this before the real board</small></a><a href="#soldering-md--1-before-this-how-connections-work">1. Before this: how connections work</a><a href="#soldering-md--1b-and-the-other-tool-you-cannot-skip">1b. And the other tool you cannot skip</a><a href="#soldering-md--2-safety-briefly">2. Safety, briefly</a><a href="#soldering-md--3-setting-up">3. Setting up</a><a href="#soldering-md--4-practice-do-these-on-a-spare-kit-board">4. Practice — do these on a spare kit board</a><a href="#soldering-md--5-the-motion-precisely">5. The motion, precisely</a><a href="#soldering-md--6-reading-a-joint">6. Reading a joint</a><a href="#soldering-md--7-habits-that-prevent-most-problems">7. Habits that prevent most problems</a><a href="#soldering-md--8-when-it-goes-wrong">8. When it goes wrong</a><a href="#soldering-md--9-worth-watching-before-you-start">9. Worth watching before you start</a><a href="#soldering-md--10-then-build">10. Then build</a><a class="doc" href="#build-md">Build manual<small>parts, board, pre-flight, then steps 1-7</small></a><a href="#build-md--two-rules">Two rules</a><a href="#build-md--1-parts-and-tools">1. Parts and tools</a><a href="#build-md--2-the-case-deferred">2. The case — deferred</a><a href="#build-md--3-the-board">3. The board</a><a href="#build-md--4-soldering-if-you-ve-never-done-it">4. Soldering, if you've never done it</a><a href="#build-md--5-build-in-order">5. Build, in order</a><a href="#build-md--6-software">6. Software</a><a href="#build-md--7-final-acceptance-test">7. Final acceptance test</a><a href="#build-md--8-troubleshooting">8. Troubleshooting</a><a href="#build-md--9-if-it-goes-wrong">9. If it goes wrong</a><a class="doc" href="#breadboard-md">Breadboard<small>rebuild the working prototype (fallback)</small></a><a href="#breadboard-md--the-rules-that-make-it-all-work">The rules that make it all work</a><a href="#breadboard-md--step-1-ground-do-this-first">Step 1 — ground (do this first)</a><a href="#breadboard-md--step-2-lcd-4-wires-straight-to-the-esp32">Step 2 — LCD (4 wires, straight to the ESP32)</a><a href="#breadboard-md--step-3-the-four-leds">Step 3 — the four LEDs</a><a href="#breadboard-md--step-4-the-seven-buttons">Step 4 — the seven buttons</a><a href="#breadboard-md--complete-pin-list">Complete pin list</a><a href="#breadboard-md--step-5-bring-it-up">Step 5 — bring it up</a><a href="#breadboard-md--if-something-misbehaves">If something misbehaves</a><a class="doc" href="#claude-md">Architecture<small>software side: hooks, daemon, protocol</small></a><a href="#claude-md--platform">Platform</a><a href="#claude-md--architecture">Architecture</a><a href="#claude-md--files">Files</a><a href="#claude-md--install-the-hooks-live-outside-the-repo">Install (the hooks live outside the repo)</a><a href="#claude-md--serial-protocol">Serial protocol</a><a href="#claude-md--pin-map-do-not-change-without-asking">Pin map — do not change without asking</a><a href="#claude-md--constraints">Constraints</a><a href="#claude-md--what-you-cannot-verify">What you cannot verify</a><a href="#claude-md--testing-note">Testing note</a><a href="#claude-md--context-usage">Context usage</a><a href="#claude-md--status">Status</a>
 <h2>Figures</h2>
 <a href="schematics.html">Schematics &amp; board layout</a>
 <a href="build-plan.html">Tickable checklist</a>
@@ -203,6 +203,78 @@ plus 4 more for the LCD port. Sixteen wires total.</p>
 <p>The LCD port exists because of a detail that's easy to miss: once the ESP32 is seated, its
 own pins are <em>inside</em> the socket, so nothing can clip onto them. The board therefore carries
 its own 4-pin male header, wired to the socket pads.</p>
+<hr />
+<h2 id="start-here-md--what-actually-gets-soldered-and-what-never-is">What actually gets soldered — and what never is</h2>
+<p>The single most important distinction in the build. Two parts are irreplaceable and
+<strong>neither is ever soldered</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Never soldered</th>
+<th>Why</th>
+<th>How it connects instead</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>The ESP32</strong></td>
+<td>you have exactly one</td>
+<td>plugs into two <strong>socket strips</strong>. The <em>strips</em> are soldered; the module is not</td>
+</tr>
+<tr>
+<td><strong>The LCD</strong></td>
+<td>you have exactly one</td>
+<td>4 F-F jumpers to the <strong>LCD port</strong>, a male header soldered to the board</td>
+</tr>
+</tbody>
+</table>
+<p>Everything soldered falls into four groups, ~149 joints total:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align: right;">Joints</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Socket strips</strong></td>
+<td style="text-align: right;">30</td>
+<td>two 15-way female strips. The ESP32 plugs in on top afterwards</td>
+</tr>
+<tr>
+<td><strong>Component legs</strong></td>
+<td style="text-align: right;">37</td>
+<td>4 LEDs, 4 resistors, 7 switches (<strong>3 legs each</strong> — one is clipped off)</td>
+</tr>
+<tr>
+<td><strong>Buses</strong></td>
+<td style="text-align: right;">46</td>
+<td>bare wire along rows 8, 16, 21, linked down column 1</td>
+</tr>
+<tr>
+<td><strong>Wires</strong></td>
+<td style="text-align: right;">36</td>
+<td>16 wires × 2 ends, plus the LCD port's 4 male pins</td>
+</tr>
+</tbody>
+</table>
+<pre><code>   the ESP32          ┌───────────────┐   ← plugs in LAST, never soldered
+                      │  ▼ ▼ ▼ ▼ ▼ ▼  │
+   socket strip    ┌──┴───────────────┴──┐
+   (SOLDER THIS)   │ ⌷  ⌷  ⌷  ⌷  ⌷  ⌷  │
+   ════════════════╪══╪══╪══╪══╪══╪══╪═══  ← the board
+                   ▼  ▼  ▼  ▼  ▼  ▼  ▼
+                  the strip's own pins — these are what you solder
+</code></pre>
+<p><strong>Both ends of every wire are lap joints.</strong> The hole at each end is already full — the
+socket pad holds a header pin, the component pad holds the LED's or switch's leg. So you
+solder the tinned wire end <em>onto solder that is already there</em>, never into an empty hole.
+That is why step 1 leaves a 2mm stub on the 16 socket pads that take a wire: something to
+hook the wire around.</p>
+<p><strong>You don't solder every component and then every wire.</strong> Each step fits its own
+components <em>and</em> their wires, so the step ends in a test that actually runs.</p>
 <hr />
 <h2 id="start-here-md--what-you-ll-actually-do-in-order">What you'll actually do, in order</h2>
 <table>
