@@ -74,7 +74,72 @@ def joints():
         f"| **total** | **~{a+hdr}** | at 1–2 min each including inspection, that is **3–5 hours** |",
     ])
 
-SECTIONS = {"rowplan": rowplan, "wiretable": wiretable, "joints": joints}
+def steps():
+    """Every physical action, in order, with its coordinates. Moves refer to CONNECTIONS.md."""
+    o = []
+    o.append(f"#### Step A — the three GND buses  ·  *Move 2*")
+    o.append("")
+    o.append(f"Only row **{GND_ROWS[0]}** is empty enough to bus now. Rows "
+             f"**{', '.join(str(r) for r in GND_ROWS[1:])}** also carry button legs — those buses go on "
+             f"*after* their buttons (steps C and D).")
+    o.append("")
+    o.append(f"1. Lay bare 24AWG along row **{GND_ROWS[0]}**, cols 1 → {COLS}, **beside the pads, not over the holes**.")
+    o.append(f"2. Tack one end, check straight, solder every 2nd–3rd pad.")
+    o.append(f"3. Leave a tail at column {GND_LINK_COL} — the other two buses will join it there.")
+    o.append("")
+    o.append(f"✅ **Test:** every pad in row {GND_ROWS[0]} beeps to every other. No other row beeps to it.")
+    o.append("")
+    o.append(f"#### Step B — LEDs and resistors  ·  *Moves 1 and 3*")
+    o.append("")
+    o.append("Do one LED completely, test the idea, then repeat. Per LED:")
+    o.append("")
+    o.append("| LED | long leg (+) | short leg (−) | 220Ω top | 220Ω bottom |")
+    o.append("|---|---|---|---|---|")
+    for i, c in enumerate(LED_COLS):
+        o.append(f"| {i+1} {LED_NAME[i]} | col {c}, row {LED_ROWS[0]} | col {c}, row {LED_ROWS[1]} | "
+                 f"col {c}, row {RES_ROWS[0]} | col {c}, row {RES_ROWS[1]} |")
+    o.append("")
+    o.append(f"1. LED in — long leg row {LED_ROWS[0]}, short leg row {LED_ROWS[1]}. Solder the **anode only**; leave the cathode leg long.")
+    o.append(f"2. Resistor in rows {RES_ROWS[0]} and {RES_ROWS[1]}, same column. Bend its leads so the body sits centred. Solder both.")
+    o.append(f"3. **Move 3:** bend the LED's cathode leg flat onto the row-{RES_ROWS[0]} pad and solder it there too. Now snip both.")
+    o.append(f"4. The resistor's bottom lead is in row {RES_ROWS[1]} — already the GND bus. Nothing more to do.")
+    o.append("")
+    o.append(f"✅ **Test:** beep col 3 row {LED_ROWS[1]} to col 3 row {RES_ROWS[0]} — must beep (the bent leg). "
+             f"Beep row {LED_ROWS[0]} to the bus — must **not** beep.")
+    o.append("")
+    o.append(f"#### Step C — the four colored buttons  ·  *Moves 1 and 2*")
+    o.append("")
+    o.append("| Button | signal leg | ground leg |")
+    o.append("|---|---|---|")
+    for i, c0 in enumerate(BTN_COL0):
+        o.append(f"| {i+1} {LED_NAME[i]} | col {c0}, row {BTN_ROWS[0]} | col {c0+BIG_LEG_COLS}, row {BTN_ROWS[1]} |")
+    o.append("")
+    o.append(f"1. Seat all four buttons — legs span rows {BTN_ROWS[0]}→{BTN_ROWS[1]} and 2 columns.")
+    o.append(f"2. **Solder all four legs of each** (the pairs are internally joined, so it costs nothing and doubles the anchoring).")
+    o.append(f"3. On the **row-{BTN_ROWS[1]} legs, leave them long**, bend flat along the row.")
+    o.append(f"4. Now lay the row-{BTN_ROWS[1]} bus **on top of those bent legs** and solder through. Link it to row {GND_ROWS[0]} down column {GND_LINK_COL}.")
+    o.append("")
+    o.append(f"✅ **Test:** every row-{BTN_ROWS[1]} leg beeps to row {GND_ROWS[0]}. No row-{BTN_ROWS[0]} leg beeps to any bus.")
+    o.append("")
+    o.append(f"#### Step D — AA / no / yes  ·  *same as step C*")
+    o.append("")
+    o.append("| Button | signal leg | ground leg |")
+    o.append("|---|---|---|")
+    for (n, g, d), c0 in zip(ANS_INFO, ANS_COL0):
+        o.append(f"| {n} ({d}) | col {c0}, row {ANS_ROWS[0]} | col {c0+SMALL_LEG}, row {ANS_ROWS[1]} |")
+    o.append("")
+    o.append(f"Same sequence: seat, solder all legs, leave the row-{ANS_ROWS[1]} legs long and bent, then bus over them and link to column {GND_LINK_COL}.")
+    o.append("")
+    o.append(f"✅ **Test:** all three ground legs beep to row {GND_ROWS[0]}. No signal leg beeps to a bus.")
+    o.append("")
+    o.append(f"#### Step E — the {len(harness())} wires to board B  ·  *Moves 4 and 5*")
+    o.append("")
+    o.append("Strip 4mm, tin both ends, label both ends, then solder. Full destinations in the wire table above.")
+    o.append("")
+    o.append(f"✅ **Test:** beep each wire end-to-end, then beep it against the nearest GND bus — must not beep.")
+    return "\n".join(o)
+
+SECTIONS = {"rowplan": rowplan, "wiretable": wiretable, "joints": joints, "steps": steps}
 
 doc = open(DOC).read()
 changed = []

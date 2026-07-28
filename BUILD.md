@@ -343,78 +343,75 @@ arduino-cli compile -u -p /dev/cu.usbserial-0001 --fqbn esp32:esp32:esp32 firmwa
 > and beep neighbouring pads against each other to catch bridges — *before* the first
 > insertion.
 
-### Step 2 — board A, the buses
+### Steps 2–6 — board A, in order
 
-Bare solid wire straight across: **row 1** (5V), **rows 5 and 17** (GND). Link the two GND
-rows with a wire down **column 24**. Tack each at one end, check it's straight, then solder
-every second or third pad.
+> **Read [`CONNECTIONS.md`](CONNECTIONS.md) first.** Every action below is one of its five
+> moves. If "bend the cathode leg onto the next pad" doesn't mean anything to you yet, that
+> document is where it's explained.
 
-> The board has no traces. A bus is what turns 24 isolated holes into one shared node — it
-> is the single most important thing on the board.
+<!-- GEN:steps -->
+#### Step A — the three GND buses  ·  *Move 2*
 
-**Test:** multimeter continuity.
-✅ Every point on a bus beeps · **5V ↔ GND does NOT beep**
+Only row **7** is empty enough to bus now. Rows **14, 18** also carry button legs — those buses go on *after* their buttons (steps C and D).
 
-Repeat that second check after *every* stage from here. If the buses ever beep together
-you've bridged something — find it before adding another part.
+1. Lay bare 24AWG along row **7**, cols 1 → 24, **beside the pads, not over the holes**.
+2. Tack one end, check straight, solder every 2nd–3rd pad.
+3. Leave a tail at column 24 — the other two buses will join it there.
 
-### Step 3 — LEDs and resistors
+✅ **Test:** every pad in row 7 beeps to every other. No other row beeps to it.
 
-Per LED: **anode (long leg)** in row 3, **cathode (short leg)** in row 4, cathode leg bent
-straight down into the **GND bus at row 5**. The **220Ω lies flat in row 2**, one end level
-with the anode column, the other end taking that LED's wire to the ESP32.
+#### Step B — LEDs and resistors  ·  *Moves 1 and 3*
 
-| LED | Column | ESP32 |
+Do one LED completely, test the idea, then repeat. Per LED:
+
+| LED | long leg (+) | short leg (−) | 220Ω top | 220Ω bottom |
+|---|---|---|---|---|
+| 1 red | col 3, row 1 | col 3, row 2 | col 3, row 3 | col 3, row 7 |
+| 2 green | col 9, row 1 | col 9, row 2 | col 9, row 3 | col 9, row 7 |
+| 3 blue | col 15, row 1 | col 15, row 2 | col 15, row 3 | col 15, row 7 |
+| 4 yellow | col 21, row 1 | col 21, row 2 | col 21, row 3 | col 21, row 7 |
+
+1. LED in — long leg row 1, short leg row 2. Solder the **anode only**; leave the cathode leg long.
+2. Resistor in rows 3 and 7, same column. Bend its leads so the body sits centred. Solder both.
+3. **Move 3:** bend the LED's cathode leg flat onto the row-3 pad and solder it there too. Now snip both.
+4. The resistor's bottom lead is in row 7 — already the GND bus. Nothing more to do.
+
+✅ **Test:** beep col 3 row 2 to col 3 row 3 — must beep (the bent leg). Beep row 1 to the bus — must **not** beep.
+
+#### Step C — the four colored buttons  ·  *Moves 1 and 2*
+
+| Button | signal leg | ground leg |
 |---|---|---|
-| Red | 3 | GPIO 13 |
-| Green | 9 | GPIO 14 |
-| Blue | 15 | GPIO 27 |
-| Yellow | 21 | GPIO 26 |
+| 1 red | col 2, row 9 | col 4, row 14 |
+| 2 green | col 8, row 9 | col 10, row 14 |
+| 3 blue | col 14, row 9 | col 16, row 14 |
+| 4 yellow | col 20, row 9 | col 22, row 14 |
 
-**Test:** temporarily wire the four LED lines plus GND to the ESP32 and upload
-`firmware/ledtest`.
-✅ All four cycle red → green → blue → yellow. One dark = it's backwards; flip it.
+1. Seat all four buttons — legs span rows 9→14 and 2 columns.
+2. **Solder all four legs of each** (the pairs are internally joined, so it costs nothing and doubles the anchoring).
+3. On the **row-14 legs, leave them long**, bend flat along the row.
+4. Now lay the row-14 bus **on top of those bent legs** and solder through. Link it to row 7 down column 24.
 
-### Step 4 — the four colored buttons
+✅ **Test:** every row-14 leg beeps to row 7. No row-9 leg beeps to any bus.
 
-Legs in **rows 9 and 14**, columns **2-4, 8-10, 14-16, 20-22**. Use **diagonally opposite**
-legs: the top-left one takes its wire to the ESP32, the bottom-right one goes to the GND
-bus. **No resistors** — the firmware enables internal pull-ups.
+#### Step D — AA / no / yes  ·  *same as step C*
 
-> **Solder all four legs, don't clip the spare two.** The two legs on each side are
-> internally connected, so the "unused" pair is electrically identical to the pair you
-> wired — soldering them changes nothing electrically but doubles the mechanical anchor.
-> On single-sided board a pad lifts easily, and a button that tears free mid-demo is not
-> recoverable.
-
-| Button | Left leg column | ESP32 |
+| Button | signal leg | ground leg |
 |---|---|---|
-| 1 red | 2 | GPIO 32 |
-| 2 green | 8 | GPIO 33 |
-| 3 blue | 14 | GPIO 25 |
-| 4 yellow | 20 | GPIO 4 |
+| AA (always allow) | col 3, row 16 | col 5, row 18 |
+| no (deny) | col 11, row 16 | col 13, row 18 |
+| yes (approve) | col 19, row 16 | col 21, row 18 |
 
-**Test:** `firmware/btntest`, serial monitor at 115200.
-✅ `button 0` … `button 3`, one line per press, no repeats.
+Same sequence: seat, solder all legs, leave the row-18 legs long and bent, then bus over them and link to column 24.
 
-### Step 5 — AA / no / yes
+✅ **Test:** all three ground legs beep to row 7. No signal leg beeps to a bus.
 
-Small 3×3 buttons, legs in **rows 16 and 18**, columns **3-5, 11-13, 19-21**. Same diagonal
-rule.
+#### Step E — the 12 wires to board B  ·  *Moves 4 and 5*
 
-| Button | Left leg column | ESP32 |
-|---|---|---|
-| AA (always allow) | 3 | GPIO 23 |
-| no (deny) | 11 | GPIO 18 |
-| yes (approve) | 19 | GPIO 19 |
+Strip 4mm, tin both ends, label both ends, then solder. Full destinations in the wire table above.
 
-**Test:** `firmware/btntest` again.
-✅ `button 0` … `button 6`.
-
-> **Several buttons dead at once means the GND bus, not the switches.** That exact failure
-> happened twice on the breadboard and cost an hour each time.
-> A button reading *permanently pressed* has both wires on the same internal pair — rotate
-> it 90°.
+✅ **Test:** beep each wire end-to-end, then beep it against the nearest GND bus — must not beep.
+<!-- /GEN:steps -->
 
 ### Step 6 — the LCD
 

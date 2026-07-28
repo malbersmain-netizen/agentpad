@@ -9,25 +9,16 @@ spends the evening debugging cold joints.
 
 ---
 
-## 1. The one thing that surprises everyone
+## 1. Before this: how connections work
 
-**Perfboard has no wires in it.**
+**Perfboard has no wires in it.** Every hole is an island; nothing is joined until you join
+it. That single fact drives the whole design.
 
-A printed circuit board has copper traces connecting things. Perfboard does not — it is
-just a grid of isolated holes, each with a copper ring. **Nothing is connected to anything
-until you connect it.**
+**→ [`CONNECTIONS.md`](CONNECTIONS.md) explains the five moves** you'll use to join things:
+putting a part in, laying a bus, bending a leg to a neighbouring pad, running a wire
+between boards, and soldering onto an existing joint.
 
-So every connection in this build is made one of three ways:
-
-| Method | Use it for |
-|---|---|
-| **Component lead bent over** to reach another hole | LED cathode down to the bus |
-| **Solder bridge** across two touching pads | joining a lead to the bus wire |
-| **Jumper wire** on the underside | GPIO signals to the header |
-
-That's why the layout has "buses": a **bare wire soldered straight across a row**, turning
-20 isolated holes into one shared node. Everything that needs ground reaches the ground
-bus and gets soldered to it. If you understand buses, you understand this build.
+Read it first. This document teaches your hands; that one teaches the plan.
 
 ---
 
