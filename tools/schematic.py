@@ -142,7 +142,7 @@ PITCH, OX, OY = 22, 74, 62
 def board(stage=99, side="top"):
     """Draw the board as it will actually look: copper pads, real part bodies, buses, wires."""
     W = OX + COLS*PITCH + 250
-    H = OY + ROWS*PITCH + 120
+    H = OY + ROWS*PITCH + 130
     X = lambda c: OX + (c-1)*PITCH
     Y = lambda r: OY + (r-1)*PITCH
     o = []
@@ -193,8 +193,13 @@ def board(stage=99, side="top"):
         cs = s*0.62
         o.append(f'<rect x="{cx-cs/2}" y="{cy-cs/2}" width="{cs}" height="{cs}" rx="5" fill="{colr}" stroke="#111"/>')
         lab(cx, cy+6, str(n), "#fff", 16, "middle", 700)
-        for (lx, ly) in ((x0,y0),(x1,y0),(x0,y1),(x1,y1)):
-            o.append(f'<circle cx="{lx}" cy="{ly}" r="{PITCH*0.20}" fill="#b9bcc2" stroke="#555"/>')
+        for (hc, hr), role in switch_legs(c0, BIG_LEG_COLS, BTN_ROWS):
+            lx, ly = X(hc), Y(hr)
+            if role == "clip":
+                o.append(f'<circle cx="{lx}" cy="{ly}" r="{PITCH*0.26}" fill="none" stroke="#ff5b5b" stroke-width="2.4"/>')
+                o.append(f'<path d="M {lx-5} {ly-5} L {lx+5} {ly+5} M {lx+5} {ly-5} L {lx-5} {ly+5}" stroke="#ff5b5b" stroke-width="2.4"/>')
+            else:
+                o.append(f'<circle cx="{lx}" cy="{ly}" r="{PITCH*0.20}" fill="#b9bcc2" stroke="#555"/>')
 
     def smallbtn(c0, colr, name):
         x0, x1 = X(c0), X(c0+SMALL_LEG)
@@ -204,8 +209,13 @@ def board(stage=99, side="top"):
         o.append(f'<rect x="{cx-s/2}" y="{cy-s/2}" width="{s}" height="{s}" rx="3" fill="#2f3237" stroke="#111"/>')
         o.append(f'<circle cx="{cx}" cy="{cy}" r="{s*0.30}" fill="{colr}" stroke="#111"/>')
         lab(cx, cy+s/2+16, name, "#111", 11, "middle", 700)
-        for (lx, ly) in ((x0,y0),(x1,y0),(x0,y1),(x1,y1)):
-            o.append(f'<circle cx="{lx}" cy="{ly}" r="{PITCH*0.18}" fill="#b9bcc2" stroke="#555"/>')
+        for (hc, hr), role in switch_legs(c0, SMALL_LEG, ANS_ROWS):
+            lx, ly = X(hc), Y(hr)
+            if role == "clip":
+                o.append(f'<circle cx="{lx}" cy="{ly}" r="{PITCH*0.24}" fill="none" stroke="#ff5b5b" stroke-width="2.2"/>')
+                o.append(f'<path d="M {lx-4.5} {ly-4.5} L {lx+4.5} {ly+4.5} M {lx+4.5} {ly-4.5} L {lx-4.5} {ly+4.5}" stroke="#ff5b5b" stroke-width="2.2"/>')
+            else:
+                o.append(f'<circle cx="{lx}" cy="{ly}" r="{PITCH*0.18}" fill="#b9bcc2" stroke="#555"/>')
 
     if side == "top":
         if stage >= 1:
@@ -311,9 +321,12 @@ def board(stage=99, side="top"):
             o.append(f'<path d="M {X(BUS_COLS[1])} {Y(GND_ROWS[1])} H {X(SPINE)+14} V {Y(gr)} H {X(gc)}" '
                      f'stroke="#111" stroke-width="3" fill="none" stroke-linejoin="round"/>')
             o.append(f'<circle cx="{X(gc)}" cy="{Y(gr)}" r="4.5" fill="#111" stroke="#fff" stroke-width="1.2"/>')
-            lab(OX-34, OY+ROWS*PITCH+36, "wire 12: GND bus (col 28) \u2192 the ESP32's GND pad \u2014 the only ground wire on the board", "#111", 11, "start", 700)
+            lab(OX-34, OY+ROWS*PITCH+34, "wire 12: GND bus (col 28) \u2192 the ESP32's GND pad \u2014 the only ground wire on the board", "#111", 11, "start", 700)
 
             lab(OX + COLS*PITCH/2, OY+ROWS*PITCH+56,
+                "\u2715 red = the leg you CLIP OFF before seating each switch \u2014 three legs go in, not four",
+                "#ff5b5b", 11.5, "middle", 700)
+            lab(OX + COLS*PITCH/2, OY+ROWS*PITCH+76,
                 f"{len(wires)} signal wires + 1 ground (numbered as in BUILD.md) + {len(LCD_PINS)} orange LCD-port wires \u00b7 "
                 f"dashed = runs under the ESP32 on the copper face \u00b7 the LCD itself is never "
                 f"soldered \u2014 it plugs into the orange port with 4 F-F jumpers", "#666", 11.5)
@@ -329,7 +342,7 @@ def board(stage=99, side="top"):
             lab(X(c), Y(LED_ROWS[1])-15, "flat onto row 4", "#ffd76b", 9)
         lab(OX + COLS*PITCH/2, OY+ROWS*PITCH+56,
             "Each ground leg lands directly on a bus — no ground jumpers anywhere.", "#444", 12)
-    o.append(f'<text x="{OX-34}" y="{OY+ROWS*PITCH+86}" font-size="11.5" fill="#888">ONE board · {ROWS} rows x {COLS} cols · double-sided · ESP32 socketed at cols {HDR_COLS[0]}-{HDR_COLS[1]}</text>')
+    o.append(f'<text x="{OX-34}" y="{OY+ROWS*PITCH+100}" font-size="11.5" fill="#888">ONE board · {ROWS} rows x {COLS} cols · double-sided · ESP32 socketed at cols {HDR_COLS[0]}-{HDR_COLS[1]}</text>')
     return svg(W, H, "".join(o))
 
 # ============================================== 3b. BOARD B + WHOLE ASSEMBLY

@@ -56,39 +56,36 @@ No beep with the tips touching → flat battery, or the red lead is in the wrong
 ## 3. Testing a tactile switch — pre-flight P1
 
 A 4-leg tactile switch is **two pairs**. The legs within a pair are joined permanently;
-pressing connects one pair to the other. This board puts one whole pair on the signal row
-and the other whole pair on the ground row, so **which pair is which decides whether the
-design works at all.**
+pressing connects one pair to the other.
 
-The four legs sit at the corners of a rectangle. On a colored (12mm) switch two legs are
-**5.1mm apart** (short sides) and two are **12.7mm apart** (long sides). Call the short-side
-pairs `A-B` and `C-D`.
+**Which pair is which varies by part.** On this kit's switches, the joined pairs run the
+**long way, down the columns** — measured, not assumed. An early draft of this layout
+assumed the opposite and would have shorted all seven buttons to ground.
 
-**Beep all six pairings, without pressing:**
+**The board no longer depends on it.** The build clips one leg off every switch, and
+`verify-layout.py` proves the remaining three work whichever way the pairs run. So this
+test is now just confirming the parts are alive and behave like switches.
 
-| Probe 1 | Probe 2 | Distance | Beeps? |
-|---|---|---|---|
-| A | B | 5.1mm | |
-| C | D | 5.1mm | |
-| A | C | 12.7mm | |
-| B | D | 12.7mm | |
-| A | D | diagonal | |
-| B | C | diagonal | |
+**The test:**
 
-**Exactly two beep.** Then press and hold — everything beeps. Release — back to two.
+1. Continuity mode. One spare colored switch, one spare small switch.
+2. Beep all six leg pairings **without pressing**.
+3. Press and hold, then beep any pair that was silent.
 
-### Reading the result
+Doing it systematically beats free-handing it: **clip the black lead to one leg** and touch
+red to the other three, then move the clip to the next leg. That covers all six pairs with
+one lead never moving.
 
-- **`A-B` and `C-D` beep** (the 5.1mm pairs) → matches the layout. Build it.
-- **`A-C` and `B-D` beep** (the 12.7mm pairs) → **stop.** Signal and ground would be the
-  same internal node and every button would read permanently pressed the moment the ground
-  bus goes on. The switch cannot be rotated — it would not fit. `BTN_ROWS` / `ANS_ROWS` in
-  `tools/layout.py` have to change so signal and ground sit on different *columns*, then
-  re-run `verify-layout.py`, `gen-tables.py` and `schematic.py`.
+| Result | Meaning |
+|---|---|
+| **Exactly two pairs beep unpressed; all four beep pressed** | Normal. Use it |
+| Only one pair beeps | Probe slipped, or a leg is lacquered — scrape it and retry. If it repeats, the switch is faulty |
+| Three or more pairs beep unpressed | Shorted internally. Discard it |
+| Nothing changes when pressed | Dead switch, or you are not pressing hard enough to latch it |
 
-**The small buttons are square**, so spacing cannot tell you which pair is which. Find the
-two legs that beep and **draw a marker line across the top of the body in that direction**.
-That line must run left-to-right along a row when the switch is seated.
+You do **not** need to record which pair is which, and the square small buttons do **not**
+need marking — the signal leg and the clipped leg are defined by *position on the board*,
+not by the switch's internals. Any orientation works.
 
 ---
 

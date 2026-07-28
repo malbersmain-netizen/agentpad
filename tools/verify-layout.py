@@ -87,15 +87,33 @@ for label, row in (("LED anode", LED_ROWS[0]),
     if row in GND_ROWS:
         fails.append(f"{label} (row {row}) sits ON a GND bus — shorted to ground")
 
-# a tactile switch's two internally-joined legs share a ROW here (they are the pair on
-# the same side of the body). Signal and ground must therefore be on DIFFERENT rows, or
-# the switch is shorted closed the moment the bus goes on.
-for label, rows in (("colored button", BTN_ROWS), ("answer button", ANS_ROWS)):
-    if rows[0] == rows[1]:
-        fails.append(f"{label} signal and ground legs are both in row {rows[0]} — "
-                     f"same internal node, permanently shorted")
+# A tactile switch is two internally-joined pairs, and WHICH pair is which depends on the
+# part. The kit's switches join the LONG way (down the columns); the first draft of this
+# layout assumed the short way. Rather than depend on the measurement, the build clips one
+# leg -- and this check PROVES that choice is safe under BOTH pairings by simulating each.
+for label, cols, span, rows in (("colored button", BTN_COL0, BIG_LEG_COLS, BTN_ROWS),
+                                ("answer button",  ANS_COL0, SMALL_LEG,    ANS_ROWS)):
+    for c0 in cols:
+        legs     = switch_legs(c0, span, rows)
+        soldered = {h for h, role in legs if role != "clip"}
+        wire_at  = next(h for h, role in legs if role == "signal")
+        for hyp, key in (("row-wise", lambda L: L[1]), ("column-wise", lambda L: L[0])):
+            sig = {h for h, _ in legs if key(h) == key(wire_at)} & soldered
+            gnd = {h for h, _ in legs if key(h) != key(wire_at)} & soldered
+            short = [h for h in sig if h[1] in GND_ROWS]
+            if short:
+                fails.append(f"{label} at col {c0}: if the joined pairs run {hyp}, the signal "
+                             f"node reaches the GND bus at {short} — dead short")
+            if not any(h[1] in GND_ROWS for h in gnd):
+                fails.append(f"{label} at col {c0}: if the joined pairs run {hyp}, no soldered "
+                             f"ground leg lands on a bus — the switch cannot pull the pin down")
+            if wire_at not in sig:
+                fails.append(f"{label} at col {c0}: the signal wire does not land on the "
+                             f"switch's signal node under {hyp} pairing")
     if rows[1] not in GND_ROWS:
         fails.append(f"{label} ground row {rows[1]} is not a bus row")
+notes.append("every switch has ONE leg clipped, which makes the board work whichever way "
+             "that switch's internal pairs run — proven above for both cases")
 
 # the GND link is BARE wire running between the buses. Every signal wire runs along its
 # own row from its part out to the riser lane, so any signal row that passes over the

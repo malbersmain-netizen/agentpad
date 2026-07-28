@@ -105,6 +105,23 @@ on top of the bent legs and solder once. Only row 8 is empty enough to bus first
 
 ---
 
+## Move 1b — clipping a leg you must NOT fit
+
+Every tactile switch on this board goes in with **three legs, not four.** The fourth — the
+one in the signal column on the ground-bus row — gets snipped flush with the body before
+the switch is seated.
+
+The reason is that a switch's two internally-joined pairs may run along its short axis or
+its long axis depending on the part, and this kit's run the long way. If they do, that
+fourth leg is on the *signal* node, and dropping it onto the ground bus welds the button
+closed. Clipping it is correct either way, so the board does not care which switch you
+bought. `tools/verify-layout.py` simulates both pairings and fails if the design ever
+assumes all four legs can be fitted.
+
+Three legs is plenty of anchoring for a part this size.
+
+---
+
 ## Move 3 — bending a leg to reach a neighbouring pad
 
 Used once per LED. The LED's cathode is in row 3 and its resistor's top lead is in row 4 —

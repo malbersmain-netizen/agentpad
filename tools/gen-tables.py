@@ -124,31 +124,26 @@ def preflight():
     return "\n".join([
         "Twenty minutes here. Every one of these has bitten someone building this exact board.",
         "",
-        "#### P1 — find each switch's internally-joined leg pair  ·  **do not skip**",
+        "#### P1 — confirm your switches behave like a switch",
         "",
         f"A 4-leg tactile switch is two pairs of two. The legs within a pair are joined "
-        f"permanently; pressing connects one pair to the other. This layout puts **one whole "
-        f"pair on the signal row and the other whole pair on the ground row** — so the joined "
-        f"pair must run *across a row*, along the columns. Get that backwards and every signal "
-        f"leg is welded to the ground bus.",
+        f"permanently; pressing connects one pair to the other. **On this kit's switches the "
+        f"joined pairs run the long way, down the columns** — measured with a meter, not assumed.",
         "",
-        "1. Multimeter to continuity. Take one **spare** colored switch and one spare small switch.",
-        "2. Beep all six leg pairings without pressing. Exactly two pairings beep — those are "
-        "your pairs.",
-        "3. **Mark the joined pair with a marker across the top of the body.** That line must end "
-        "up running left-to-right (along a row) when the switch is seated.",
-        "4. Press and hold: now all four legs beep together. Release: back to two pairs.",
+        f"You do not have to match that. The build **clips one leg off every switch**, which "
+        f"makes the board work whichever way the pairs run — `verify-layout.py` proves it for "
+        f"both cases. This check is just to confirm the parts are alive and behave normally.",
         "",
-        f"✅ **Pass:** you know which way each switch has to face, and every switch of that type "
-        f"goes in the same way. The colored switches are {BIG_LEG_COLS*P:.1f}mm across × "
-        f"{BIG_LEG_ROWS*P:.1f}mm long so they only physically fit one way — check that the joined "
-        f"pair is the {BIG_LEG_COLS*P:.1f}mm one. The small ones are square "
-        f"({SMALL_LEG*P:.1f}mm both ways) so they fit either way and **you must use the mark**.",
+        "1. Multimeter to continuity. Take one spare colored switch and one spare small switch.",
+        "2. Beep all six leg pairings without pressing. **Exactly two pairings beep.**",
+        "3. Press and hold: all four legs beep together. Release: back to two.",
         "",
-        f"❌ **If a colored switch's joined pair runs the long way** ({BIG_LEG_ROWS*P:.1f}mm, rows "
-        f"{BTN_ROWS[0]}↔{BTN_ROWS[1]}), stop. It cannot be rotated — it would not fit. Change "
-        f"`BTN_ROWS` in `tools/layout.py` so signal and ground are on different *columns* instead, "
-        f"re-run `verify-layout.py` and `gen-tables.py`, and rebuild the figures.",
+        "✅ **Pass:** two pairs unpressed, everything joined when pressed.",
+        "",
+        f"❌ **If only one pair beeps,** or nothing changes when you press, that switch is faulty "
+        f"— try another. **If three or more pairs beep unpressed,** it is shorted; discard it.",
+        "",
+        f"> Full meter walkthrough: [`MULTIMETER.md`](MULTIMETER.md).",
         "",
         "#### P2 — confirm the resistors are 220Ω",
         "",
@@ -274,54 +269,74 @@ def steps():
 
     # ---------------------------------------------------------------- 4
     head("Step 4 — the four colored buttons, the second bus, the link  ·  *Moves 1, 2 and 4*")
-    o.append("| Button | legs — signal node (row " + str(BTN_ROWS[0]) + ") | legs — ground node (row "
-             + str(BTN_ROWS[1]) + ") | wire # → socket |")
-    o.append("|---|---|---|---|")
+    o.append(f"| Button | signal leg (takes the wire) | anchor leg | **CLIP this one** | ground leg (on the bus) | wire # |")
+    o.append("|---|---|---|---|---|---|")
     for i, c0 in enumerate(BTN_COL0):
         n, l, s, p, col, row = wires_for(f"button {i+1}")[0]
-        o.append(f"| {i+1} {LED_NAME[i]} | cols {c0} **and** {c0+BIG_LEG_COLS} | "
-                 f"cols {c0} **and** {c0+BIG_LEG_COLS} | **{n}** from col {c0} → col {col}, row {row} ({p}) |")
+        legs = dict((r, h) for h, r in switch_legs(c0, BIG_LEG_COLS, BTN_ROWS))
+        o.append(f"| {i+1} {LED_NAME[i]} | col {legs['signal'][0]}, row {legs['signal'][1]} | "
+                 f"col {legs['anchor'][0]}, row {legs['anchor'][1]} | "
+                 f"~~col {legs['clip'][0]}, row {legs['clip'][1]}~~ | "
+                 f"col {legs['ground'][0]}, row {legs['ground'][1]} | "
+                 f"**{n}** → col {col}, row {row} ({p}) |")
     o.append("")
-    o.append(f"> All four legs get soldered. The two legs in row {BTN_ROWS[0]} are one internal "
-             f"node (the signal), the two in row {BTN_ROWS[1]} are the other (ground) — that is "
-             f"what P1 confirmed. Soldering all four costs nothing and doubles the anchoring on a "
-             f"part you will press thousands of times.")
+    o.append(f"> **Clip one leg off every switch before you seat it** — the one at **column c, "
+             f"row {BTN_ROWS[1]}**, directly below the signal leg. Snip it flush with the body so "
+             f"it cannot reach the board. Solder the other three.")
+    o.append("")
+    o.append(f"> **Why.** A tactile switch's two internally-joined pairs may run along the rows or "
+             f"down the columns depending on the part — this kit's run down the columns. If they "
+             f"do, that row-{BTN_ROWS[1]} leg is on the *signal* node, and soldering it onto the "
+             f"GND bus shorts the button closed forever. Clipping it is safe **either way**, so "
+             f"the board does not depend on which switch you bought. Do not solder all four to "
+             f"'anchor it better' — `verify-layout.py` fails if the design ever assumes that.")
     o.append("")
     o.extend([
-        f"1. Seat all four switches. Legs span rows {BTN_ROWS[0]}→{BTN_ROWS[1]} and columns "
-        f"c → c+{BIG_LEG_COLS}. Check each cap is square before soldering — tack one leg, sight "
-        f"along the row, then finish.",
-        f"2. Solder the two **row-{BTN_ROWS[0]}** legs of each and trim them.",
-        f"3. Solder the two **row-{BTN_ROWS[1]}** legs but **leave them long**; bend them flat "
-        f"along row {BTN_ROWS[1]}.",
-        f"4. Lay the row-{BTN_ROWS[1]} bus **on top of those bent legs**, cols {BUS_COLS[0]} → "
+        f"1. **Clip the row-{BTN_ROWS[1]} leg in the signal column** off all four switches first, "
+        f"while they are still loose and easy to hold.",
+        f"2. Seat all four. The remaining three legs span rows {BTN_ROWS[0]}→{BTN_ROWS[1]} and "
+        f"columns c → c+{BIG_LEG_COLS}. Tack one leg, sight along the row to check the cap is "
+        f"square, then finish.",
+        f"3. Solder both **row-{BTN_ROWS[0]}** legs and trim them.",
+        f"4. Solder the remaining **row-{BTN_ROWS[1]}** leg but **leave it long**; bend it flat "
+        f"along the row.",
+        f"5. Lay the row-{BTN_ROWS[1]} bus **on top of those bent legs**, cols {BUS_COLS[0]} → "
         f"{BUS_COLS[1]}, and solder through both at once. (Bus-first does not work on this row — "
         f"the wire would block the holes.)",
-        f"5. **Link the buses:** bare wire down column {GND_LINK_COL} from row {GND_ROWS[0]} to row "
-        f"{GND_ROWS[1]}. Column {GND_LINK_COL} is chosen because no signal wire ever runs left of "
-        f"column {min(int(s.split()[1].rstrip(',')) for _,s,p,*_ in H if p!='GND')}, so nothing crosses this bare wire.",
-        "6. Run the four button wires from the row-" + str(BTN_ROWS[0]) + " leg listed above.",
+        f"6. **Link the buses:** bare wire down column {GND_LINK_COL} from row {GND_ROWS[0]} to "
+        f"row {GND_ROWS[1]}. Column {GND_LINK_COL} is chosen because no signal wire ever runs left "
+        f"of column {min(int(s.split()[1].rstrip(',')) for _,s,p,*_ in H if p!='GND')}, so nothing "
+        f"crosses this bare wire.",
+        f"7. Run the four button wires from the row-{BTN_ROWS[0]} leg in the signal column.",
     ])
+    o.append("")
     test(f"every row-{BTN_ROWS[1]} leg beeps to row {GND_ROWS[0]} and to the socket GND. **No** "
          f"row-{BTN_ROWS[0]} leg beeps to any bus while the button is released — and every one does "
          f"while it is pressed. Then `firmware/btntest` prints `button 0`…`button 3`.",
          "Several buttons dead at once is the bus or the link, not the switches — that failed twice "
-         "on the breadboard. One button permanently pressed means its signal and ground legs are on "
-         "the same internal node: recheck P1.")
+         "on the breadboard. **One button permanently pressed almost certainly means you soldered "
+         "the leg you were told to clip** — desolder it and snip it off. A button that never "
+         "registers means its signal wire or its row-11 joint.")
 
     # ---------------------------------------------------------------- 5
     head("Step 5 — AA / no / yes, the third bus  ·  *same moves*")
-    o.append("| Button | signal legs (row " + str(ANS_ROWS[0]) + ") | ground legs (row "
-             + str(ANS_ROWS[1]) + ") | wire # → socket |")
-    o.append("|---|---|---|---|")
+    o.append(f"| Button | signal leg | anchor leg | **CLIP this one** | ground leg | wire # |")
+    o.append("|---|---|---|---|---|---|")
     for (n_, g, d), c0 in zip(ANS_INFO, ANS_COL0):
         n, l, s, p, col, row = wires_for(n_)[0]
-        o.append(f"| {n_} ({d}) | cols {c0} **and** {c0+SMALL_LEG} | cols {c0} **and** {c0+SMALL_LEG} | "
-                 f"**{n}** from col {c0} → col {col}, row {row} ({p}) |")
+        legs = dict((r, h) for h, r in switch_legs(c0, SMALL_LEG, ANS_ROWS))
+        o.append(f"| {n_} ({d}) | col {legs['signal'][0]}, row {legs['signal'][1]} | "
+                 f"col {legs['anchor'][0]}, row {legs['anchor'][1]} | "
+                 f"~~col {legs['clip'][0]}, row {legs['clip'][1]}~~ | "
+                 f"col {legs['ground'][0]}, row {legs['ground'][1]} | "
+                 f"**{n}** → col {col}, row {row} ({p}) |")
     o.append("")
-    o.append(f"Identical sequence to step 4: seat, solder the row-{ANS_ROWS[0]} legs, leave the "
-             f"row-{ANS_ROWS[1]} legs long and bent, bus over them, then extend the column-"
-             f"{GND_LINK_COL} link down from row {GND_ROWS[1]} to row {GND_ROWS[2]}. Then the three wires.")
+    o.append(f"Identical sequence to step 4 — **including clipping one leg off each switch first**. "
+             f"These are square, and because one leg is clipped **it does not matter which way round "
+             f"they go** — the wire and the clip are defined by position, not by the switch's "
+             f"internals. Solder the row-{ANS_ROWS[0]} legs, leave the "
+             f"row-{ANS_ROWS[1]} leg long and bent, bus over it, extend the column-{GND_LINK_COL} "
+             f"link from row {GND_ROWS[1]} to row {GND_ROWS[2]}, and run the three wires.")
     test(f"all three ground legs beep to row {GND_ROWS[0]}. No signal leg beeps to a bus when "
          f"released. `firmware/btntest` now prints `button 0` … `button 6` — **all seven**.",
          f"btntest reading only some buttons has been a real failure here: an old copy of that "

@@ -180,6 +180,28 @@ def bodies():
     return out
 
 
+def switch_legs(c0, span, rows):
+    """The four legs of one tactile switch, and what happens to each.
+
+    MEASURED on the kit's switches: the internally-joined pairs run the LONG way, down
+    the columns -- NOT the short way as the first draft assumed. Rather than depend on
+    that, the build clips ONE leg and the design then works either way:
+
+        (c0,      rows[0])  signal   -- takes the wire
+        (c0+span, rows[0])  solder   -- isolated pad, anchoring only
+        (c0,      rows[1])  CLIP     -- would sit on the GND bus. Under column-wise
+                                        pairing that is the SIGNAL node: a dead short.
+        (c0+span, rows[1])  ground   -- lands on the GND bus, which is what we want
+
+    verify-layout.py proves this holds under both pairings; do not "tidy" it by
+    soldering all four legs.
+    """
+    return [((c0,      rows[0]), "signal"),
+            ((c0+span, rows[0]), "anchor"),
+            ((c0,      rows[1]), "clip"),
+            ((c0+span, rows[1]), "ground")]
+
+
 def occupied_holes():
     """{(col,row): [what]} for every hole that already takes a lead or a pin."""
     h = {}
@@ -187,14 +209,12 @@ def occupied_holes():
     for i, c in enumerate(LED_COLS):
         claim(c, LED_ROWS[0], f"LED{i+1} anode");  claim(c, LED_ROWS[1], f"LED{i+1} cathode")
         claim(c, RES_ROWS[0], f"R{i+1} top");      claim(c, RES_ROWS[1], f"R{i+1} bottom")
-    for i, c0 in enumerate(BTN_COL0):            # tactile switches have FOUR legs
-        for cc in (c0, c0+BIG_LEG_COLS):
-            claim(cc, BTN_ROWS[0], f"BTN{i+1} leg (signal node)")
-            claim(cc, BTN_ROWS[1], f"BTN{i+1} leg (ground node)")
+    for i, c0 in enumerate(BTN_COL0):            # four legs, three of them fitted
+        for hole, role in switch_legs(c0, BIG_LEG_COLS, BTN_ROWS):
+            if role != "clip": claim(*hole, f"BTN{i+1} {role} leg")
     for n, c0 in zip(["AA","no","yes"], ANS_COL0):
-        for cc in (c0, c0+SMALL_LEG):
-            claim(cc, ANS_ROWS[0], f"{n} leg (signal node)")
-            claim(cc, ANS_ROWS[1], f"{n} leg (ground node)")
+        for hole, role in switch_legs(c0, SMALL_LEG, ANS_ROWS):
+            if role != "clip": claim(*hole, f"{n} {role} leg")
     for sd, names in (("LEFT", ESP_LEFT), ("RIGHT", ESP_RIGHT)):
         for i, nm in enumerate(names):
             claim(*socket_hole(sd, i+1), f"socket {sd} {i+1} ({nm})")

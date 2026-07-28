@@ -323,18 +323,21 @@ Two habits for the whole build:
 <!-- GEN:preflight -->
 Twenty minutes here. Every one of these has bitten someone building this exact board.
 
-#### P1 — find each switch's internally-joined leg pair  ·  **do not skip**
+#### P1 — confirm your switches behave like a switch
 
-A 4-leg tactile switch is two pairs of two. The legs within a pair are joined permanently; pressing connects one pair to the other. This layout puts **one whole pair on the signal row and the other whole pair on the ground row** — so the joined pair must run *across a row*, along the columns. Get that backwards and every signal leg is welded to the ground bus.
+A 4-leg tactile switch is two pairs of two. The legs within a pair are joined permanently; pressing connects one pair to the other. **On this kit's switches the joined pairs run the long way, down the columns** — measured with a meter, not assumed.
 
-1. Multimeter to continuity. Take one **spare** colored switch and one spare small switch.
-2. Beep all six leg pairings without pressing. Exactly two pairings beep — those are your pairs.
-3. **Mark the joined pair with a marker across the top of the body.** That line must end up running left-to-right (along a row) when the switch is seated.
-4. Press and hold: now all four legs beep together. Release: back to two pairs.
+You do not have to match that. The build **clips one leg off every switch**, which makes the board work whichever way the pairs run — `verify-layout.py` proves it for both cases. This check is just to confirm the parts are alive and behave normally.
 
-✅ **Pass:** you know which way each switch has to face, and every switch of that type goes in the same way. The colored switches are 5.1mm across × 12.7mm long so they only physically fit one way — check that the joined pair is the 5.1mm one. The small ones are square (5.1mm both ways) so they fit either way and **you must use the mark**.
+1. Multimeter to continuity. Take one spare colored switch and one spare small switch.
+2. Beep all six leg pairings without pressing. **Exactly two pairings beep.**
+3. Press and hold: all four legs beep together. Release: back to two.
 
-❌ **If a colored switch's joined pair runs the long way** (12.7mm, rows 11↔16), stop. It cannot be rotated — it would not fit. Change `BTN_ROWS` in `tools/layout.py` so signal and ground are on different *columns* instead, re-run `verify-layout.py` and `gen-tables.py`, and rebuild the figures.
+✅ **Pass:** two pairs unpressed, everything joined when pressed.
+
+❌ **If only one pair beeps,** or nothing changes when you press, that switch is faulty — try another. **If three or more pairs beep unpressed,** it is shorted; discard it.
+
+> Full meter walkthrough: [`MULTIMETER.md`](MULTIMETER.md).
 
 #### P2 — confirm the resistors are 220Ω
 
@@ -415,35 +418,39 @@ Do **LED 1 completely, including its wire and the test**, before starting LED 2.
 
 #### Step 4 — the four colored buttons, the second bus, the link  ·  *Moves 1, 2 and 4*
 
-| Button | legs — signal node (row 11) | legs — ground node (row 16) | wire # → socket |
-|---|---|---|---|
-| 1 red | cols 3 **and** 5 | cols 3 **and** 5 | **5** from col 3 → col 30, row 17 (D32) |
-| 2 green | cols 10 **and** 12 | cols 10 **and** 12 | **6** from col 10 → col 30, row 16 (D33) |
-| 3 blue | cols 17 **and** 19 | cols 17 **and** 19 | **7** from col 17 → col 30, row 15 (D25) |
-| 4 yellow | cols 24 **and** 26 | cols 24 **and** 26 | **8** from col 24 → col 40, row 12 (D4) |
+| Button | signal leg (takes the wire) | anchor leg | **CLIP this one** | ground leg (on the bus) | wire # |
+|---|---|---|---|---|---|
+| 1 red | col 3, row 11 | col 5, row 11 | ~~col 3, row 16~~ | col 5, row 16 | **5** → col 30, row 17 (D32) |
+| 2 green | col 10, row 11 | col 12, row 11 | ~~col 10, row 16~~ | col 12, row 16 | **6** → col 30, row 16 (D33) |
+| 3 blue | col 17, row 11 | col 19, row 11 | ~~col 17, row 16~~ | col 19, row 16 | **7** → col 30, row 15 (D25) |
+| 4 yellow | col 24, row 11 | col 26, row 11 | ~~col 24, row 16~~ | col 26, row 16 | **8** → col 40, row 12 (D4) |
 
-> All four legs get soldered. The two legs in row 11 are one internal node (the signal), the two in row 16 are the other (ground) — that is what P1 confirmed. Soldering all four costs nothing and doubles the anchoring on a part you will press thousands of times.
+> **Clip one leg off every switch before you seat it** — the one at **column c, row 16**, directly below the signal leg. Snip it flush with the body so it cannot reach the board. Solder the other three.
 
-1. Seat all four switches. Legs span rows 11→16 and columns c → c+2. Check each cap is square before soldering — tack one leg, sight along the row, then finish.
-2. Solder the two **row-11** legs of each and trim them.
-3. Solder the two **row-16** legs but **leave them long**; bend them flat along row 16.
-4. Lay the row-16 bus **on top of those bent legs**, cols 1 → 28, and solder through both at once. (Bus-first does not work on this row — the wire would block the holes.)
-5. **Link the buses:** bare wire down column 1 from row 8 to row 16. Column 1 is chosen because no signal wire ever runs left of column 3, so nothing crosses this bare wire.
-6. Run the four button wires from the row-11 leg listed above.
+> **Why.** A tactile switch's two internally-joined pairs may run along the rows or down the columns depending on the part — this kit's run down the columns. If they do, that row-16 leg is on the *signal* node, and soldering it onto the GND bus shorts the button closed forever. Clipping it is safe **either way**, so the board does not depend on which switch you bought. Do not solder all four to 'anchor it better' — `verify-layout.py` fails if the design ever assumes that.
+
+1. **Clip the row-16 leg in the signal column** off all four switches first, while they are still loose and easy to hold.
+2. Seat all four. The remaining three legs span rows 11→16 and columns c → c+2. Tack one leg, sight along the row to check the cap is square, then finish.
+3. Solder both **row-11** legs and trim them.
+4. Solder the remaining **row-16** leg but **leave it long**; bend it flat along the row.
+5. Lay the row-16 bus **on top of those bent legs**, cols 1 → 28, and solder through both at once. (Bus-first does not work on this row — the wire would block the holes.)
+6. **Link the buses:** bare wire down column 1 from row 8 to row 16. Column 1 is chosen because no signal wire ever runs left of column 3, so nothing crosses this bare wire.
+7. Run the four button wires from the row-11 leg in the signal column.
+
 
 ✅ **Test:** every row-16 leg beeps to row 8 and to the socket GND. **No** row-11 leg beeps to any bus while the button is released — and every one does while it is pressed. Then `firmware/btntest` prints `button 0`…`button 3`.
 
-❌ **If it fails:** Several buttons dead at once is the bus or the link, not the switches — that failed twice on the breadboard. One button permanently pressed means its signal and ground legs are on the same internal node: recheck P1.
+❌ **If it fails:** Several buttons dead at once is the bus or the link, not the switches — that failed twice on the breadboard. **One button permanently pressed almost certainly means you soldered the leg you were told to clip** — desolder it and snip it off. A button that never registers means its signal wire or its row-11 joint.
 
 #### Step 5 — AA / no / yes, the third bus  ·  *same moves*
 
-| Button | signal legs (row 19) | ground legs (row 21) | wire # → socket |
-|---|---|---|---|
-| AA (always allow) | cols 4 **and** 6 | cols 4 **and** 6 | **9** from col 4 → col 40, row 22 (D23) |
-| no (deny) | cols 13 **and** 15 | cols 13 **and** 15 | **10** from col 13 → col 40, row 16 (D18) |
-| yes (approve) | cols 22 **and** 24 | cols 22 **and** 24 | **11** from col 22 → col 40, row 17 (D19) |
+| Button | signal leg | anchor leg | **CLIP this one** | ground leg | wire # |
+|---|---|---|---|---|---|
+| AA (always allow) | col 4, row 19 | col 6, row 19 | ~~col 4, row 21~~ | col 6, row 21 | **9** → col 40, row 22 (D23) |
+| no (deny) | col 13, row 19 | col 15, row 19 | ~~col 13, row 21~~ | col 15, row 21 | **10** → col 40, row 16 (D18) |
+| yes (approve) | col 22, row 19 | col 24, row 19 | ~~col 22, row 21~~ | col 24, row 21 | **11** → col 40, row 17 (D19) |
 
-Identical sequence to step 4: seat, solder the row-19 legs, leave the row-21 legs long and bent, bus over them, then extend the column-1 link down from row 16 to row 21. Then the three wires.
+Identical sequence to step 4 — **including clipping one leg off each switch first**. These are square, and because one leg is clipped **it does not matter which way round they go** — the wire and the clip are defined by position, not by the switch's internals. Solder the row-19 legs, leave the row-21 leg long and bent, bus over it, extend the column-1 link from row 16 to row 21, and run the three wires.
 
 ✅ **Test:** all three ground legs beep to row 8. No signal leg beeps to a bus when released. `firmware/btntest` now prints `button 0` … `button 6` — **all seven**.
 
