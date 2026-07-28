@@ -5,3 +5,4 @@ events.jsonl
 daemon.log
 .claude/settings.local.json
 context.jsonl
+build-plan.html
