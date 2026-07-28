@@ -22,6 +22,14 @@ Read it first. This document teaches your hands; that one teaches the plan.
 
 ---
 
+## 1b. And the other tool you cannot skip
+
+**→ [`MULTIMETER.md`](MULTIMETER.md)** — the jacks, continuity vs diode mode, and the three
+checks you will repeat on every joint in this build. If you have never used a meter, read it
+before Exercise 1; several exercises below end in "beep it".
+
+---
+
 ## 2. Safety, briefly
 
 - The iron is ~340°C. It looks identical hot and cold. **Park it in its stand every time.**

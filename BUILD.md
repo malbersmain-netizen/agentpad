@@ -45,7 +45,7 @@ more, but sacrifice one for the soldering practice in `SOLDERING.md`.
 | Temperature-controlled soldering iron | ~340°C for leaded solder |
 | Solder, 60/40 **leaded**, 0.6–0.8mm | Far more forgiving than lead-free for a first build |
 | Flux pen | The difference between clean joints and blobs |
-| **Multimeter with continuity beep** | **Non-negotiable.** Nearly every failure is a cold joint or invisible bridge |
+| **Multimeter with continuity beep** | **Non-negotiable.** Nearly every failure is a cold joint or invisible bridge. Never used one? [`MULTIMETER.md`](MULTIMETER.md) |
 | Wire strippers · flush cutters | |
 | Helping hands / small vise | You need both hands for iron and solder |
 | Desoldering braid | For when — not if — you bridge two pads |
@@ -316,6 +316,9 @@ Two habits for the whole build:
 > that document is where it's explained.
 
 ### Pre-flight — before any solder
+
+> **Never used a multimeter?** [`MULTIMETER.md`](MULTIMETER.md) walks through the jacks,
+> the dial, and each of these tests. Twenty minutes and you will use it all build.
 
 <!-- GEN:preflight -->
 Twenty minutes here. Every one of these has bitten someone building this exact board.

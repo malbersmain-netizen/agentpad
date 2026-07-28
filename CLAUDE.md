@@ -51,6 +51,7 @@ Screen reading survives only to notice the prompt has been **answered**, and mat
 | `firmware/{blink,lcdtest,ledtest,btntest}/` | Milestone test sketches, kept for hardware debugging |
 | `BUILD.md` | The soldered build — parts, board layout, wiring, steps. Tables between `<!-- GEN:… -->` markers are GENERATED |
 | `SOLDERING.md` | From-zero soldering course with practice exercises |
+| `MULTIMETER.md` | From-zero multimeter guide — continuity, diode and resistance tests |
 | `BREADBOARD.md` | Rebuilding the breadboard prototype |
 | `CONNECTIONS.md` | **How you physically join two points on perfboard** — read first |
 | `tools/layout.py` | **Single source of truth** for every row, column, GPIO, mount hole and connector |
