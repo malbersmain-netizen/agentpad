@@ -1,6 +1,6 @@
 # Agent Pad — Complete Build Guide (macOS)
 
-A physical control surface for Claude Code. Four LEDs show what four agents are doing, an LCD shows detail, four buttons pick an agent, and an N64 controller approves or denies permission prompts.
+A physical control surface for Claude Code. Four LEDs show what four agents are doing and an LCD shows detail. Six buttons on the board do everything: four color buttons each launch a color-tinted tmux `claude` session (if it isn't running yet) and focus it, and two more buttons approve or deny that agent's permission prompt. No game controller — the device is self-contained.
 
 Assumes zero electronics experience. Nothing is soldered.
 
@@ -14,13 +14,14 @@ Assumes zero electronics experience. Nothing is soldered.
 |---|---|---|
 | [Freenove Ultimate Starter Kit](https://radioshack-of-bozeman-640025.shoplightspeed.com/pi-4-acckit-freenove-ultimate-starter-kit-for-rasp.html) | $79.95 | **Being held for you. Only 1 in stock.** Contains LCD, LEDs, buttons, resistors, breadboard |
 | [ESP32 dev board](https://radioshack-of-bozeman-640025.shoplightspeed.com/wifi-board-hiletgo-esp-wroom-32-esp32-esp-32s-deve.html) × 2 | $9.95 ea | **Only 2 in stock — buy both.** Headers confirmed pre-soldered |
-| [N64 USB controller](https://radioshack-of-bozeman-640025.shoplightspeed.com/n64-saffun-classic-n64-controller-saffun-n64-wired.html) | $22.99 | Backup: [NES controller](https://radioshack-of-bozeman-640025.shoplightspeed.com/suily-usb-controller-for-nes-games-suily-pc-usb-co.html), $11.99 |
-| [Edgelec 30cm male-to-female jumpers](https://radioshack-of-bozeman-640025.shoplightspeed.com/electronics-parts/lights/led-strips/jumpers/) | ~$10 | **Essential** — the ESP32 doesn't fit on a breadboard. See §6 |
-| [Hiearcool 7-in-1 USB-C hub](https://radioshack-of-bozeman-640025.shoplightspeed.com/cables-and-adapters/usb-cable-types/hubs/) | ~$40 | 100W PD passthrough lets you charge while building. Count the USB-A ports — you need 2 |
+| [Edgelec 30cm male-to-female jumpers](https://radioshack-of-bozeman-640025.shoplightspeed.com/electronics-parts/lights/led-strips/jumpers/) | ~$10 | **Required** — the ESP32 doesn't fit on a breadboard, and 6 buttons blow the kit's F-M budget. See §6 |
+| [Hiearcool 7-in-1 USB-C hub](https://radioshack-of-bozeman-640025.shoplightspeed.com/cables-and-adapters/usb-cable-types/hubs/) | ~$40 | 100W PD passthrough lets you charge while building. You only need **1** USB-A port — the ESP32 is the only USB device |
 | [USB-**A** to USB-**C** data cable](https://radioshack-of-bozeman-640025.shoplightspeed.com/cables-and-adapters/usb-cable-types/usb-type-c/usb-type-c-cables/) | ~$12 | **A-to-C, not C-to-C.** Hub USB-C ports are often power-only with no data lines. Also: not a charge-only cable |
 | [Breadboard, Chanzon 400-point](https://radioshack-of-bozeman-640025.shoplightspeed.com/electronics-parts/diy/breadboards/) | ~$8 | Optional — the kit includes one |
 
 **No soldering required.** The ESP32 ships with headers pre-attached and the LCD has its own. Skip the iron, solder, flux, and wick entirely.
+
+**No game controller.** An earlier version of this build used an N64 USB controller for approve/deny. It's gone — approve and deny are now plain push buttons on the board. Don't buy one, and don't buy the NES backup either.
 
 ### What the Freenove kit supplies
 
@@ -32,11 +33,11 @@ Confirmed from the contents sheet — you need nothing else for the core build:
 | Red / Green / Blue / Yellow LEDs | 10 / 4 / 4 / 4 | One per agent |
 | Resistor-220 | 20 | Four, one per LED |
 | Big Push Button + Red/Green/Blue/Yellow caps | 4 + 4 | Agent keys, color-matched to the LEDs |
-| Push Button | 6 | Spares |
+| Push Button | 6 | **Two are load-bearing: APPROVE and DENY.** The other four are spares |
 | Project Board (breadboard) | 1 | Everything else |
 | 65 Jump Wire M-M | 65 | Breadboard-internal connections |
 | 10 Jump Wire F-F | 10 | LCD directly to ESP32 |
-| 10 Jump Wire F-M | 10 | ESP32 to breadboard — **the tight one, see §6** |
+| 10 Jump Wire F-M | 10 | ESP32 to breadboard — **not enough, see §6** |
 
 Bonus parts you now have for stretch goals: **servo** (a physical flag), **joystick**, **potentiometers ×3**, **active and passive buzzers**.
 
@@ -62,13 +63,13 @@ Store home: [radioshack-of-bozeman.shoplightspeed.com](https://radioshack-of-boz
 
 [Best Buy Bozeman store page](https://stores.bestbuy.com/mt/bozeman/2155-cattail-st-1264.html)
 
-**Total: ~$185**
+**Total: ~$162** (was ~$185 before the controller was dropped)
 
 ### Ask at the counter
 
 1. "Does the Freenove kit have the LCD1602 in it?" — look in the box
-2. "How many USB-A ports does the Hiearcool hub have?" — you need 2
-3. "How many pushbuttons are in the kit?" — you want 6; 5 is common
+2. "How many USB-A ports does the Hiearcool hub have?" — 1 is enough; the ESP32 is the only USB device
+3. "How many pushbuttons are in the kit?" — you need at least 2 plain ones plus the 4 big capped ones; the kit lists 6 plain
 4. "Does the kit include a breadboard, and how big?" — tells you if you need the Chanzon
 
 ### Do NOT buy
@@ -83,7 +84,7 @@ Servos, LED strips, RC light kits, tactile buttons, resistors. The Freenove kit 
 
 You run four Claude Code sessions at once. The problem: you can't tell which one is waiting for you without checking each terminal.
 
-This device tells you.
+This device tells you — and lets you answer without touching the keyboard.
 
 ```
         ┌──────────────────────────────┐
@@ -91,10 +92,12 @@ This device tells you.
         │   1w 2B 3i 4d                │
         └──────────────────────────────┘
           🔴     🟢     🔵     🟡         ← 4 LEDs, one per agent
-         [red] [grn]  [blu]  [ylw]        ← 4 buttons, matching caps
+         [red] [grn]  [blu]  [ylw]        ← 4 color buttons, matching caps
 
-        [N64 controller]  A = approve, B = deny
+            [APPROVE]   [DENY]            ← 2 plain buttons, GPIO 19 / 18
 ```
+
+A **color button** launches that agent's tmux window running `claude` (or focuses it if it's already running). **APPROVE** and **DENY** answer the permission prompt of whichever agent's window is on screen — and only when it really is blocked. If it isn't, the LCD flashes `not blocked` and nothing is typed.
 
 ### Reading the device
 
@@ -128,27 +131,31 @@ Uppercase B is deliberate — it's the only tall character, so it catches your e
 
 Three things are running, all on your Mac:
 
-1. **Claude Code sessions** — four of them, inside tmux
-2. **The ESP32** — a $10 chip that drives the LEDs and LCD and reads the buttons
+1. **Claude Code sessions** — up to four, in one tmux session named `agentpad`
+2. **The ESP32** — a $10 chip that drives the LEDs and LCD and reads the six buttons
 3. **A Python program** — the brain connecting everything
 
 ```
-  ┌─────────────────────────────────────────┐
-  │  macOS                                  │
-  │                                         │
-  │  tmux                  Python daemon    │
-  │   ├─ agent 1  ──hooks──►  reads         │
-  │   ├─ agent 2            events.jsonl    │
-  │   ├─ agent 3                            │
-  │   └─ agent 4  ◄─send-keys─┤             │
-  │                           ├─ USB ↔ ESP32│
-  │                           └─ USB ← N64  │
-  └─────────────────────────────────────────┘
+  ┌─────────────────────────────────────────────────┐
+  │   macOS                                         │
+  │                                                 │
+  │   tmux session "agentpad"        Python daemon  │
+  │    ├─ A1-red  ──hooks──►     reads events.jsonl │
+  │    ├─ A2-grn                                  │ │
+  │    ├─ A3-blu  ◄─new-window / select-window────┤ │
+  │    └─ A4-ylw  ◄─send-keys─────────────────────┤ │
+  │                                               │ │
+  │                              USB ↔ ESP32 ─────┘ │
+  └─────────────────────────────────────────────────┘
 ```
 
-**Hooks** are Claude Code's way of running a command when something happens — a session starts, a prompt is submitted, Claude needs permission. You'll write one tiny script and point five hooks at it.
+Only one USB device is involved: the ESP32.
 
-Each hook appends a line to the events file. The daemon watches that file, updates the lights, and when you press a button it uses `tmux send-keys` to type into the right session.
+**Hooks** are Claude Code's way of running a command when something happens — a session starts, a prompt is submitted, Claude asks permission. You'll write one tiny script and point five hooks at it.
+
+Each hook appends a line to the events file. The daemon watches that file, updates the lights, and when you press a button it uses `tmux new-window` / `select-window` to launch or focus an agent, or `tmux send-keys` to answer its prompt.
+
+> **`blocked` comes from the `PermissionRequest` hook, not `Notification`.** This was measured on this build: `Notification` fires **6.00 seconds after** the prompt renders — it exists to chase a user who walked away, not to report a prompt. `PermissionRequest` fires at +0.00s and covers every prompt type. Using `Notification` makes the pad feel broken. Do not switch it back.
 
 **None of this needs a network.** Only Claude Code itself needs internet to reach the API — a phone hotspot is plenty.
 
@@ -185,11 +192,26 @@ The board package is a few hundred MB. Do it on home wifi.
 
 ### Python
 
-```
-pip3 install pyserial pygame
+Don't `pip3 install` into system Python. This project uses a **project-local venv managed by [mise](https://mise.jdx.dev)** on Python 3.13, pinned by `mise.toml`:
+
+```toml
+[tools]
+python = "3.13"
+
+[env]
+_.python.venv = { path = ".venv", create = true }
 ```
 
-If `pip3` isn't found, install Python from https://www.python.org/downloads/
+```
+brew install mise
+cd ~/projects/agentpad
+mise install
+mise exec -- pip install pyserial
+```
+
+`pyserial` is the only dependency. (Earlier drafts also installed `pygame` for the game controller — no longer needed.)
+
+Anything you run from inside `~/projects/agentpad` picks up `.venv` automatically; from elsewhere, prefix with `mise exec --`.
 
 ### USB driver — wait, don't install it yet
 
@@ -271,7 +293,7 @@ The 4 pins are male, and the ESP32's pins are male too, so use the kit's **F-F j
 
 The ESP32 has tiny labels printed next to each pin. Look for `21`, `22`, `GND`, `VIN`.
 
-> **Watch your F-M budget.** The kit has only 10 female-to-male jumpers and they're the only ones that reach the ESP32. Allocation: 4 for LED signals, 4 for button signals, 1 for GND to the negative rail — 9 of 10, with one spare. Going LCD-to-ESP32 with F-F is what makes this fit. The 30cm Edgelec pack is your insurance.
+> **Watch your F-M budget — the kit is one short.** The kit has only 10 female-to-male jumpers and they're the only ones that reach the ESP32. With six buttons the allocation is: 4 LED signals + 6 button signals + 1 GND to the negative rail = **11 wires, and you have 10.** So the 30cm Edgelec pack isn't insurance any more, it's required. Going LCD-to-ESP32 with F-F jumpers is still what keeps the number this low.
 
 Plug in USB, then upload this:
 
@@ -348,35 +370,39 @@ They should light one at a time, in order.
 
 ## 8. Milestone 4 — Wire the buttons
 
-**Unplug USB.** Use the four **Big Push Buttons** and snap on the colored caps — red, green, blue, yellow. Put each button directly below the LED of the same color.
+**Unplug USB.** There are **six** buttons: the four **Big Push Buttons** with the colored caps snapped on — red, green, blue, yellow — each directly below the LED of the same color, plus **two plain push buttons** off to the side for APPROVE and DENY.
 
 The buttons have 4 legs but are really 2 pairs. Straddle the breadboard's center channel with them — this guarantees you're using legs from opposite pairs.
 
-For each button:
-- One leg → the ESP32 pin below
-- Leg on the **opposite side** → the negative rail
+For each of the six, wiring is identical:
+- One leg → the ESP32 pin below, via an F-M jumper
+- The **diagonally opposite** leg → the blue negative rail, via an M-M jumper
 
-**No resistors needed.** The ESP32 has resistors built in that the code switches on.
+**No resistors needed**, on any of them. The ESP32 has pull-up resistors built in that the code switches on.
 
-| Agent | Cap color | ESP32 pin |
+| Button | Cap / label | ESP32 pin |
 |---|---|---|
-| 1 | Red | GPIO 32 |
-| 2 | Green | GPIO 33 |
-| 3 | Blue | GPIO 25 |
-| 4 | Yellow | GPIO 4 |
+| Agent 1 | Red | GPIO 32 |
+| Agent 2 | Green | GPIO 33 |
+| Agent 3 | Blue | GPIO 25 |
+| Agent 4 | Yellow | GPIO 4 |
+| **APPROVE** | plain | **GPIO 19** |
+| **DENY** | plain | **GPIO 18** |
+
+Put APPROVE and DENY somewhere you won't confuse them under demo pressure — separated from the color row, and always in the same left-to-right order. Label them with tape.
 
 Test:
 
 ```cpp
-const int BTN[4] = {32, 33, 25, 4};
+const int BTN[6] = {32, 33, 25, 4, 19, 18};   // 0-3 select, 4 approve, 5 deny
 
 void setup() {
   Serial.begin(115200);
-  for (int i = 0; i < 4; i++) pinMode(BTN[i], INPUT_PULLUP);
+  for (int i = 0; i < 6; i++) pinMode(BTN[i], INPUT_PULLUP);
 }
 
 void loop() {
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 6; i++) {
     if (digitalRead(BTN[i]) == LOW) {
       Serial.print("button ");
       Serial.println(i);
@@ -386,7 +412,7 @@ void loop() {
 }
 ```
 
-Open Tools → Serial Monitor, set the dropdown to **115200 baud**, and press buttons. You should see `button 0` through `button 3`.
+Open Tools → Serial Monitor, set the dropdown to **115200 baud**, and press buttons. You should see `button 0` through `button 5`.
 
 If a button fires constantly without being touched, its second leg isn't reaching the negative rail.
 
@@ -403,7 +429,7 @@ The sketch lives at `firmware/agentpad/agentpad.ino` in this repo. It has been v
 - `L 0 working` → LED 1 goes solid
 - `L 1 blocked` → LED 2 blinks fast
 - `D0 hello there` → top LCD row changes
-- Press a button → `B 0` appears
+- Press each of the six buttons → `B 0` through `B 5` appear. **Check 4 and 5 specifically** — they're APPROVE and DENY, they have no LED to confirm them, and a mis-wired one is invisible until the live demo
 
 If all of that works, your hardware is finished. Everything from here is software.
 
@@ -430,7 +456,7 @@ while True:
         print(line)
 ```
 
-Run it: `python3 test.py` (inside the mise venv)
+Run it: `cd ~/projects/agentpad && mise exec -- python test.py`
 
 The LCD updates, LED 1 blinks, and pressing buttons prints `B 0` in your terminal. Ctrl+C to quit.
 
@@ -458,14 +484,16 @@ Then add to `~/.claude/settings.json`:
   "hooks": {
     "SessionStart":     [{"hooks": [{"type": "command", "command": "~/.claude/agentpad.sh idle"}]}],
     "UserPromptSubmit": [{"hooks": [{"type": "command", "command": "~/.claude/agentpad.sh working"}]}],
-    "Notification":     [{"hooks": [{"type": "command", "command": "~/.claude/agentpad.sh blocked"}]}],
+    "PermissionRequest":[{"hooks": [{"type": "command", "command": "~/.claude/agentpad.sh blocked"}]}],
     "Stop":             [{"hooks": [{"type": "command", "command": "~/.claude/agentpad.sh done"}]}],
     "SessionEnd":       [{"hooks": [{"type": "command", "command": "~/.claude/agentpad.sh none"}]}]
   }
 }
 ```
 
-**Test it:** start tmux (`tmux new -s agents`), run `claude`, ask it anything. Then in another terminal:
+`PermissionRequest` is what makes `blocked` usable — see the warning in §3. Don't substitute `Notification`.
+
+**Test it:** start tmux (`tmux new -s test`), run `claude`, ask it anything. Then in another terminal:
 
 ```
 cat ~/projects/agentpad/events.jsonl
@@ -473,189 +501,58 @@ cat ~/projects/agentpad/events.jsonl
 
 You should see JSON lines with a `pane` value like `%0`. **If `pane` is empty, Claude Code isn't running inside tmux** — that's the whole mechanism, so fix it before continuing.
 
+To see a `blocked` line you need a command that actually asks permission. **Local read-only commands don't prompt** — `date`, `df -h`, `ls` and friends are auto-allowed inside the sandbox and produce no `PermissionRequest`. Ask for something that escapes the sandbox instead; `curl -sI https://example.com` prompts reliably and is the one to use when demoing or testing.
+
 ---
 
-## 12. Milestone 8 — The controller
+## 12. Milestone 8 — The controller (dropped)
 
-Plug it into the hub. macOS needs no driver. Create `pad.py`:
+There is no controller any more. Approve and deny are the two plain buttons you wired in Milestone 4, so the whole build is self-contained on the board — one USB cable, nothing else to plug in, nothing to configure per-controller.
 
-```python
-import pygame
-
-pygame.init()
-pygame.joystick.init()
-js = pygame.joystick.Joystick(0)
-js.init()
-print("pad:", js.get_name())
-
-while True:
-    for e in pygame.event.get():
-        if e.type == pygame.JOYBUTTONDOWN:
-            print("button", e.button)
-        elif e.type == pygame.JOYHATMOTION:
-            print("hat", e.value)
-        elif e.type == pygame.JOYAXISMOTION and abs(e.value) > 0.5:
-            print("axis", e.axis, round(e.value, 2))
-```
-
-Run it and press every button. **Write down which number each one reports** — A, B, Start, Z, and the d-pad. Cheap adapters number them unpredictably, so never assume; always check. The d-pad usually shows up as `hat` values like `(0, 1)` rather than buttons.
-
-pygame may open a small blank window. That's normal — it needs it to receive events. Leave it open.
+The controller code (`pad.py`) has been deleted, and `pygame` is no longer a dependency. Skip this milestone entirely — it survives only as a numbering placeholder so the later milestones keep the numbers used elsewhere in this guide.
 
 ---
 
 ## 13. Milestone 9 — The daemon
 
-Create `daemon.py`. Edit the CONFIG block with your port and your button numbers from Milestone 8.
+The daemon is `daemon.py` in this repo. Read it there rather than retyping it — it's the one file that changes most. The only thing you should normally edit is the CONFIG block at the top: `PORT` (your port from Milestone 1), `SESSION`, and `APPROVE` / `DENY` (the keystrokes typed at a permission prompt — menu numbering varies, so these get tuned live).
 
-```python
-import json, os, time, subprocess, threading
-import serial, pygame
+What it does:
 
-# ===== CONFIG =====
-PORT      = "/dev/cu.usbserial-0001"
-BTN_A     = 0       # from pad.py
-BTN_B     = 1
-BTN_START = 9
-APPROVE   = "1"     # what to type at a permission prompt
-DENY      = "3"
-EVENTS    = os.path.expanduser("~/projects/agentpad/events.jsonl")
-# ==================
+- **Owns the tmux session.** On startup it creates a session named `agentpad` with a placeholder `home` window, so you can attach before any agent exists.
+- **Color button (`B 0`–`B 3`) → launch or focus.** If that agent's window isn't running it spawns one (`tmux new-window` running `claude`, named `A1-red` … `A4-ylw`) and tints the whole window a dark color matching the LED. If it already exists, it just selects it. You never create panes or start `claude` by hand.
+- **Approve (`B 4`) / Deny (`B 5`) → answer the prompt** of whichever agent window is *on screen*, via `tmux send-keys`. It follows tmux, so switching windows by hand works too.
+- **The interlock.** Before typing anything, two independent conditions must agree: the hook says that agent is `blocked`, **and** a selection prompt is actually rendered on that pane right now (checked with `tmux capture-pane`). Either one alone can be stale. If they don't agree, it flashes `not blocked` on the LCD and types nothing. Keep this.
+- **Reads `events.jsonl`** and maps each hook's `$TMUX_PANE` to an agent slot — but only panes it launched itself, so other Claude sessions on the machine can't claim a slot or receive keystrokes. Each event pushes `L <i> <state>` to the board.
+- **Clears `blocked` itself** when the prompt leaves the screen (answered from the keyboard or from the pad). Setting `blocked` is the `PermissionRequest` hook's job; clearing it is the daemon's.
+- **Redraws the LCD once a second** so the state timer counts live.
+- **Survives restarts.** It blanks all four LEDs on startup (the ESP32 holds its last LED state across daemon restarts), re-binds existing agent windows to their color slots by window name, and replays the event log to restore states — deliberately never restoring `blocked`, since a prompt from a previous run is long gone.
+- **Supervises its own worker threads**, restarting any that crash, so one exception can't silently half-kill it.
 
-ser = serial.Serial(PORT, 115200, timeout=0.1)
-time.sleep(2)
+Run it:
 
-slots = [None] * 4          # slot index -> tmux pane id
-info  = {}                  # pane id -> {"state":..., "since":...}
-focus = 0
-
-def send(line):
-    ser.write((line + "\n").encode())
-
-def slot_of(pane):
-    if pane in slots:
-        return slots.index(pane)
-    for i in range(4):
-        if slots[i] is None:
-            slots[i] = pane
-            return i
-    return None
-
-def state_of(i):
-    p = slots[i]
-    return info[p]["state"] if p and p in info else "none"
-
-def refresh():
-    letters = {"none": "-", "idle": "i", "working": "w", "blocked": "B", "done": "d"}
-    p = slots[focus]
-    if p and p in info:
-        secs = int(time.time() - info[p]["since"])
-        row0 = f"A{focus+1} {info[p]['state'].upper()[:7]} {secs//60}:{secs%60:02d}"
-    else:
-        row0 = f"A{focus+1} --"
-    row1 = " ".join(f"{i+1}{letters[state_of(i)]}" for i in range(4))
-    send(f"D0 {row0[:16]}")
-    send(f"D1 {row1[:16]}")
-
-def set_focus(i):
-    global focus
-    focus = i
-    p = slots[i]
-    if p:
-        subprocess.run(["tmux", "select-pane", "-t", p])
-    refresh()
-
-def type_into(pane, text):
-    subprocess.run(["tmux", "send-keys", "-t", pane, text, "Enter"])
-
-def respond(keystroke):
-    p = slots[focus]
-    if not p or info.get(p, {}).get("state") != "blocked":
-        send("D0 not blocked")        # refuse - avoids typing junk
-        time.sleep(0.6)
-        refresh()
-        return
-    type_into(p, keystroke)
-
-def next_blocked():
-    for i in range(4):
-        if state_of(i) == "blocked":
-            set_focus(i)
-            return
-    send("D0 nothing blocked")
-    time.sleep(0.6)
-    refresh()
-
-def tail_events():
-    open(EVENTS, "a").close()
-    with open(EVENTS, "r") as f:
-        f.seek(0, 2)
-        while True:
-            line = f.readline()
-            if not line:
-                time.sleep(0.1)
-                continue
-            try:
-                e = json.loads(line)
-            except Exception:
-                continue
-            pane = e.get("pane")
-            if not pane:
-                continue
-            i = slot_of(pane)
-            if i is None:
-                continue
-            st = e.get("state", "idle")
-            info[pane] = {"state": st, "since": time.time()}
-            send(f"L {i} {st}")
-            refresh()
-
-def read_serial():
-    while True:
-        line = ser.readline().decode(errors="ignore").strip()
-        if line.startswith("B "):
-            set_focus(int(line.split()[1]))
-
-threading.Thread(target=tail_events, daemon=True).start()
-threading.Thread(target=read_serial, daemon=True).start()
-
-pygame.init()
-pygame.joystick.init()
-js = pygame.joystick.Joystick(0)
-js.init()
-
-refresh()
-print("agentpad running. ctrl-c to quit.")
-
-while True:
-    for e in pygame.event.get():
-        if e.type == pygame.JOYBUTTONDOWN:
-            if   e.button == BTN_A:     respond(APPROVE)
-            elif e.button == BTN_B:     respond(DENY)
-            elif e.button == BTN_START: next_blocked()
-        elif e.type == pygame.JOYHATMOTION:
-            x, y = e.value
-            if   y ==  1: set_focus(0)
-            elif x ==  1: set_focus(1)
-            elif y == -1: set_focus(2)
-            elif x == -1: set_focus(3)
-    time.sleep(0.02)
+```
+cd ~/projects/agentpad && mise exec -- python daemon.py
 ```
 
-Run it: `python3 daemon.py` (inside the mise venv)
+It prints `agentpad running. ctrl-c to quit.` and logs to `daemon.log` — check that file first when a button seems to do nothing.
 
 ---
 
 ## 14. Running it for real
 
 1. Charger → hub's USB-C PD port. Hub → your Mac.
-2. **ESP32 → a USB-A port** (via the A-to-C cable). The breadboard gets its power from the ESP32, not from USB.
-3. **Controller → the other USB-A port.**
-4. `tmux new -s agents`, then split into 4 panes (`Ctrl-b %` and `Ctrl-b "`)
-5. Run `claude` in each pane
-6. In a separate terminal: `python3 daemon.py`
+2. **ESP32 → the USB-A port** (via the A-to-C cable). That's the only USB device. The breadboard gets its power from the ESP32, not from USB.
+3. Start the daemon in its own terminal:
+   ```
+   cd ~/projects/agentpad && mise exec -- python daemon.py
+   ```
+4. In another terminal, attach so you can watch: `tmux attach -t agentpad`
+5. **Press a color button.** That agent's window appears, tinted, already running `claude`, and focused. Press another color button for a second agent. Press a color button again any time to jump back to that agent.
 
-Give an agent a long task. Its LED goes solid. When it hits a permission prompt, the LED blinks fast and the LCD names it. Press Start to jump there, A to approve.
+Give an agent a long task. Its LED goes solid. When it hits a permission prompt, the LED blinks fast and the LCD names the agent and how long it's been waiting. Press **APPROVE** or **DENY**.
+
+For demoing, ask for something that actually needs permission — `curl -sI https://example.com` prompts reliably. `date` and `df -h` do not: local read-only commands are auto-allowed and never produce a prompt to approve.
 
 ---
 
@@ -675,8 +572,11 @@ Give an agent a long task. Its LED goes solid. When it hits a permission prompt,
 | Everything dead after adding parts | Missing GND jumper from ESP32 to the negative rail |
 | `pane` is empty in events file | Claude Code isn't running inside tmux |
 | `tmux: command not found` | `brew install tmux` |
-| Pressing A types nothing | The agent isn't in `blocked` state — that's the safety interlock working |
-| A approves the wrong thing | Change `APPROVE` — permission menus are numbered, and numbering varies |
+| LCD flashes `not blocked` and nothing is typed | The interlock refused. Either that agent has no live prompt on screen, or the window you're looking at isn't an agent window. Check `daemon.log` — it records the state and the on-screen check for every refusal |
+| LCD flashes `no agent focused` | tmux is on the `home` window (or something you opened yourself). Press a color button first |
+| Approve hits the wrong menu item | Change `APPROVE` / `DENY` in the daemon's CONFIG block — permission menus are numbered, and numbering varies |
+| LEDs show stale states right after starting the daemon | Shouldn't happen — the daemon blanks all four LEDs on startup because the ESP32 keeps its last LED state. If it does, the board isn't receiving serial: check the port and that nothing else holds it |
+| No prompt ever appears, so there's nothing to approve | You're asking for something the sandbox auto-allows. `date`, `df -h`, `ls` never prompt. Use a command that escapes the sandbox — `curl -sI https://example.com` |
 | Port name changes after replug | Pick a hub port and stay in it; re-check with `ls /dev/cu.*` |
 
 ---
@@ -689,12 +589,12 @@ Do these in order. Each takes about five minutes and each one, if skipped, can c
 2. Blink sketch uploads (Milestone 1)
 3. LCD says hello (Milestone 2)
 4. LEDs cycle (Milestone 3)
-5. Buttons print to Serial Monitor (Milestone 4)
-6. Real firmware; test by typing into Serial Monitor (Milestone 5)
-7. Python drives the board (Milestone 6)
-8. Hooks write to the events file with a real `pane` value (Milestone 7)
-9. Map every controller button (Milestone 8)
-10. Daemon (Milestone 9)
+5. Wire the four color buttons; they print to Serial Monitor (Milestone 4)
+6. Wire APPROVE (GPIO 19) and DENY (GPIO 18); confirm `button 4` and `button 5` (Milestone 4)
+7. Real firmware; test all six buttons by typing into Serial Monitor (Milestone 5)
+8. Python drives the board (Milestone 6)
+9. Hooks write to the events file with a real `pane` value (Milestone 7)
+10. Daemon: press a color button, an agent window appears; approve a real `curl` prompt (Milestone 9)
 
 Don't skip ahead. The whole point of this order is that when something breaks, only one thing has changed.
 
@@ -702,7 +602,7 @@ Don't skip ahead. The whole point of this order is that when something breaks, o
 
 ## 17. If it all goes wrong
 
-The Wiz/Govee bulb is the fallback. Wiz bulbs take local UDP JSON on port 38899 — no cloud, no account. Have your hooks turn the bulb amber on `blocked` and back to white on `done`. That's a complete, useful project in about twenty minutes, and it works with no ESP32, no wiring, and no controller.
+The Wiz/Govee bulb is the fallback. Wiz bulbs take local UDP JSON on port 38899 — no cloud, no account. Have your hooks turn the bulb amber on `blocked` and back to white on `done`. That's a complete, useful project in about twenty minutes, and it works with no ESP32 and no wiring at all.
 
 A working simple thing beats a broken ambitious thing at a demo.
 
@@ -719,6 +619,7 @@ A working simple thing beats a broken ambitious thing at a demo.
 | Homebrew (for tmux) | https://brew.sh |
 | Arduino IDE | https://www.arduino.cc/en/software |
 | Python | https://www.python.org/downloads/ |
+| mise (project-local Python 3.13 venv) | https://mise.jdx.dev |
 | CP210x Mac driver (**only if needed**) | https://www.silabs.com/software-and-tools/usb-to-uart-bridge-vcp-drivers |
 | ESP32 board manager URL | `https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json` |
 

@@ -3,5 +3,7 @@ python = "3.13"
 
 [env]
 # Auto-create and activate a project-local venv on Python 3.13.
-# pygame wheels are known-good here; the global mise Python (3.14) may lack them.
+# Pinned so the daemon runs on a known-good interpreter and never touches the
+# global mise Python. Only dependency now is pyserial (the game controller, and
+# with it pygame, was dropped in favour of on-board approve/deny buttons).
 _.python.venv = { path = ".venv", create = true }
