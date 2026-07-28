@@ -101,6 +101,7 @@ Line-based, human-readable on purpose — it must stay testable by typing into t
 L <0-3> <none|idle|working|blocked|done>
 D0 <up to 16 chars>
 D1 <up to 16 chars>
+G <0-100>            # bar graph. Firmware accepts it; the hardware is NOT wired.
 ```
 
 **ESP32 → Mac**

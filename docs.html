@@ -102,7 +102,7 @@ command takes. The part that had to be fast is the <em>blocked</em> light, and t
 <hr />
 <h2 id="start-here-md--the-three-layers">The three layers</h2>
 <p><strong>Layer 1 — the board.</strong> Dumb on purpose. It reads seven switches and drives four LEDs
-and an LCD. It has no idea what Claude Code is. Its entire vocabulary is five line-based
+and an LCD. It has no idea what Claude Code is. Its entire vocabulary is four line-based
 serial commands, which you can type by hand into the Arduino Serial Monitor to test it.</p>
 <table>
 <thead>
@@ -119,6 +119,10 @@ serial commands, which you can type by hand into the Arduino Serial Monitor to t
 <tr>
 <td><code>D0 &lt;text&gt;</code> / <code>D1 &lt;text&gt;</code></td>
 <td>write an LCD row</td>
+</tr>
+<tr>
+<td><code>G &lt;0-100&gt;</code></td>
+<td>bar-graph level — <strong>accepted but not wired</strong>, see below</td>
 </tr>
 </tbody>
 </table>
@@ -3373,6 +3377,7 @@ Use curl when demoing.</p>
 <pre><code>L &lt;0-3&gt; &lt;none|idle|working|blocked|done&gt;
 D0 &lt;up to 16 chars&gt;
 D1 &lt;up to 16 chars&gt;
+G &lt;0-100&gt;            # bar graph. Firmware accepts it; the hardware is NOT wired.
 </code></pre>
 <p><strong>ESP32 → Mac</strong></p>
 <pre><code>B &lt;0-6&gt;     # 0-3 select/launch agent, 4 approve, 5 deny, 6 always-allow

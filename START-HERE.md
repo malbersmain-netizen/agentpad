@@ -69,13 +69,14 @@ command takes. The part that had to be fast is the *blocked* light, and that com
 ## The three layers
 
 **Layer 1 — the board.** Dumb on purpose. It reads seven switches and drives four LEDs
-and an LCD. It has no idea what Claude Code is. Its entire vocabulary is five line-based
+and an LCD. It has no idea what Claude Code is. Its entire vocabulary is four line-based
 serial commands, which you can type by hand into the Arduino Serial Monitor to test it.
 
 | Mac → ESP32 | meaning |
 |---|---|
 | `L <0-3> <none\|idle\|working\|blocked\|done>` | set an LED's pattern |
 | `D0 <text>` / `D1 <text>` | write an LCD row |
+| `G <0-100>` | bar-graph level — **accepted but not wired**, see below |
 
 | ESP32 → Mac | meaning |
 |---|---|
