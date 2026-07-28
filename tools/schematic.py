@@ -142,12 +142,19 @@ PITCH, OX, OY = 22, 74, 62
 def board(stage=99, side="top"):
     """Draw the board as it will actually look: copper pads, real part bodies, buses, wires."""
     W = OX + COLS*PITCH + 250
-    H = OY + ROWS*PITCH + 130
-    X = lambda c: OX + (c-1)*PITCH
-    Y = lambda r: OY + (r-1)*PITCH
+    H = OY + ROWS*PITCH + (210 if side == "under" else 130)
+    TOP = 26 if side == "under" else 0     # extra headroom for the mirrored-view warning
+    # The underside really is MIRRORED: flip the board about its vertical edge and column 1
+    # ends up on the right. Drawing it un-mirrored while labelling it "mirrored" is how you
+    # lay a whole board backwards.
+    if side == "under":
+        X = lambda c: OX + (COLS-c)*PITCH
+    else:
+        X = lambda c: OX + (c-1)*PITCH
+    Y = lambda r: OY + TOP + (r-1)*PITCH
     o = []
     # FR4 substrate
-    o.append(f'<rect x="{OX-34}" y="{OY-30}" width="{COLS*PITCH+22}" height="{ROWS*PITCH+22}" rx="8" '
+    o.append(f'<rect x="{OX-34}" y="{OY+TOP-30}" width="{COLS*PITCH+22}" height="{ROWS*PITCH+22}" rx="8" '
              f'fill="{"#1d6b3d" if side=="top" else "#17572f"}" stroke="#0e3f22" stroke-width="2"/>')
     # copper pads
     for c in range(1, COLS+1):
@@ -155,7 +162,7 @@ def board(stage=99, side="top"):
             o.append(f'<circle cx="{X(c)}" cy="{Y(r)}" r="{PITCH*0.30}" fill="#c9962e"/>')
             o.append(f'<circle cx="{X(c)}" cy="{Y(r)}" r="{PITCH*0.14}" fill="#123a1f"/>')
     for c in range(1, COLS+1, 2):
-        o.append(f'<text x="{X(c)}" y="{OY-38}" text-anchor="middle" font-size="11" fill="#999">{c}</text>')
+        o.append(f'<text x="{X(c)}" y="{OY+TOP-38}" text-anchor="middle" font-size="11" fill="#999">{c}</text>')
     for r in range(1, ROWS+1):
         o.append(f'<text x="{OX-44}" y="{Y(r)+4}" text-anchor="end" font-size="11" fill="#999">{r}</text>')
 
@@ -327,28 +334,65 @@ def board(stage=99, side="top"):
             o.append(f'<path d="M {X(BUS_COLS[1])} {Y(GND_ROWS[1])} H {X(SPINE)+14} V {Y(gr)} H {X(gc)}" '
                      f'stroke="#111" stroke-width="3" fill="none" stroke-linejoin="round"/>')
             o.append(f'<circle cx="{X(gc)}" cy="{Y(gr)}" r="4.5" fill="#111" stroke="#fff" stroke-width="1.2"/>')
-            lab(OX-34, OY+ROWS*PITCH+34, "wire 12: GND bus (col 28) \u2192 the ESP32's GND pad \u2014 the only ground wire on the board", "#111", 11, "start", 700)
+            lab(OX-34, OY+TOP+ROWS*PITCH+34, "wire 12: GND bus (col 28) \u2192 the ESP32's GND pad \u2014 the only ground wire on the board", "#111", 11, "start", 700)
 
-            lab(OX + COLS*PITCH/2, OY+ROWS*PITCH+56,
+            lab(OX + COLS*PITCH/2, OY+TOP+ROWS*PITCH+56,
                 "\u2715 red = the leg you CLIP OFF before seating each switch \u2014 three legs go in, not four",
                 "#ff5b5b", 11.5, "middle", 700)
-            lab(OX + COLS*PITCH/2, OY+ROWS*PITCH+76,
+            lab(OX + COLS*PITCH/2, OY+TOP+ROWS*PITCH+76,
                 f"{len(wires)} signal wires + 1 ground (numbered as in BUILD.md) + {len(LCD_PINS)} orange LCD-port wires \u00b7 "
                 f"dashed = runs under the ESP32 on the underside \u00b7 the LCD itself is never "
                 f"soldered \u2014 it plugs into the orange port with 4 F-F jumpers", "#666", 11.5)
     else:
-        lab(OX + COLS*PITCH/2, OY-52, "UNDERSIDE — mirrored. ALL copper and ALL solder joints are on this face.", "#c33", 13, "middle", 700)
+        lab(OX + COLS*PITCH/2, OY+TOP-70,
+            "UNDERSIDE \u2014 the board flipped over. COLUMN NUMBERS RUN RIGHT TO LEFT.",
+            "#c33", 13.5, "middle", 700)
+        lab(OX + COLS*PITCH/2, OY+TOP-52,
+            "Every joint in the build is made on this face. The top pads are left bare.",
+            "#666", 11.5)
+        # the three buses and the link, at the real link column
         for r in GND_ROWS: bus(r)
-        o.append(f'<line x1="{X(COLS)}" y1="{Y(GND_ROWS[0])}" x2="{X(COLS)}" y2="{Y(GND_ROWS[-1])}" stroke="#8c9099" stroke-width="7"/>')
+        o.append(f'<line x1="{X(GND_LINK_COL)}" y1="{Y(GND_ROWS[0])}" x2="{X(GND_LINK_COL)}" '
+                 f'y2="{Y(GND_ROWS[-1])}" stroke="#8c9099" stroke-width="7"/>')
+        # LED cathode leg bent onto the resistor pad
         for i, c in enumerate(LED_COLS):
             o.append(f'<path d="M {X(c)} {Y(LED_ROWS[1])} L {X(c)} {Y(RES_ROWS[0])}" stroke="#ffd76b" stroke-width="4" fill="none"/>')
-            o.append(f'<circle cx="{X(c)}" cy="{Y(LED_ROWS[1])}" r="{PITCH*0.30}" fill="none" stroke="#ffd76b" stroke-width="2.5"/>')
-            o.append(f'<circle cx="{X(c)}" cy="{Y(RES_ROWS[0])}" r="{PITCH*0.30}" fill="none" stroke="#ffd76b" stroke-width="2.5"/>')
-            lab(X(c), Y(LED_ROWS[1])-26, "cathode leg bent", "#ffd76b", 9)
-            lab(X(c), Y(LED_ROWS[1])-15, "flat onto row 4", "#ffd76b", 9)
-        lab(OX + COLS*PITCH/2, OY+ROWS*PITCH+56,
-            "Each ground leg lands directly on a bus — no ground jumpers anywhere.", "#444", 12)
-    o.append(f'<text x="{OX-34}" y="{OY+ROWS*PITCH+100}" font-size="11.5" fill="#888">ONE board · {ROWS} rows x {COLS} cols · double-sided · ESP32 socketed at cols {HDR_COLS[0]}-{HDR_COLS[1]}</text>')
+            for rr in (LED_ROWS[1], RES_ROWS[0]):
+                o.append(f'<circle cx="{X(c)}" cy="{Y(rr)}" r="{PITCH*0.30}" fill="none" stroke="#ffd76b" stroke-width="2.5"/>')
+        # the switch legs: three soldered, one hole left EMPTY
+        for cols, span, rows in ((BTN_COL0, BIG_LEG_COLS, BTN_ROWS), (ANS_COL0, SMALL_LEG, ANS_ROWS)):
+            for c0 in cols:
+                for (hc, hr), role in switch_legs(c0, span, rows):
+                    if role == "clip":
+                        o.append(f'<circle cx="{X(hc)}" cy="{Y(hr)}" r="{PITCH*0.28}" fill="none" stroke="#ff5b5b" stroke-width="2.2" stroke-dasharray="3 3"/>')
+                    else:
+                        o.append(f'<circle cx="{X(hc)}" cy="{Y(hr)}" r="{PITCH*0.22}" fill="#cfd3d8" stroke="#555"/>')
+        # socket pin joints, and which of them also take a wire
+        wired = {socket_hole(sd, i+1) for lbl, s_, pin, sd, i_, c_, r_ in []}
+        wired = {(c, r) for *_, c, r in harness()} | {sk for _, _, _, sk in lcd_port()}
+        for sd, names in (("3V3", ESP_3V3_SIDE), ("VIN", ESP_VIN_SIDE)):
+            for i, nm in enumerate(names):
+                c, r = socket_hole(sd, i+1)
+                hot = (c, r) in wired
+                o.append(f'<circle cx="{X(c)}" cy="{Y(r)}" r="{PITCH*0.30}" '
+                         f'fill="{"#f0c419" if hot else "#8c9099"}" stroke="#333"/>')
+                if hot:
+                    o.append(f'<circle cx="{X(c)}" cy="{Y(r)}" r="{PITCH*0.46}" fill="none" stroke="#f0c419" stroke-width="1.6"/>')
+        # LCD port pins
+        for i, (nm, _) in enumerate(LCD_PINS):
+            o.append(f'<circle cx="{X(LCD_PORT_COL0+i)}" cy="{Y(LCD_PORT_ROW)}" r="{PITCH*0.28}" fill="#e8a33d" stroke="#333"/>')
+        ly = OY + TOP + ROWS*PITCH + 52
+        for i, (mk, txt, colr) in enumerate([
+            ("bus",  f"bare wire along rows {', '.join(map(str,GND_ROWS))}, linked down col {GND_LINK_COL}. Every ground leg lands straight on one \u2014 no ground jumpers", "#8c9099"),
+            ("bend", f"LED cathode leg bent flat from row {LED_ROWS[1]} onto the row-{RES_ROWS[0]} pad, soldered into the resistor's joint", "#ffd76b"),
+            ("clip", "dashed red = hole left EMPTY. That switch leg was clipped off before seating", "#ff5b5b"),
+            ("sock", "socket pins: yellow ring = also takes a wire, leave a 2mm stub. Grey = trim flush", "#f0c419"),
+            ("lcd",  f"LCD port pins, cols {LCD_PORT_COL0}-{LCD_PORT_COL0+3} row {LCD_PORT_ROW}", "#e8a33d"),
+        ]):
+            yy = ly + i*19
+            o.append(f'<circle cx="{OX-20}" cy="{yy-4}" r="6" fill="{colr}" stroke="#333"/>')
+            lab(OX-4, yy, txt, "#444", 11, "start")
+    o.append(f'<text x="{OX-34}" y="{OY+TOP+ROWS*PITCH+(170 if side=='under' else 100)}" font-size="11.5" fill="#888">ONE board · {ROWS} rows x {COLS} cols · double-sided · ESP32 socketed at cols {HDR_COLS[0]}-{HDR_COLS[1]}</text>')
     return svg(W, H, "".join(o))
 
 # ============================================== 3b. BOARD B + WHOLE ASSEMBLY
@@ -507,8 +551,9 @@ FIGS = [
   "Two pieces screw to the plate: the board, and the LCD. The ESP32 is socketed on the board "
   "itself, USB facing an edge. Only the board is permanent."),
  ("4 · Underside — where every joint lives", board(99, "under"),
-  "The board is double-sided, but every joint is made on THIS face, so the design works whether or "
-  "not the holes are plated through. Components sit on the other side; only their legs come through."),
+  f"**This view is MIRRORED** \u2014 flip the board over and column 1 is on the right, so the "
+  f"numbers run 42 \u2192 1. The board is double-sided, but every joint is made on this one face, "
+  f"which is what makes the design independent of whether your holes are plated through."),
  ("5 · Component detail — which holes exactly", fig_detail(),
   "Each switch has four legs but only two internally-joined pairs \u2014 and on this kit they join "
   "down the LONG axis. One leg is CLIPPED OFF before seating so the board works either way."),
