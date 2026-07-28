@@ -284,8 +284,29 @@ easy to debug, thirty is an all-nighter.
 Before every power-up: **beep the new joints, and check GND↔5V does NOT beep.**
 
 ### Step 1 — ESP32 header
-Solder two 15-pin female strips at cols 12 and 21, rows 35–49. Tack **one pin each**
-first, check the strips are square and the ESP32 still seats, then do the rest.
+
+The kit's **40-pin header is a stacking type** — sockets on one face, long pins on the
+other. Cut two **15-socket** lengths (count 15, cut through the 16th; you lose that one).
+
+> **Orientation matters and is hard to undo.** Insert the strips from **UNDERNEATH** the
+> board so the pins push **up through** the holes and the **sockets hang below**. Solder
+> on the **top** side, then trim the pins flush.
+>
+> Sockets facing *down* is what lets the ESP32 plug in from below — which is the only
+> reason everything fits on one board. Fitted the intuitive way (pins down, sockets up),
+> the ESP32 would have to sit on top, where there is no room beside 7 buttons and 4 LEDs.
+
+**The trick that guarantees alignment:**
+
+1. Plug **both strips onto the ESP32's pins** first — the ESP32 now holds them at exactly
+   the right spacing and squareness
+2. Push that whole assembly up into the board from below
+3. Confirm the pins land in **rows 6 and 16**
+4. Solder **one pin per strip**, check it sits flat, then do the rest
+5. Trim the pins flush and pull the ESP32 out
+
+Soldering the strips separately and *then* trying to seat the ESP32 is how people end up
+desoldering a 15-pin strip, which is genuinely miserable.
 
 **Test:** plug in the ESP32 and the USB cable.
 ```bash
