@@ -34,12 +34,16 @@ SMALL_BODY  = 6.0
 LED_D       = 6.0    # 5mm LED INCLUDING its base flange -- the flange is what collides
 RES_BODY    = 6.3    # 1/4W body length
 RES_W       = 2.5
+HOLE_D      = 1.0    # kit perfboard hole; one lead each, never two
+BEND        = 1.5    # straight lead needed between body seal and bend, per end
 
 # ---- layout ---------------------------------------------------------------
 LED_COLS = [3, 9, 15, 21]   # each LED, its resistor and its button share one column
-LED_ROWS = (2, 3)           # anode row 2 (takes the GPIO wire), cathode row 3
-RES_ROWS = (3, 7)           # resistor stands in the CATHODE path: top lead shares the
-                            # cathode hole, bottom lead lands on the GND bus
+LED_ROWS = (1, 2)           # anode row 1 (takes the GPIO wire), cathode row 2
+RES_ROWS = (3, 7)           # resistor stands in the CATHODE path. Its top lead is the ONLY
+                            # thing in row 3; the LED's cathode lead is bent over on the
+                            # copper face to meet that pad. One lead per hole, always --
+                            # a 1.0mm hole cannot take two 0.5-0.6mm leads plus solder.
 BTN_COL0 = [c-1 for c in LED_COLS]
 BTN_ROWS = (9, 14)   # bottom leg lands directly ON a GND bus
 ANS_COL0 = [3, 11, 19]
@@ -55,8 +59,8 @@ def add(name, cx, cy, w, h, where):
 for i, c in enumerate(LED_COLS):
     x, y = xy(c, (LED_ROWS[0]+LED_ROWS[1])/2)
     add(f"LED{i+1}", x, y, LED_D, LED_D, f"col {c}, rows {LED_ROWS[0]}-{LED_ROWS[1]}")
-    y1 = xy(c, RES_ROWS[1])[1]          # body pushed to the bus end so it clears the LED
-    add(f"R{i+1}", x, y1 - RES_BODY/2, RES_W, RES_BODY,
+    ry = (xy(c, RES_ROWS[0])[1] + xy(c, RES_ROWS[1])[1]) / 2   # centred: equal bend each end
+    add(f"R{i+1}", x, ry, RES_W, RES_BODY,
         f"col {c}, rows {RES_ROWS[0]}-{RES_ROWS[1]}")
 for i, c0 in enumerate(BTN_COL0):
     x0, y0 = xy(c0, BTN_ROWS[0]); x1, y1 = xy(c0+BIG_LEG_COLS, BTN_ROWS[1])
@@ -83,13 +87,35 @@ for i in range(len(parts)):
 
 # --- 3. a part's body must fit between its own leads
 span = (RES_ROWS[1]-RES_ROWS[0]) * P
-if RES_BODY > span:
-    fails.append(f"resistor body {RES_BODY}mm > its {span:.2f}mm lead span — cannot physically fit")
+if RES_BODY + 2*BEND > span:
+    fails.append(f"resistor needs {RES_BODY}mm body + 2x{BEND}mm bend allowance = "
+                 f"{RES_BODY+2*BEND:.2f}mm but its lead span is only {span:.2f}mm")
 
-# --- 4. CONNECTIVITY. Perfboard joins nothing; every net needs a shared hole or a bus.
-if LED_ROWS[1] != RES_ROWS[0]:
-    fails.append(f"LED cathode (row {LED_ROWS[1]}) and resistor top (row {RES_ROWS[0]}) are "
-                 f"different holes — NOT connected")
+# --- 4. CONNECTIVITY and HOLE OCCUPANCY.
+# Perfboard joins nothing, AND a 1.0mm hole holds exactly one lead. Track every hole.
+holes = {}
+def claim(col, row, owner):
+    holes.setdefault((col, row), []).append(owner)
+
+for i, c in enumerate(LED_COLS):
+    claim(c, LED_ROWS[0], f"LED{i+1} anode");  claim(c, LED_ROWS[1], f"LED{i+1} cathode")
+    claim(c, RES_ROWS[0], f"R{i+1} top");      claim(c, RES_ROWS[1], f"R{i+1} bottom")
+for i, c0 in enumerate(BTN_COL0):
+    claim(c0, BTN_ROWS[0], f"BTN{i+1} signal")
+    claim(c0+BIG_LEG_COLS, BTN_ROWS[1], f"BTN{i+1} gnd")
+for n, c0 in zip(["AA","no","yes"], ANS_COL0):
+    claim(c0, ANS_ROWS[0], f"{n} signal"); claim(c0+SMALL_LEG, ANS_ROWS[1], f"{n} gnd")
+for (col,row), owners in sorted(holes.items()):
+    if len(owners) > 1:
+        fails.append(f"hole (col {col}, row {row}) has {len(owners)} leads: {', '.join(owners)} "
+                     f"— a {HOLE_D}mm hole takes one")
+
+# the LED cathode must be ADJACENT to the resistor top so its lead can bridge on the pad
+if abs(LED_ROWS[1] - RES_ROWS[0]) != 1:
+    fails.append(f"LED cathode row {LED_ROWS[1]} and resistor top row {RES_ROWS[0]} are "
+                 f"{abs(LED_ROWS[1]-RES_ROWS[0])} rows apart — the cathode lead cannot bridge")
+
+# ground legs must land ON a bus
 for label, row in (("resistor bottom", RES_ROWS[1]),
                    ("colored-button GND leg", BTN_ROWS[1]),
                    ("answer-button GND leg", ANS_ROWS[1])):
@@ -97,7 +123,25 @@ for label, row in (("resistor bottom", RES_ROWS[1]),
         near = min(GND_ROWS, key=lambda r: abs(r-row))
         fails.append(f"{label} (row {row}) is not on a GND bus {GND_ROWS} — "
                      f"needs a {abs(near-row)}-row jumper to row {near}")
+
+# SIGNAL legs must NOT land on a bus  <-- the check whose absence gave a false PASS
+for label, row in (("LED anode", LED_ROWS[0]),
+                   ("colored-button signal leg", BTN_ROWS[0]),
+                   ("answer-button signal leg", ANS_ROWS[0])):
+    if row in GND_ROWS:
+        fails.append(f"{label} (row {row}) sits ON a GND bus — shorted to ground")
+
+# leg rows/cols must exist
+for label, rows in (("colored button", BTN_ROWS), ("answer button", ANS_ROWS),
+                    ("LED", LED_ROWS), ("resistor", RES_ROWS)):
+    for r in rows:
+        if not 1 <= r <= ROWS: fails.append(f"{label} leg row {r} is off the board")
+if BTN_ROWS[1]-BTN_ROWS[0] != BIG_LEG_ROWS:
+    fails.append(f"colored-button leg rows differ by {BTN_ROWS[1]-BTN_ROWS[0]}, measured {BIG_LEG_ROWS}")
+if ANS_ROWS[1]-ANS_ROWS[0] != SMALL_LEG:
+    fails.append(f"answer-button leg rows differ by {ANS_ROWS[1]-ANS_ROWS[0]}, measured {SMALL_LEG}")
 notes.append("every ground leg lands directly on a bus — zero ground jumpers needed")
+notes.append(f"{len(holes)} holes used, max 1 lead each")
 
 # --- 5. keep 5V off board A
 if LCD_ON_BOARD_A:

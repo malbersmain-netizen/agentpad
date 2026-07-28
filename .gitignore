@@ -11,3 +11,4 @@ assembly-guide.html
 case/*.stl
 case/err.txt
 schematics.html
+board-*.png
