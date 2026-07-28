@@ -233,23 +233,29 @@ def board(stage=99, side="top"):
             for c in HDR_COLS:
                 o.append(f'<rect x="{X(c)-11}" y="{ey0-11}" width="22" height="{ey1-ey0+22}" rx="5" fill="#15181c"/>')
             used = {p for _, _, p, _, _, _, _ in harness()}
-            for sd, names in (("LEFT", ESP_LEFT), ("RIGHT", ESP_RIGHT)):
+            for sd, names in (("3V3", ESP_3V3_SIDE), ("VIN", ESP_VIN_SIDE)):
                 for i, nm in enumerate(names):
                     c, r = socket_hole(sd, i+1)
                     hot = nm in used
                     o.append(f'<circle cx="{X(c)}" cy="{Y(r)}" r="{PITCH*0.26}" '
                              f'fill="{"#f0c419" if hot else "#5a6068"}"/>')
-                    lab(X(c) + (13 if sd == "LEFT" else 14), Y(r)+3.5, nm,
+                    lab(X(c) + (13 if sd == "3V3" else 14), Y(r)+3.5, nm,
                         "#fff" if hot else "#7d848d", 8.5,
                         "start", 700 if hot else 400)
-            # the four drilled mounting holes
-            for c, r in mount_holes():
-                o.append(f'<circle cx="{X(c)}" cy="{Y(r)}" r="{MOUNT_DRILL/2/2.54*PITCH}" '
-                         f'fill="#0b2b16" stroke="#e8e8e8" stroke-width="2"/>')
-                o.append(f'<circle cx="{X(c)}" cy="{Y(r)}" r="{MOUNT_HEAD_R/2.54*PITCH}" '
-                         f'fill="none" stroke="#e8e8e8" stroke-width="1" stroke-dasharray="3 3" opacity="0.55"/>')
-            lab(X(mount_holes()[0][0])+14, Y(mount_holes()[0][1])-14,
-                f"M2 mount, {MOUNT_DRILL}mm", "#e8e8e8", 9.5, "start", 700)
+            # mounting. The real board has factory holes in the margin at each corner;
+            # the computed on-pad positions are only the fallback.
+            if FACTORY_CORNER_HOLES:
+                mx0, my0 = OX-34+13, OY-30+13
+                mx1, my1 = OX-34+COLS*PITCH+22-13, OY-30+ROWS*PITCH+22-13
+                for mx, my in ((mx0,my0),(mx1,my0),(mx0,my1),(mx1,my1)):
+                    o.append(f'<circle cx="{mx}" cy="{my}" r="7" fill="#0b2b16" stroke="#e8e8e8" stroke-width="2"/>')
+                lab(mx0+16, my0-6, "factory corner holes \u2014 M3, no drilling", "#e8e8e8", 9.5, "start", 700)
+            else:
+                for c, r in mount_holes():
+                    o.append(f'<circle cx="{X(c)}" cy="{Y(r)}" r="{MOUNT_DRILL/2/2.54*PITCH}" '
+                             f'fill="#0b2b16" stroke="#e8e8e8" stroke-width="2"/>')
+                lab(X(mount_holes()[0][0])+14, Y(mount_holes()[0][1])-14,
+                    f"drill {MOUNT_DRILL}mm here", "#e8e8e8", 9.5, "start", 700)
             # the LCD port -- 4 male pins
             p0 = LCD_PORT_COL0; pr = LCD_PORT_ROW
             o.append(f'<rect x="{X(p0)-11}" y="{Y(pr)-11}" width="{(len(LCD_PINS)-1)*PITCH+22}" '
@@ -298,7 +304,7 @@ def board(stage=99, side="top"):
                 o.append(f'<path d="M {xs} {ys} V {ys+dy} H {xl} V {Y(row)} H {X(HDR_COLS[0])}" '
                          f'stroke="{cc2}" stroke-width="2.2" fill="none" opacity="0.9" '
                          f'stroke-linejoin="round"/>')
-                if sd == "RIGHT":   # continues underneath the module to the far column
+                if sd == "VIN":     # continues underneath the module to the far column
                     o.append(f'<path d="M {X(HDR_COLS[0])} {Y(row)} H {X(col)}" stroke="{cc2}" '
                              f'stroke-width="2.2" fill="none" stroke-dasharray="5 4" opacity="0.9"/>')
                 o.append(f'<circle cx="{X(col)}" cy="{Y(row)}" r="4.5" fill="{cc2}" stroke="#fff" stroke-width="1.2"/>')
@@ -346,8 +352,6 @@ def board(stage=99, side="top"):
     return svg(W, H, "".join(o))
 
 # ============================================== 3b. BOARD B + WHOLE ASSEMBLY
-ESP_LEFT  = ["VIN","GND","D13","D12","D14","D27","D26","D25","D33","D32","D35","D34","VN","VP","EN"]
-ESP_RIGHT = ["3V3","GND","D15","D2","D4","RX2","TX2","D5","D18","D19","D21","RX0","TX0","D22","D23"]
 USED = {"VIN":"5V -> LCD","GND":"ground","D13":"LED 1 red","D14":"LED 2 green","D27":"LED 3 blue",
         "D26":"LED 4 yellow","D32":"button 1","D33":"button 2","D25":"button 3","D4":"button 4",
         "D23":"AA","D18":"no","D19":"yes","D21":"LCD SDA","D22":"LCD SCL"}

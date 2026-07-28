@@ -68,13 +68,13 @@ def wiretable():
             "| LCD pin | Board hole (male pin) | Wires to socket hole | ESP32 pin |", "|---|---|---|---|"]
     for name, hole, esp, sock in lcd_port():
         out.append(f"| {name} | col {hole[0]}, row {hole[1]} | col {sock[0]}, row {sock[1]} | **{esp}** |")
-    left  = sum(1 for r in H if r[3] == "LEFT")
-    right = len(H) - left
-    lp_left = sum(1 for _, _, _, s in lcd_port() if s[0] == HDR_COLS[0])
-    out += ["", f"That is **{left+lp_left} wires onto the left socket column and "
-                f"{right+len(lcd_port())-lp_left} onto the right** — "
+    near = sum(1 for r in H if r[3] == "3V3") + sum(1 for _, _, _, s in lcd_port()
+                                                    if s[0] == HDR_COLS[0])
+    far  = len(H) + len(lcd_port()) - near
+    out += ["", f"That is **{near} wires onto the 3V3 column (col {HDR_COLS[0]}, the near one) "
+                f"and {far} onto the VIN column (col {HDR_COLS[1]})** — "
                 f"{len(H)+len(lcd_port())} of the socket's 30 pads take a wire.",
-            "", "> **Never wire to RX0 or TX0** (right column, positions 12–13). Those carry the USB "
+            "", "> **Never wire to RX0 or TX0** (3V3 column, positions 12–13 from the USB end). Those carry the USB "
                 "serial link; touching them breaks uploads *and* the daemon, and looks like a dead board.",
             "", f"> **The LCD port carries 5V** (VIN). It is the only 5V on the board and it lives at "
                 f"columns {LCD_PORT_COL0}–{LCD_PORT_COL0+3}, well away from the control surface. "

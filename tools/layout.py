@@ -67,14 +67,26 @@ LCD_SOLDERED = False
 # ---- ESP32, same board, columns 30-40 -------------------------------------
 HDR_COLS = (30, 40)         # 10 apart = the ESP32's 1.0in pin rows
 HDR_ROWS = (8, 22)          # 15 sockets running down
-# The ESP32's LEFT silkscreen column sits at board column 30 -- the side nearest the
-# controls -- so the 8 left-hand signals get the short runs.
-HDR_SIDE_COL = {"LEFT": HDR_COLS[0], "RIGHT": HDR_COLS[1]}
+#
+# ORIENTATION -- this cost a full set of wrong wire destinations once, so it is spelled
+# out. The sides are named after their power pin, never "left"/"right", because left and
+# right swap the moment you turn the module round.
+#
+#   * The USB connector is at the VIN / 3V3 end (CONFIRMED on the real module).
+#   * We seat it USB pointing at the BOTTOM edge, so the cable exits away from the LCD,
+#     which mounts above the board. That fixes everything else:
+#       - pin position 1 (VIN, 3V3) is at the BOTTOM of the socket, board row 22
+#       - position 15 (EN, D23)    is at the TOP,    board row 8
+#       - viewed from the top with USB down, a DevKit V1 has 3V3 on the LEFT and VIN on
+#         the RIGHT, so the 3V3 column is board col 30 and the VIN column is col 40
+#
+ESP_USB_END   = "bottom"
+HDR_SIDE_COL  = {"3V3": HDR_COLS[0], "VIN": HDR_COLS[1]}
 
 
 def socket_hole(side, pos):
-    """Board hole for an ESP32 pin: position 1 is the top of the socket."""
-    return HDR_SIDE_COL[side], HDR_ROWS[0] + (pos - 1)
+    """Board hole for an ESP32 pin. Position 1 is the USB end, at the BOTTOM."""
+    return HDR_SIDE_COL[side], HDR_ROWS[1] - (pos - 1)
 
 
 # ---- the LCD port ---------------------------------------------------------
@@ -94,7 +106,7 @@ def lcd_port():
     for i, (name, pin) in enumerate(LCD_PINS):
         esp = pin if pin in ("GND", "VIN") else f"D{pin}"
         out.append((name, (LCD_PORT_COL0 + i, LCD_PORT_ROW), esp,
-                    socket_hole(*esp_position(esp))))
+                    socket_hole(*esp_position(esp, gnd_for="lcd"))))
     return out
 
 
@@ -114,18 +126,26 @@ LED_NAME  = ["red", "green", "blue", "yellow"]
 ANS_INFO  = [("AA", 23, "always allow"), ("no", 18, "deny"), ("yes", 19, "approve")]
 LCD_PINS  = [("GND", "GND"), ("VCC", "VIN"), ("SDA", "21"), ("SCL", "22")]
 
-# ESP32 silkscreen order, position 1 = top, USB at the bottom (MEASURED)
-ESP_LEFT  = ["VIN","GND","D13","D12","D14","D27","D26","D25","D33","D32","D35","D34","VN","VP","EN"]
-ESP_RIGHT = ["3V3","GND","D15","D2","D4","RX2","TX2","D5","D18","D19","D21","RX0","TX0","D22","D23"]
+# ESP32 silkscreen, READ FROM THE USB END. Position 1 is the pin beside the USB socket.
+# Transcribed from the real module.
+ESP_VIN_SIDE = ["VIN","GND","D13","D12","D14","D27","D26","D25","D33","D32","D35","D34","VN","VP","EN"]
+ESP_3V3_SIDE = ["3V3","GND","D15","D2","D4","RX2","TX2","D5","D18","D19","D21","RX0","TX0","D22","D23"]
+# GND exists on both sides. Take it from the 3V3 side for the board's ground wire (that
+# column is nearest the control surface) and from the VIN side for the LCD, which keeps
+# the LCD's power pair together on one column.
+GND_SIDE_FOR = {"board": "3V3", "lcd": "VIN"}
 
 COL  = ["#c0392b", "#2e7d32", "#1565c0", "#b8860b"]
 ANSC = ["#8a5a12", "#37474f", "#0f6b52"]
 
 
-def esp_position(pin):
-    """Where a pin physically sits: ('LEFT'|'RIGHT', 1..15)."""
-    if pin in ESP_LEFT:  return "LEFT",  ESP_LEFT.index(pin) + 1
-    if pin in ESP_RIGHT: return "RIGHT", ESP_RIGHT.index(pin) + 1
+def esp_position(pin, gnd_for="board"):
+    """Where a pin physically sits: ('VIN'|'3V3', 1..15), counted from the USB end."""
+    if pin == "GND":
+        side = GND_SIDE_FOR[gnd_for]
+        return side, (ESP_VIN_SIDE if side == "VIN" else ESP_3V3_SIDE).index("GND") + 1
+    if pin in ESP_VIN_SIDE: return "VIN", ESP_VIN_SIDE.index(pin) + 1
+    if pin in ESP_3V3_SIDE: return "3V3", ESP_3V3_SIDE.index(pin) + 1
     raise KeyError(pin)
 
 
@@ -221,9 +241,9 @@ def occupied_holes():
     for n, c0 in zip(["AA","no","yes"], ANS_COL0):
         for hole, role in switch_legs(c0, SMALL_LEG, ANS_ROWS):
             if role != "clip": claim(*hole, f"{n} {role} leg")
-    for sd, names in (("LEFT", ESP_LEFT), ("RIGHT", ESP_RIGHT)):
+    for sd, names in (("VIN", ESP_VIN_SIDE), ("3V3", ESP_3V3_SIDE)):
         for i, nm in enumerate(names):
-            claim(*socket_hole(sd, i+1), f"socket {sd} {i+1} ({nm})")
+            claim(*socket_hole(sd, i+1), f"socket {sd}-side pos {i+1} ({nm})")
     for name, hole, _, _ in lcd_port():
         claim(*hole, f"LCD port {name}")
     return h

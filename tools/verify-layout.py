@@ -147,6 +147,39 @@ if HDR_ROWS[1]-HDR_ROWS[0] != 14:
 if HDR_COLS[1]-HDR_COLS[0] != 10:
     fails.append(f"socket columns are {HDR_COLS[1]-HDR_COLS[0]} apart, the ESP32 measures 10")
 
+# --- 6b. ESP32 ORIENTATION. Getting this backwards moved all 12 wire destinations once.
+for _nm, _lst in (("VIN", ESP_VIN_SIDE), ("3V3", ESP_3V3_SIDE)):
+    if len(_lst) != 15:
+        fails.append(f"the {_nm} side lists {len(_lst)} pins, the module has 15")
+    if _lst[0] != _nm:
+        fails.append(f"the {_nm} side must start at its power pin — position 1 is the USB "
+                     f"end, and {_nm} sits beside the USB socket. Got {_lst[0]}")
+if ESP_USB_END == "bottom":
+    if socket_hole("VIN", 1)[1] != HDR_ROWS[1]:
+        fails.append("USB is at the bottom, so pin position 1 must land on the bottom socket "
+                     f"row {HDR_ROWS[1]}, not row {socket_hole('VIN', 1)[1]}")
+else:
+    fails.append(f"ESP_USB_END={ESP_USB_END!r}: only 'bottom' is designed for — pointing the "
+                 f"USB at the top puts the cable over the LCD port at row {LCD_PORT_ROW}")
+if HDR_SIDE_COL["3V3"] != HDR_COLS[0]:
+    fails.append("with USB at the bottom a DevKit V1 has 3V3 on the left, so the 3V3 column "
+                 f"must be board col {HDR_COLS[0]}")
+# pins that must never be used
+_BANNED = {"RX0": "USB serial — breaks uploads and the daemon",
+           "TX0": "USB serial — breaks uploads and the daemon",
+           "D34": "input only, no pull-up", "D35": "input only, no pull-up",
+           "VN": "input only", "VP": "input only",
+           "D2": "boot strapping", "D12": "boot strapping", "D15": "boot strapping",
+           "EN": "reset"}
+for _lbl, _src, _pin, *_ in harness():
+    if _pin in _BANNED:
+        fails.append(f"{_lbl} is wired to {_pin} — {_BANNED[_pin]}")
+for _n, _h, _pin, _s in lcd_port():
+    if _pin in _BANNED:
+        fails.append(f"LCD {_n} is wired to {_pin} — {_BANNED[_pin]}")
+notes.append(f"ESP32 seated USB-at-{ESP_USB_END}: position 1 = row {socket_hole('VIN',1)[1]}, "
+             f"3V3 column = col {HDR_SIDE_COL['3V3']}, VIN column = col {HDR_SIDE_COL['VIN']}")
+
 # --- 7. the LCD must have somewhere to plug in
 if LCD_SOLDERED:
     fails.append("the LCD must stay on jumpers so it remains a reusable part")
