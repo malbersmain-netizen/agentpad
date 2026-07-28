@@ -1682,8 +1682,11 @@ cold, then fail intermittently. If something works when you press on it, it's a 
 <hr />
 <h2 id="soldering-md--7-habits-that-prevent-most-problems">7. Habits that prevent most problems</h2>
 <ul>
-<li><strong>Solder the lowest parts first</strong> so the board still lies flat — but see the bus rule
-  below: on a row that carries a bus, the components go in <em>before</em> the bus wire.</li>
+<li><strong>Hold the work, don't rely on gravity.</strong> "Lowest parts first so the board lies flat" is
+  standard advice, and it only matters if you're placing a part and flipping the board onto
+  the bench to hold it in. Use helping hands, a vise, or a strip of Kapton tape and the
+  order stops mattering — which is just as well, because from the first bus onward there
+  are wires on the underside and the board never lies flat again.</li>
 <li><strong>Tack one leg, verify, then finish.</strong> Applies to every multi-leg part.</li>
 <li><strong>Beep every new joint</strong> with the multimeter before moving on.</li>
 <li><strong>After every stage, beep each GND bus against the neighbouring signal rows.</strong> They must
@@ -2348,9 +2351,15 @@ stop, add flux, retry — don't just hold the iron there.</p>
 real board. Ten minutes here saves hours.</p>
 <p><strong>Wire prep:</strong> strip 4–5mm, twist stranded ends, tin them before fitting. Tinned wire goes
 into a joint far more predictably.</p>
-<p><strong>Rule of thumb:</strong> solder the <strong>lowest-profile parts first</strong> so the board still lies flat —
-with one exception: on a row that carries both a bus <em>and</em> component legs, the components go
-in first and the bus wire lies on top of their bent legs. §5 gives the order that respects both.</p>
+<p><strong>Rule of thumb:</strong> hold the work rather than relying on gravity. "Lowest parts first so the
+board lies flat" only matters if you place a part and flip the board onto the bench to hold
+it in; with helping hands, a vise or a scrap of tape it stops mattering. And it stops being
+possible anyway — from the first bus onward there are wires on the underside and the board
+never sits flat again.</p>
+<p>The order in §5 is chosen for two things that <em>do</em> matter: <strong>every step ends in a test that
+runs</strong>, so a failure is one step's worth of joints rather than 141; and a few joints have a
+genuine dependency — the LED's cathode bends onto a pad the resistor must already occupy,
+and on a bussed row the switch legs are easier to solder before the bus goes over them.</p>
 <hr />
 <h2 id="build-md--5-build-in-order">5. Build, in order</h2>
 <p>Each step ends with a test that <strong>exercises the thing you just built</strong>, not just a beep.

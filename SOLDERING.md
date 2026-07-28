@@ -135,8 +135,11 @@ cold, then fail intermittently. If something works when you press on it, it's a 
 
 ## 7. Habits that prevent most problems
 
-- **Solder the lowest parts first** so the board still lies flat — but see the bus rule
-  below: on a row that carries a bus, the components go in *before* the bus wire.
+- **Hold the work, don't rely on gravity.** "Lowest parts first so the board lies flat" is
+  standard advice, and it only matters if you're placing a part and flipping the board onto
+  the bench to hold it in. Use helping hands, a vise, or a strip of Kapton tape and the
+  order stops mattering — which is just as well, because from the first bus onward there
+  are wires on the underside and the board never lies flat again.
 - **Tack one leg, verify, then finish.** Applies to every multi-leg part.
 - **Beep every new joint** with the multimeter before moving on.
 - **After every stage, beep each GND bus against the neighbouring signal rows.** They must

@@ -304,9 +304,16 @@ real board. Ten minutes here saves hours.
 **Wire prep:** strip 4–5mm, twist stranded ends, tin them before fitting. Tinned wire goes
 into a joint far more predictably.
 
-**Rule of thumb:** solder the **lowest-profile parts first** so the board still lies flat —
-with one exception: on a row that carries both a bus *and* component legs, the components go
-in first and the bus wire lies on top of their bent legs. §5 gives the order that respects both.
+**Rule of thumb:** hold the work rather than relying on gravity. "Lowest parts first so the
+board lies flat" only matters if you place a part and flip the board onto the bench to hold
+it in; with helping hands, a vise or a scrap of tape it stops mattering. And it stops being
+possible anyway — from the first bus onward there are wires on the underside and the board
+never sits flat again.
+
+The order in §5 is chosen for two things that *do* matter: **every step ends in a test that
+runs**, so a failure is one step's worth of joints rather than 141; and a few joints have a
+genuine dependency — the LED's cathode bends onto a pad the resistor must already occupy,
+and on a bussed row the switch legs are easier to solder before the bus goes over them.
 
 ---
 
