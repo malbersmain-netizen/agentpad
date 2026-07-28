@@ -113,7 +113,9 @@ def mounts():
 def joints():
     bus_len   = BUS_COLS[1] - BUS_COLS[0] + 1
     bus       = len(GND_ROWS) * (bus_len // 2) + 4          # every 2nd pad, + the link
-    legs      = len(LED_COLS)*2 + len(LED_COLS)*2 + len(BTN_COL0)*4 + len(ANS_COL0)*4
+    per_sw    = sum(1 for _, role in switch_legs(BTN_COL0[0], BIG_LEG_COLS, BTN_ROWS)
+                    if role != "clip")          # three legs, not four -- one is clipped
+    legs      = len(LED_COLS)*2 + len(LED_COLS)*2 + (len(BTN_COL0) + len(ANS_COL0))*per_sw
     sockets   = 2 * (HDR_ROWS[1] - HDR_ROWS[0] + 1)         # 15 pins per strip, both strips
     sig_wires = len(H) * 2
     port      = len(LCD_PINS) + len(LCD_PINS)*2             # 4 male pins + 4 wires, 2 ends each
@@ -121,7 +123,8 @@ def joints():
     return "\n".join([
         "| Group | Joints | What |", "|---|---:|---|",
         f"| GND buses + link | {bus} | 3 bare wires soldered every 2nd pad, plus the column-{GND_LINK_COL} link |",
-        f"| Component legs | {legs} | 4 LEDs + 4 resistors (2 each), 7 switches (**4 legs each**) |",
+        f"| Component legs | {legs} | 4 LEDs + 4 resistors (2 each), 7 switches (**{per_sw} legs each** — "
+        f"the fourth is clipped) |",
         f"| ESP32 socket | {sockets} | two 15-way strips |",
         f"| Signal wires | {sig_wires} | {len(H)} wires, both ends |",
         f"| LCD port | {port} | {len(LCD_PINS)} male pins + {len(LCD_PINS)} wires |",

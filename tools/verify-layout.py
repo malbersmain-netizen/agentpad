@@ -193,6 +193,74 @@ if usb_gap > 0:
 notes.append("every ground leg lands directly on a bus — zero ground jumpers needed")
 notes.append(f"{len(holes)} holes used, max 1 lead each")
 
+# --- 10. every coordinate printed in the docs must be a hole this design knows about.
+# The tables are generated, but the hand-written prose around them is not, and that prose
+# is what drifted four times.
+import re as _re, glob as _glob
+_known = set(holes) | set(mount_holes()) | {h for _, h, _, _ in lcd_port()}
+for _r in GND_ROWS:                       # bus pads: a wire may lap onto any of them
+    _known |= {(c, _r) for c in range(BUS_COLS[0], BUS_COLS[1] + 1)}
+for _c in (GND_LINK_COL,):                # the link column between the buses
+    _known |= {(_c, r) for r in range(GND_ROWS[0], GND_ROWS[-1] + 1)}
+for _cols, _span, _rows in ((BTN_COL0, BIG_LEG_COLS, BTN_ROWS),
+                            (ANS_COL0, SMALL_LEG, ANS_ROWS)):
+    for _c0 in _cols:                     # the clipped leg is referenced in the steps
+        _known |= {h for h, role in switch_legs(_c0, _span, _rows) if role == "clip"}
+_known.add((1, 1))                        # documented grid origin
+_docs = sorted(_glob.glob(os.path.join(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__))), "*.md")))
+_bad = []
+for _f in _docs:
+    if os.path.basename(_f).startswith("docs-archive"):
+        continue                          # superseded by design, banner says do not build
+    for _m in _re.finditer(r"col (\d+),? row (\d+)", open(_f).read()):
+        _h = (int(_m.group(1)), int(_m.group(2)))
+        if not (1 <= _h[0] <= COLS and 1 <= _h[1] <= ROWS):
+            _bad.append(f"{os.path.basename(_f)} cites col {_h[0]}, row {_h[1]} — off the board")
+        elif _h not in _known:
+            _bad.append(f"{os.path.basename(_f)} cites col {_h[0]}, row {_h[1]} — "
+                        f"no part, bus, port or mount uses that hole")
+fails.extend(_bad)
+notes.append(f"checked every 'col N, row M' in {len(_docs)} markdown files against the layout")
+
+# --- 11. the board -> firmware -> daemon chain must agree.
+# ANS_INFO is in physical left-to-right order (AA, no, yes); the firmware array is in
+# BUTTON INDEX order (approve, deny, always). Those are different orderings of the same
+# three pins, and confusing them would swap approve and deny on a soldered board.
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+try:
+    _ino = open(os.path.join(_ROOT, "firmware/agentpad/agentpad.ino")).read()
+    _fw_btn = [int(x) for x in _re.search(r"BTN\[7\]\s*=\s*\{([^}]*)\}", _ino).group(1).split(",")]
+    _fw_led = [int(x) for x in _re.search(r"LED\[4\]\s*=\s*\{([^}]*)\}", _ino).group(1).split(",")]
+    if _fw_led != LED_GPIO:
+        fails.append(f"firmware LED[] is {_fw_led} but the layout wires {LED_GPIO} — "
+                     f"LED order IS the agent slot order, so this swaps agents")
+    _want = set(BTN_GPIO) | {g for _, g, _ in ANS_INFO}
+    if set(_fw_btn) != _want:
+        fails.append(f"firmware BTN[] scans {sorted(set(_fw_btn))}, the layout wires {sorted(_want)}")
+    if _fw_btn[:4] != BTN_GPIO:
+        fails.append(f"firmware BTN[0..3] is {_fw_btn[:4]}, must be {BTN_GPIO} so button N "
+                     f"selects agent N")
+    # indices 4/5/6 are approve/deny/always by protocol; check they carry the right GPIO
+    _sem = {d: g for _, g, d in ANS_INFO}
+    for _idx, _role in ((4, "approve"), (5, "deny"), (6, "always allow")):
+        if _fw_btn[_idx] != _sem[_role]:
+            fails.append(f"firmware BTN[{_idx}] is GPIO {_fw_btn[_idx]}, but the protocol says "
+                         f"index {_idx} = {_role}, which the board wires to GPIO {_sem[_role]}")
+    _dae = open(os.path.join(_ROOT, "daemon.py")).read()
+    for _idx, _const in ((4, "APPROVE"), (5, "DENY"), (6, "ALWAYS")):
+        if not _re.search(rf"n == {_idx}:\s*respond\({_const}\)", _dae):
+            fails.append(f"daemon.py does not map button {_idx} to {_const}")
+    _bt = open(os.path.join(_ROOT, "firmware/btntest/btntest.ino")).read()
+    _n = int(_re.search(r"BTN\[(\d+)\]", _bt).group(1))
+    if _n != len(_fw_btn):
+        fails.append(f"btntest scans {_n} pins but there are {len(_fw_btn)} buttons — "
+                     f"correctly soldered switches would look dead")
+    notes.append("board wiring -> firmware pin arrays -> daemon actions all agree "
+                 "(approve=4, deny=5, always=6)")
+except (FileNotFoundError, AttributeError) as e:
+    notes.append(f"could not cross-check firmware/daemon: {e}")
+
 # ---------------------------------------------------------------- report
 print(f"board {BOARD_W}x{BOARD_H}mm · {ROWS} rows x {COLS} cols · "
       f"margins {BX:.2f}mm side, {BY:.2f}mm top/bottom\n")

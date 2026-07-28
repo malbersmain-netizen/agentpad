@@ -47,6 +47,7 @@ Screen reading survives only to notice the prompt has been **answered**, and mat
 | `daemon.py` | The brain: serial ↔ tmux ↔ LEDs/LCD. Launches/focuses agents, approve/deny. |
 | `test.py` | Serial smoke test |
 | `hooks/agentpad.sh` | Source of truth for the hook script — **copy to `~/.claude/agentpad.sh`** (see Install) |
+| `hooks/agentpad-status.sh` | statusLine script — the only source of context-window % |
 | `firmware/agentpad/agentpad.ino` | The real firmware. Folder name matches the `.ino` so `arduino-cli` can build it. |
 | `firmware/{blink,lcdtest,ledtest,btntest}/` | Milestone test sketches, kept for hardware debugging |
 | `BUILD.md` | The soldered build — parts, board layout, wiring, steps. Tables between `<!-- GEN:… -->` markers are GENERATED |
@@ -58,6 +59,7 @@ Screen reading survives only to notice the prompt has been **answered**, and mat
 | `tools/verify-layout.py` | Checks bodies, overlaps, hole occupancy and connectivity |
 | `tools/gen-tables.py` | Regenerates BUILD.md's tables from `layout.py` |
 | `tools/schematic.py` | Generates `schematics.html` from `layout.py` |
+| `tools/view-plan.py` | Renders BUILD.md into a tickable bench checklist |
 | `docs-archive-breadboard-era.md` | Superseded milestone guide — do not build from it |
 | `mise.toml` | Python 3.13 venv definition |
 | `events.jsonl`, `daemon.log` | Runtime state; both gitignored |

@@ -4,7 +4,7 @@ Takes you from loose parts to a working, mounted device. Read section 4 before y
 the iron; everything else follows in order.
 
 **Scope:** 1 LCD + 4 LEDs + 7 buttons on **one 30 × 42 double-sided PCB**, screwed to a wooden
-backing. ~150 solder joints, 4–6 hours.
+backing. ~149 solder joints, 4–6 hours.
 
 **Done means:** press a color button → a tinted `claude` window opens and focuses; its LED
 heartbeats; ask it something needing permission → LED blinks fast → press `yes` → the
@@ -210,11 +210,11 @@ That is **10 wires onto the left socket column and 6 onto the right** — 16 of 
 | Group | Joints | What |
 |---|---:|---|
 | GND buses + link | 46 | 3 bare wires soldered every 2nd pad, plus the column-1 link |
-| Component legs | 44 | 4 LEDs + 4 resistors (2 each), 7 switches (**4 legs each**) |
+| Component legs | 37 | 4 LEDs + 4 resistors (2 each), 7 switches (**3 legs each** — the fourth is clipped) |
 | ESP32 socket | 30 | two 15-way strips |
 | Signal wires | 24 | 12 wires, both ends |
 | LCD port | 12 | 4 male pins + 4 wires |
-| **total** | **~156** | at 1–2 min each including inspection, that is **4–6 hours** |
+| **total** | **~149** | at 1–2 min each including inspection, that is **4–6 hours** |
 <!-- /GEN:joints -->
 
 ### Mounting to wood
