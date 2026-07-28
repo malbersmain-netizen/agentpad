@@ -1,42 +1,69 @@
-"""Milestone 9: the daemon.
+"""Agent Pad daemon (self-contained: all control on the board, no game controller).
 
-Reads Claude Code hook events from events.jsonl, drives the ESP32 (LEDs + LCD),
-reads buttons from the ESP32, reads the game controller via pygame, and uses
-tmux to focus panes and type approve/deny keystrokes.
+Flow:
+  - Color buttons (serial "B 0".."B 3") launch a color-tinted tmux window running
+    `claude` if that agent isn't running yet, then focus it.
+  - Approve / Deny buttons (serial "B 4" / "B 5") send a keystroke to the focused
+    agent -- but ONLY when that agent's state is `blocked` (safety interlock).
+  - Claude Code hooks append to events.jsonl (pane + state); the daemon lights the
+    matching LED and updates the LCD.
 
-Fill in BTN_A / BTN_B / BTN_START from pad.py before running.
+Run it in its own terminal, then attach to the session in another:
+    tmux attach -t agentpad
 """
 import json, os, time, subprocess, threading
-import serial, pygame
+import serial
 
 # ===== CONFIG =====
-PORT      = "/dev/cu.usbserial-0001"   # confirmed on this build
-BTN_A     = 0       # <-- set from pad.py (approve)
-BTN_B     = 1       # <-- set from pad.py (deny)
-BTN_START = 9       # <-- set from pad.py (jump to next blocked)
-APPROVE   = "1"     # keystroke typed at a permission prompt to approve
-DENY      = "3"     # keystroke typed to deny
-EVENTS    = os.path.expanduser("~/projects/agentpad/events.jsonl")
+PORT     = "/dev/cu.usbserial-0001"     # confirmed on this build
+SESSION  = "agentpad"                    # tmux session name
+APPROVE  = "1"                           # keystroke sent to approve a prompt
+DENY     = "3"                           # keystroke sent to deny a prompt
+CLAUDE   = "claude"                      # command launched in each agent window
+EVENTS   = os.path.expanduser("~/projects/agentpad/events.jsonl")
+# per-agent identity (index 0-3 = red, green, blue, yellow)
+NAMES  = ["A1-red", "A2-grn", "A3-blu", "A4-ylw"]
+COLORS = ["colour52", "colour22", "colour17", "colour58"]  # dark tint per window
 # ==================
 
 ser = serial.Serial(PORT, 115200, timeout=0.1)
 time.sleep(2)
+ser_lock = threading.Lock()   # serial is shared by tail/read/tick threads
 
-slots = [None] * 4          # slot index -> tmux pane id
-info  = {}                  # pane id -> {"state":..., "since":...}
-focus = 0
+slots     = [None] * 4     # agent index -> tmux pane id (once launched)
+pane_slot = {}             # pane id -> agent index
+info      = {}             # pane id -> {"state":..., "since":...}
+focus     = 0
 
 def send(line):
-    ser.write((line + "\n").encode())
+    with ser_lock:
+        ser.write((line + "\n").encode())
 
-def slot_of(pane):
-    if pane in slots:
-        return slots.index(pane)
-    for i in range(4):
-        if slots[i] is None:
+def tmux(*args):
+    return subprocess.run(["tmux", *args], capture_output=True, text=True)
+
+def ensure_session():
+    """Create the session (with a placeholder 'home' window) so you can attach
+    immediately and watch agent windows appear as you press buttons."""
+    if tmux("has-session", "-t", SESSION).returncode != 0:
+        tmux("new-session", "-d", "-s", SESSION, "-n", "home")
+
+def sync_slots():
+    """Bind each agent window's pane to its slot BY NAME. Authoritative and
+    idempotent, so color↔slot stays correct even after a daemon restart (when the
+    windows already exist and we never re-spawn them)."""
+    if tmux("has-session", "-t", SESSION).returncode != 0:
+        return
+    out = tmux("list-windows", "-t", SESSION, "-F", "#{window_name}\t#{pane_id}").stdout
+    for line in out.splitlines():
+        parts = line.split("\t")
+        if len(parts) != 2:
+            continue
+        name, pane = parts
+        if name in NAMES:
+            i = NAMES.index(name)
             slots[i] = pane
-            return i
-    return None
+            pane_slot[pane] = i
 
 def state_of(i):
     p = slots[i]
@@ -54,34 +81,53 @@ def refresh():
     send(f"D0 {row0[:16]}")
     send(f"D1 {row1[:16]}")
 
-def set_focus(i):
-    global focus
-    focus = i
-    p = slots[i]
-    if p:
-        subprocess.run(["tmux", "select-pane", "-t", p])
-    refresh()
+def _spawn(i):
+    """Create the tmux window for agent i running claude; record its pane id."""
+    if tmux("has-session", "-t", SESSION).returncode != 0:
+        r = tmux("new-session", "-d", "-s", SESSION, "-n", NAMES[i],
+                 "-P", "-F", "#{pane_id}", CLAUDE)
+    else:
+        r = tmux("new-window", "-t", SESSION, "-n", NAMES[i],
+                 "-P", "-F", "#{pane_id}", CLAUDE)
+    pane = r.stdout.strip()
+    if pane:
+        slots[i] = pane
+        pane_slot[pane] = i
+    # tint the whole window so you can tell agents apart at a glance
+    tmux("set-option", "-w", "-t", f"{SESSION}:{NAMES[i]}", "window-style",
+         f"bg={COLORS[i]}")
 
-def type_into(pane, text):
-    subprocess.run(["tmux", "send-keys", "-t", pane, text, "Enter"])
+def launch_or_focus(i):
+    global focus
+    wins = []
+    if tmux("has-session", "-t", SESSION).returncode == 0:
+        wins = tmux("list-windows", "-t", SESSION, "-F", "#{window_name}").stdout.split()
+    if NAMES[i] not in wins:
+        _spawn(i)
+    sync_slots()   # keep color↔slot binding authoritative
+    tmux("select-window", "-t", f"{SESSION}:{NAMES[i]}")
+    focus = i
+    refresh()
 
 def respond(keystroke):
     p = slots[focus]
     if not p or info.get(p, {}).get("state") != "blocked":
-        send("D0 not blocked")        # safety interlock: never type unless blocked
+        send("D0 not blocked")          # interlock: never type unless blocked
         time.sleep(0.6)
         refresh()
         return
-    type_into(p, keystroke)
+    tmux("send-keys", "-t", p, keystroke, "Enter")
 
-def next_blocked():
+def slot_of(pane):
+    """Map a hook's pane to an agent slot (known if we launched it; else first free)."""
+    if pane in pane_slot:
+        return pane_slot[pane]
     for i in range(4):
-        if state_of(i) == "blocked":
-            set_focus(i)
-            return
-    send("D0 nothing blocked")
-    time.sleep(0.6)
-    refresh()
+        if slots[i] is None:
+            slots[i] = pane
+            pane_slot[pane] = i
+            return i
+    return None
 
 def tail_events():
     open(EVENTS, "a").close()
@@ -103,37 +149,72 @@ def tail_events():
             if i is None:
                 continue
             st = e.get("state", "idle")
-            info[pane] = {"state": st, "since": time.time()}
+            prev = info.get(pane)
+            if not prev or prev["state"] != st:
+                info[pane] = {"state": st, "since": time.time()}  # state changed: reset timer
+            else:
+                prev["state"] = st                                # same state repeated: keep timer
             send(f"L {i} {st}")
             refresh()
 
 def read_serial():
     while True:
         line = ser.readline().decode(errors="ignore").strip()
-        if line.startswith("B "):
-            set_focus(int(line.split()[1]))
+        if not line.startswith("B "):
+            continue
+        try:
+            n = int(line.split()[1])
+        except (IndexError, ValueError):
+            continue
+        if   0 <= n <= 3: launch_or_focus(n)
+        elif n == 4:      respond(APPROVE)
+        elif n == 5:      respond(DENY)
 
+def tick():
+    """Re-render the LCD every second so the state timer counts live."""
+    while True:
+        time.sleep(1)
+        refresh()
+
+def blank_leds():
+    """Turn all four LEDs off. The ESP32 holds its last-known LED state across
+    daemon restarts, so without this a fresh start shows stale lights."""
+    for i in range(4):
+        send(f"L {i} none")
+
+def recover_state():
+    """Rebuild last-known agent state from the events log so a daemon restart is
+    seamless (LEDs + blocked interlock correct immediately, not on next event)."""
+    try:
+        lines = open(EVENTS).read().splitlines()
+    except FileNotFoundError:
+        return
+    for line in lines:
+        try:
+            e = json.loads(line)
+        except Exception:
+            continue
+        pane = e.get("pane")
+        if pane in pane_slot:                     # only known agent panes
+            info[pane] = {"state": e.get("state", "idle"), "since": time.time()}
+    for pane, i in pane_slot.items():
+        if pane in info:
+            send(f"L {i} {info[pane]['state']}")
+
+ensure_session()
+blank_leds()      # clear stale LED state the board held from a previous run
+sync_slots()      # bind existing agent windows to their color slots on startup
+recover_state()   # restore last-known LED states + interlock after a restart
 threading.Thread(target=tail_events, daemon=True).start()
 threading.Thread(target=read_serial, daemon=True).start()
-
-pygame.init()
-pygame.joystick.init()
-js = pygame.joystick.Joystick(0)
-js.init()
+threading.Thread(target=tick, daemon=True).start()
 
 refresh()
 print("agentpad running. ctrl-c to quit.")
+print(f"attach the board's sessions with:  tmux attach -t {SESSION}")
 
-while True:
-    for e in pygame.event.get():
-        if e.type == pygame.JOYBUTTONDOWN:
-            if   e.button == BTN_A:     respond(APPROVE)
-            elif e.button == BTN_B:     respond(DENY)
-            elif e.button == BTN_START: next_blocked()
-        elif e.type == pygame.JOYHATMOTION:
-            x, y = e.value
-            if   y ==  1: set_focus(0)
-            elif x ==  1: set_focus(1)
-            elif y == -1: set_focus(2)
-            elif x == -1: set_focus(3)
-    time.sleep(0.02)
+try:
+    while True:
+        time.sleep(0.2)
+except KeyboardInterrupt:
+    pass

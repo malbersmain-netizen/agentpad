@@ -4,14 +4,17 @@
 LiquidCrystal_I2C lcd(0x27, 16, 2);   // change to 0x3F if blank
 
 const int LED[4] = {13, 14, 27, 26};
-const int BTN[4] = {32, 33, 25, 4};
+// Buttons: 0-3 = agent select (red, green, blue, yellow).
+//          4   = APPROVE (GPIO 19), 5 = DENY (GPIO 18).
+const int BTN[6] = {32, 33, 25, 4, 19, 18};
+const int NBTN   = 6;
 
 // 0=none 1=idle 2=working 3=blocked 4=done
-int state[4]              = {0, 0, 0, 0};
-unsigned long doneUntil[4] = {0, 0, 0, 0};
+int state[4]                = {0, 0, 0, 0};
+unsigned long doneUntil[4]   = {0, 0, 0, 0};
 
-int lastBtn[4]             = {HIGH, HIGH, HIGH, HIGH};
-unsigned long lastChange[4] = {0, 0, 0, 0};
+int lastBtn[6]              = {HIGH, HIGH, HIGH, HIGH, HIGH, HIGH};
+unsigned long lastChange[6]  = {0, 0, 0, 0, 0, 0};
 
 String buf = "";
 
@@ -25,8 +28,8 @@ void setup() {
   for (int i = 0; i < 4; i++) {
     pinMode(LED[i], OUTPUT);
     digitalWrite(LED[i], LOW);
-    pinMode(BTN[i], INPUT_PULLUP);
   }
+  for (int i = 0; i < NBTN; i++) pinMode(BTN[i], INPUT_PULLUP);
 }
 
 void loop() {
@@ -83,14 +86,14 @@ void updateLeds() {
 
 void readButtons() {
   unsigned long t = millis();
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < NBTN; i++) {
     int v = digitalRead(BTN[i]);
     if (v != lastBtn[i] && t - lastChange[i] > 50) {
       lastChange[i] = t;
       lastBtn[i] = v;
       if (v == LOW) {
         Serial.print("B ");
-        Serial.println(i);
+        Serial.println(i);    // 0-3 select, 4 approve, 5 deny
       }
     }
   }
