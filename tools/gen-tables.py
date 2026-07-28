@@ -339,8 +339,9 @@ def steps():
         f"4. Solder the remaining **row-{BTN_ROWS[1]}** leg but **leave it long**; bend it flat "
         f"along the row.",
         f"5. Lay the row-{BTN_ROWS[1]} bus **on top of those bent legs**, cols {BUS_COLS[0]} → "
-        f"{BUS_COLS[1]}, and solder through both at once. (Bus-first does not work on this row — "
-        f"the wire would block the holes.)",
+        f"{BUS_COLS[1]}, and solder through both at once. (Bus-first *can* work here if you lay "
+        f"the wire perfectly beside the pad centres — but legs-then-bus is far more forgiving, "
+        f"and soldering onto a bent leg gives a much bigger target than a pad edge.)",
         f"6. **Link the buses:** bare wire down column {GND_LINK_COL} from row {GND_ROWS[0]} to "
         f"row {GND_ROWS[1]}. Column {GND_LINK_COL} is chosen because no signal wire ever runs left "
         f"of column {min(int(s.split()[1].rstrip(',')) for _,s,p,*_ in H if p!='GND')}, so nothing "

@@ -456,7 +456,7 @@ Do **LED 1 completely, including its wire and the test**, before starting LED 2.
 2. Seat all four. The remaining three legs span rows 11→16 and columns c → c+2. Tack one leg, sight along the row to check the cap is square, then finish.
 3. Solder both **row-11** legs and trim them.
 4. Solder the remaining **row-16** leg but **leave it long**; bend it flat along the row.
-5. Lay the row-16 bus **on top of those bent legs**, cols 1 → 28, and solder through both at once. (Bus-first does not work on this row — the wire would block the holes.)
+5. Lay the row-16 bus **on top of those bent legs**, cols 1 → 28, and solder through both at once. (Bus-first *can* work here if you lay the wire perfectly beside the pad centres — but legs-then-bus is far more forgiving, and soldering onto a bent leg gives a much bigger target than a pad edge.)
 6. **Link the buses:** bare wire down column 1 from row 8 to row 16. Column 1 is chosen because no signal wire ever runs left of column 3, so nothing crosses this bare wire.
 7. Run the four button wires from the row-11 leg in the signal column.
 
