@@ -150,6 +150,36 @@ desoldering a 15-pin strip. Let the ESP32 hold them.
 
 Leave a clear edge on board B for the 15 wires and room for two mounting screws.
 
+### Board B — your ESP32's actual pinout
+
+Measured from the silkscreen. **Position 1 = top, USB connector at the bottom.**
+
+| Pos | LEFT column | | Pos | RIGHT column |
+|---:|---|---|---:|---|
+| 1 | **VIN** → 5V bus | | 1 | 3V3 |
+| 2 | **GND** → GND bus | | 2 | GND |
+| 3 | **D13** → LED 1 red | | 3 | D15 |
+| 4 | D12 | | 4 | D2 |
+| 5 | **D14** → LED 2 green | | 5 | **D4** → button 4 yellow |
+| 6 | **D27** → LED 3 blue | | 6 | RX2 |
+| 7 | **D26** → LED 4 yellow | | 7 | TX2 |
+| 8 | **D25** → button 3 blue | | 8 | D5 |
+| 9 | **D33** → button 2 green | | 9 | **D18** → *no* (deny) |
+| 10 | **D32** → button 1 red | | 10 | **D19** → *yes* (approve) |
+| 11 | D35 | | 11 | **D21** → LCD SDA |
+| 12 | D34 | | 12 | RX0 ⚠ |
+| 13 | VN | | 13 | TX0 ⚠ |
+| 14 | VP | | 14 | **D22** → LCD SCL |
+| 15 | EN | | 15 | **D23** → *AA* (always allow) |
+
+**8 wires on the left, 7 on the right** — a convenient balance.
+
+> **Never wire to RX0 or TX0** (right, positions 12–13). Those are the USB serial link.
+> Touching them breaks uploads *and* the daemon, and the symptom looks like a dead board.
+
+Verified against the pin rules: none of the 15 is input-only (D34/D35/VN/VP) or a boot
+strapping pin (D12, D15, D2). Every GPIO the firmware needs is broken out on this board.
+
 ### The 15 wires between the boards
 
 Each solders to the pad under the corresponding header pin on board B.
@@ -178,17 +208,25 @@ you can always dress them shorter once it's mounted.
 
 ### Mounting to wood
 
-| Item | How |
-|---|---|
-| Board A, board B | Drill the **corner holes out to 3mm** (perfboard drills easily), then wood screws with a nylon washer or standoff so the underside joints don't touch the wood |
-| LCD | Its own 4 corner holes, M3 |
-| ESP32 | Nothing — it just plugs into board B |
+Every solder joint is on the underside, so **nothing sits flat on the wood** — each piece
+stands off on spacers.
 
-**Leave a few mm of standoff under each board.** All your solder joints are on the
-underside; pressing them flat against wood risks shorts and stresses the joints.
+| Item | Hole | Fixing | Spacer |
+|---|---|---|---|
+| Board A | drill 2 diagonal corners to **3.5mm** | #4 × ½″ pan-head wood screw + nylon washer | **6mm** |
+| Board B | same | same | **6mm** |
+| LCD | its own 4 × M3 holes — no drilling | M3 × 16mm | **12–15mm** (its I²C backpack sticks ~10mm off the back) |
+| ESP32 | — | none, it plugs into board B | — |
 
-Lay it out the way it reads: LCD at the top, board A below it, board B off to one side
-with its USB facing an edge so the cable exits cleanly.
+- **Pilot-drill the wood at 2mm** or it splits.
+- **Nylon washer under every screw head** — perfboard cracks if you overtighten onto bare
+  FR4.
+- Perfboard drills easily: back it with scrap wood, go slow, let the bit cut.
+- Two diagonal corners per board is plenty and halves the drilling.
+
+Lay it out the way it reads: **LCD at the top, board A below it, board B off to one side**
+with its USB facing an edge so the cable exits cleanly and can be strain-relieved to the
+wood with a cable clip.
 
 ---
 

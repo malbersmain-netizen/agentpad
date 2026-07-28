@@ -25,7 +25,10 @@ SESSION  = "agentpad"                    # tmux session name
 APPROVE  = "1"                           # keystroke: "Yes"
 DENY     = "3"                           # keystroke: "No"
 ALWAYS   = "2"                           # keystroke: "Yes, and don't ask again"
-CLAUDE   = "claude"                      # command launched in each agent window
+# Agent windows must keep NORMAL permissions even when the user's own settings say
+# bypassPermissions -- otherwise nothing ever prompts, `blocked` never fires, and the
+# LEDs and approve/deny buttons have nothing to do. This flag is the whole demo.
+CLAUDE   = "claude --permission-mode manual"
 EVENTS   = os.path.expanduser("~/projects/agentpad/events.jsonl")
 CONTEXT  = os.path.expanduser("~/projects/agentpad/context.jsonl")
 LOGFILE  = os.path.expanduser("~/projects/agentpad/daemon.log")
