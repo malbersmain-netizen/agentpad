@@ -28,20 +28,22 @@ BIG_LEG_ROWS = 5         # pitches between the two leg ROWS
 SMALL_LEG = 2
 BIG_BODY   = 12.0
 SMALL_BODY = 6.0
-LED_D, RES = 5.0, (2.5, 7.0)
+LED_D = 5.0
+RES   = (7.0, 2.5)   # 1/4W lying FLAT -> occupies one row, three columns
 
 # 6-column pitch keeps 3.24mm between the 12mm bodies
 LED_COLS  = [3, 9, 15, 21]              # LEDs and buttons share these centre columns
 RES_COLS  = [6, 12, 18, 24]             # resistors stand in the gaps between buttons
 BTN_COL0  = [c-1 for c in LED_COLS]     # legs at c-1 and c+1
-BTN_ROWS  = (6, 11)                     # MEASURED
+BTN_ROWS  = (7, 12)   # legs 5 pitches apart (MEASURED: 6 holes long)
 ANS_COL0  = [3, 11, 19]
-ANS_ROWS  = (14, 14+SMALL_LEG)
-HEADER    = (4, 13)                     # 9 apart, both rows clear of every body
+ANS_ROWS  = (13, 13+SMALL_LEG)
+HEADER    = (6, 16)   # 10 apart = 1.0in pin rows (MEASURED: 11 holes across)
 GND_ROWS  = (5, 17)
-V5_ROW    = 18
-LED_ROWS  = (2, 3)                      # anode row 2, cathode row 3
-RES_ROWS  = (1, 3)
+V5_ROW    = 1
+LCD_ROW   = 18
+LED_ROWS  = (3, 4)   # anode row 3, cathode row 4 -> straight down to GND at row 5
+RES_ROWS  = (2, 2)   # flat, one row
 
 parts, fails = [], []
 def add(name, cx, cy, w, h, col=None, row=None):
@@ -50,8 +52,8 @@ def add(name, cx, cy, w, h, col=None, row=None):
 
 # LEDs + resistors
 for i, c in enumerate(LED_COLS):
-    x, y = xy(c, 2.5); add(f"LED{i+1}", x, y, LED_D, LED_D, c, "2-3")
-    x, y = xy(RES_COLS[i], 2.0); add(f"R{i+1}", x, y, RES[0], RES[1], RES_COLS[i], "1-3")
+    x, y = xy(c, 3.5); add(f"LED{i+1}", x, y, LED_D, LED_D, c, "3-4")
+    x, y = xy(RES_COLS[i]-1, 2.0); add(f"R{i+1}", x, y, RES[0], RES[1], f"{RES_COLS[i]-2}-{RES_COLS[i]}", "2")
 # select buttons: body centred between the leg holes
 for i, c0 in enumerate(BTN_COL0):
     x0, y0 = xy(c0, BTN_ROWS[0]); x1, y1 = xy(c0+BIG_LEG_COLS, BTN_ROWS[1])
@@ -74,7 +76,7 @@ for i in range(len(parts)):
         if not (a["x1"] <= b["x0"] or b["x1"] <= a["x0"] or a["y1"] <= b["y0"] or b["y1"] <= a["y0"]):
             fails.append(f"{a['name']} overlaps {b['name']}")
 # 3. header rows clear of every top-side lead, AND not under a button body
-used = set(LED_ROWS) | set(RES_ROWS) | set(BTN_ROWS) | set(ANS_ROWS) | set(GND_ROWS) | {V5_ROW}
+used = set(LED_ROWS)|set(RES_ROWS)|set(BTN_ROWS)|set(ANS_ROWS)|set(GND_ROWS)|{V5_ROW,LCD_ROW}
 under_btn = set(range(BTN_ROWS[0], BTN_ROWS[1]+1))
 for r in HEADER:
     if r in used:      fails.append(f"header row {r} already carries leads")
@@ -104,9 +106,9 @@ print(f"  LED -> button vertical gap: {b[0]['y0']-led['y1']:.2f}mm")
 aa = next(p for p in parts if p["name"] == "AA")
 print(f"  button -> answer row gap  : {aa['y0']-b[0]['y1']:.2f}mm")
 print(f"  ESP32 (under): {ESP_L}x{ESP_W} centred {ecx:.1f},{ecy:.1f}")
-print(f"\nrow plan: {RES_ROWS[0]}-{RES_ROWS[1]} resistors | {LED_ROWS[0]}-{LED_ROWS[1]} LEDs | "
-      f"{HEADER[0]} HEADER | {GND_ROWS[0]} GND | {BTN_ROWS[0]}+{BTN_ROWS[1]} button legs | "
-      f"{HEADER[1]} HEADER | {ANS_ROWS[0]}+{ANS_ROWS[1]} answer legs | {GND_ROWS[1]} GND | {V5_ROW} 5V+LCD")
+print(f"\nrow plan: {V5_ROW} 5V | {RES_ROWS[0]} resistors | {LED_ROWS[0]}-{LED_ROWS[1]} LEDs | {GND_ROWS[0]} GND | "
+      f"{HEADER[0]} HEADER | {BTN_ROWS[0]}+{BTN_ROWS[1]} buttons | "
+      f"{ANS_ROWS[0]}+{ANS_ROWS[1]} answers | {HEADER[1]} HEADER | {GND_ROWS[1]} GND | {LCD_ROW} LCD")
 print()
 if fails:
     print("FAILS:"); [print("  x", f) for f in fails]

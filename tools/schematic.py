@@ -18,13 +18,14 @@ ROWS, COLS = 18, 24
 BIG_LEG_COLS, BIG_LEG_ROWS, SMALL_LEG = 2, 5, 2
 LED_COLS = [3, 9, 15, 21]
 BTN_COL0 = [c-1 for c in LED_COLS]
-BTN_ROWS = (6, 11)
-RES_COLS = [6, 12, 18, 24]
+BTN_ROWS = (7, 12)
+RES_COLS = [6, 12, 18, 24]   # flat, row 2
 ANS_COL0 = [3, 11, 19]
-ANS_ROWS = (14, 16)
-HEADER   = (4, 13)
+ANS_ROWS = (13, 15)
+HEADER   = (6, 16)
 GND_ROWS = (5, 17)
-V5_ROW   = 18
+V5_ROW   = 1
+LCD_ROW  = 18
 LED_GPIO = [13, 14, 27, 26]
 BTN_GPIO = [32, 33, 25, 4]
 ANS_INFO = [("AA", 23, "always allow"), ("no", 18, "deny"), ("yes", 19, "approve")]
@@ -186,15 +187,15 @@ def board(stage=99, side="top"):
             label(X(COLS)+40, Y(V5_ROW)+4, "5V bus", "#c0392b", 11, "start")
         if stage >= 3:
             for i, c in enumerate(LED_COLS):
-                o.append(f'<circle cx="{X(c)}" cy="{Y(2.5)}" r="{5/2*PITCH/2.54}" fill="{COL[i]}" stroke="#111" stroke-width="1.5"/>')
-                label(X(c), Y(2.5)+4, str(i+1), "#fff", 12)
+                o.append(f'<circle cx="{X(c)}" cy="{Y(3.5)}" r="{5/2*PITCH/2.54}" fill="{COL[i]}" stroke="#111" stroke-width="1.5"/>')
+                label(X(c), Y(3.5)+4, str(i+1), "#fff", 12)
                 rc = RES_COLS[i]
-                o.append(f'<rect x="{X(rc)-6}" y="{Y(1)-4}" width="12" height="{2*PITCH+8}" rx="4" fill="#c8862a" stroke="#8a5a12"/>')
+                o.append(f'<rect x="{X(rc)-2*PITCH-6}" y="{Y(2)-6}" width="{2*PITCH+12}" height="12" rx="4" fill="#c8862a" stroke="#8a5a12"/>')
                 o.append(f'<line x1="{X(c)}" y1="{Y(2)}" x2="{X(rc)}" y2="{Y(2)}" stroke="{COL[i]}" stroke-width="2.5"/>')
                 o.append(f'<line x1="{X(c)}" y1="{Y(3)}" x2="{X(c)}" y2="{Y(GND_ROWS[0])}" stroke="#444" stroke-width="2.5"/>')
-                o.append(f'<line x1="{X(rc)}" y1="{Y(1)}" x2="{X(rc)}" y2="{Y(1)-22}" stroke="{COL[i]}" stroke-width="2.5"/>')
-                label(X(rc), Y(1)-28, f"GPIO {LED_GPIO[i]}", COL[i], 9.5)
-            label(X(2), Y(2.5)-26, "220Ω", "#c8862a", 9.5)
+                o.append(f'<line x1="{X(rc)}" y1="{Y(2)}" x2="{X(rc)}" y2="{Y(HEADER[0])}" stroke="{COL[i]}" stroke-width="2" opacity="0.6" stroke-dasharray="4 3"/>')
+                label(X(rc)+22, Y(4), f"GPIO {LED_GPIO[i]}", COL[i], 9)
+            label(X(2), Y(3.5)-26, "220Ω", "#c8862a", 9.5)
         if stage >= 4:
             for i, c0 in enumerate(BTN_COL0):
                 x0, x1 = X(c0), X(c0+BIG_LEG_COLS)
@@ -218,8 +219,8 @@ def board(stage=99, side="top"):
                 label(cx, cy+s/2+16, ANS_INFO[i][0], "#111", 11)
                 label(cx, cy-s/2-8, f"GPIO {ANS_INFO[i][1]}", "#222", 9.5)
         if stage >= 6:
-            o.append(f'<rect x="{X(1)-10}" y="{Y(V5_ROW)-10}" width="{3*PITCH+20}" height="20" rx="4" fill="#e07b00"/>')
-            label(X(6)+40, Y(V5_ROW)+4, "LCD: GND · 5V · SDA(21) · SCL(22)", "#e07b00", 11, "start")
+            o.append(f'<rect x="{X(1)-10}" y="{Y(LCD_ROW)-10}" width="{3*PITCH+20}" height="20" rx="4" fill="#e07b00"/>')
+            label(X(6)+40, Y(LCD_ROW)+4, "LCD: GND · 5V · SDA(21) · SCL(22)", "#e07b00", 11, "start")
     else:  # underside
         o.append(f'<text x="{OX-30}" y="{OY-48}" font-size="12" fill="#c33">MIRRORED — this is the view with the board flipped left-to-right</text>')
         for r in HEADER:

@@ -178,22 +178,31 @@ top-left. All four LEDs and the four select buttons share columns **3, 9, 15, 21
 So a colored button's legs sit in columns `c−1` and `c+1`, rows **6 and 11**. Its 12mm
 body is wider than its legs and overhangs them.
 
+**The ESP32 measures 11 holes across × 15 long**, so its pin rows are **10 apart (1.0 inch)**
+and each row is 15 pins. That spacing drives the whole row plan — a solver found only two
+valid arrangements; this is the better one.
+
 | Row | What | Columns |
 |---|---|---|
-| 1 → 3 | 220Ω standing, top end takes the GPIO wire | 6, 12, 18, 24 |
-| 2 | LED anodes (+) | 3, 9, 15, 21 |
-| 3 | LED cathodes (−) | 3, 9, 15, 21 |
-| **4** | **ESP32 header, row A** (ESP32 plugs in from BELOW) | 5 → 19 |
-| **5** | **GND bus** — bare wire straight across | 1 → 24 |
-| **6 and 11** | **Colored button legs** | 2-4, 8-10, 14-16, 20-22 |
-| **13** | **ESP32 header, row B** (9 holes from row A) | 5 → 19 |
-| **14 and 16** | **AA / no / yes legs** | 3-5, 11-13, 19-21 |
+| **1** | **5V bus** — bare wire across | 1 → 24 |
+| 2 | 220Ω lying **flat**, one per LED | 4-6, 10-12, 16-18, 22-24 |
+| 3 | LED anodes (+) | 3, 9, 15, 21 |
+| 4 | LED cathodes (−), straight down to the bus | 3, 9, 15, 21 |
+| **5** | **GND bus** — bare wire across | 1 → 24 |
+| **6** | **ESP32 header, row A** (ESP32 plugs in from BELOW) | 15 pins |
+| **7 and 12** | **Colored button legs** | 2-4, 8-10, 14-16, 20-22 |
+| **13 and 15** | **AA / no / yes legs** | 3-5, 11-13, 19-21 |
+| **16** | **ESP32 header, row B** (10 holes from row A) | 15 pins |
 | **17** | **GND bus** (linked to row 5 down column 24) | 1 → 24 |
-| 18 | **5V bus** + LCD 4-pin connector | 1 → 24 |
+| 18 | LCD 4-pin connector | 1 → 4 |
 
-Verified clearances: **3.2mm** between button bodies, **6.7mm** LED→button, **7.5mm**
-between the two button banks. Re-check any time with
+Verified clearances: **3.2mm** between button bodies, **6.7mm** LED→button, 2.4mm between
+the two button banks. Re-check any time with
 `mise exec -- python tools/verify-layout.py`.
+
+> Both header rows sit clear of every component body — that matters because the header's
+> solder joints protrude on the top side, and a button sitting on top of them wouldn't lie
+> flat. If you move anything, re-run the verifier.
 
 ### Why this works
 

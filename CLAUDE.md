@@ -2,7 +2,7 @@
 
 Physical control surface for Claude Code — a self-contained "code micro" clone. Four LEDs + an LCD show what four agents are doing. Six buttons on the board do everything: the four color buttons each **launch a color-tinted tmux `claude` session (if not running) and focus it**; two more buttons **approve / deny** the on-screen agent's permission prompt. **Single device — there is no game controller.** Don't reintroduce one.
 
-Full build guide: `agentpad-build-guide.md` in this directory. Read it before proposing changes.
+Full build guide: `agentpad-build-guide.md`. Soldered build: `BUILD.md` + `SOLDERING.md`. **Rebuilding the breadboard prototype: `BREADBOARD.md`.**
 
 ## Platform
 
