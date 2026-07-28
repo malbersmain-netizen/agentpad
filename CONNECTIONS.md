@@ -72,7 +72,9 @@ That is one **joint**. This build has about 149 of them.
 
 ## Move 2 — a bare wire that joins a whole row (a "bus")
 
-Ground has to reach ~15 different places. Running 15 separate wires would be miserable, so
+Ground has to reach 11 different legs — four resistor bottoms, four colour-button
+ground legs and three answer-button ground legs. Running 11 separate wires would be
+miserable, so
 instead you lay **one bare wire along a row of pads and solder it to each one**. That turns
 a row of islands into a single connected node. That node is called a **bus**.
 

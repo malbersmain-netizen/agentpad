@@ -1,0 +1,3376 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent Pad — all build documentation</title><style>
+:root{color-scheme:light dark;--fg:#22252a;--bg:#faf9f6;--mut:#666;--line:#e6e3da;--acc:#2f7d4f}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     background:var(--bg);color:var(--fg);display:flex}
+nav{position:sticky;top:0;height:100vh;overflow-y:auto;flex:0 0 15rem;padding:1.5rem 1rem;
+    border-right:1px solid var(--line);background:#fff}
+nav h2{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);margin:1.4rem 0 .5rem}
+nav a{display:block;padding:.32rem .5rem;border-radius:6px;color:var(--fg);text-decoration:none;font-size:.9rem}
+nav a:hover{background:#eef6f0}
+nav a.doc{font-weight:650}
+nav a small{display:block;color:var(--mut);font-weight:400;font-size:.76rem;line-height:1.3}
+main{flex:1;min-width:0;padding:2.5rem 3rem 6rem;max-width:60rem}
+h1{font-size:1.9rem;margin:0 0 .3em;scroll-margin-top:1rem}
+h2{font-size:1.35rem;margin:2.2em 0 .5em;padding-top:.4em;border-top:1px solid var(--line);scroll-margin-top:1rem}
+h3{font-size:1.1rem;margin:1.8em 0 .4em}
+h4{font-size:1rem;margin:1.5em 0 .3em;color:#333}
+table{border-collapse:collapse;margin:1.1em 0;font-size:.9rem;display:block;overflow-x:auto;max-width:100%}
+th,td{border:1px solid var(--line);padding:.42em .7em;text-align:left;vertical-align:top}
+th{background:#f3f1ea;font-weight:650;white-space:nowrap}
+code{background:#f0eee7;padding:.12em .35em;border-radius:4px;font-size:.87em}
+pre{background:#20232a;color:#e6e6e6;padding:1em 1.1em;border-radius:8px;overflow-x:auto;line-height:1.45}
+pre code{background:none;color:inherit;padding:0;font-size:.84rem}
+blockquote{margin:1.2em 0;padding:.8em 1.1em;background:#eef6f0;border-left:4px solid var(--acc);border-radius:0 8px 8px 0}
+blockquote p:first-child{margin-top:0}blockquote p:last-child{margin-bottom:0}
+hr{border:0;border-top:1px solid var(--line);margin:2.5em 0}
+.docwrap{padding-bottom:2rem}
+.top{position:fixed;right:1.5rem;bottom:1.5rem;background:var(--acc);color:#fff;padding:.55em .9em;
+     border-radius:999px;text-decoration:none;font-size:.85rem;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.figlink{display:inline-block;margin:.4rem .5rem .4rem 0;padding:.45em .8em;background:var(--acc);
+         color:#fff;border-radius:6px;text-decoration:none;font-size:.88rem;font-weight:600}
+@media (prefers-color-scheme:dark){
+  :root{--fg:#d8dae0;--bg:#16181c;--mut:#98a0ab;--line:#2b2f36}
+  nav{background:#1b1e23}nav a{color:var(--fg)}nav a:hover{background:#22303a}
+  th{background:#22262d}code{background:#252931}
+  blockquote{background:#16241c}h4{color:#c4c8d0}
+}
+</style></head><body>
+<nav><h2>Read in this order</h2><a class="doc" href="#start-here-md">Start here<small>how the whole thing fits together</small></a><a href="#start-here-md--what-you-re-building">What you're building</a><a href="#start-here-md--the-whole-loop-once">The whole loop, once</a><a href="#start-here-md--the-three-layers">The three layers</a><a href="#start-here-md--how-the-board-maps-onto-that">How the board maps onto that</a><a href="#start-here-md--the-parts-that-are-not-permanent">The parts that are not permanent</a><a href="#start-here-md--what-you-ll-actually-do-in-order">What you'll actually do, in order</a><a href="#start-here-md--the-things-most-likely-to-bite-you">The things most likely to bite you</a><a href="#start-here-md--everything-is-generated-from-one-file">Everything is generated from one file</a><a class="doc" href="#wiring-md">Wiring reference<small>every wire, every leg, every socket slot</small></a><a href="#wiring-md--a-every-wire">A. Every wire</a><a href="#wiring-md--b-the-esp32-socket-slot-by-slot">B. The ESP32 socket, slot by slot</a><a href="#wiring-md--c-every-component-every-leg">C. Every component, every leg</a><a href="#wiring-md--d-the-buses">D. The buses</a><a class="doc" href="#connections-md">Connections<small>the five moves the build is made of</small></a><a href="#connections-md--the-one-idea-everything-rests-on">The one idea everything rests on</a><a href="#connections-md--move-1-put-a-component-in-and-solder-it">Move 1 — put a component in and solder it</a><a href="#connections-md--move-2-a-bare-wire-that-joins-a-whole-row-a-bus">Move 2 — a bare wire that joins a whole row (a "bus")</a><a href="#connections-md--move-1b-clipping-a-leg-you-must-not-fit">Move 1b — clipping a leg you must NOT fit</a><a href="#connections-md--move-3-bending-a-leg-to-reach-a-neighbouring-pad">Move 3 — bending a leg to reach a neighbouring pad</a><a href="#connections-md--move-4-a-signal-wire-across-the-board">Move 4 — a signal wire across the board</a><a href="#connections-md--move-5-soldering-a-wire-onto-a-pad-that-already-has-a-pin-in-it">Move 5 — soldering a wire onto a pad that already has a pin in it</a><a href="#connections-md--putting-it-together-one-led-start-to-finish">Putting it together — one LED, start to finish</a><a href="#connections-md--the-mental-checklist-for-any-connection">The mental checklist for any connection</a><a class="doc" href="#multimeter-md">Multimeter<small>from zero, incl. the checks you repeat</small></a><a href="#multimeter-md--1-set-it-up-once">1. Set it up — once</a><a href="#multimeter-md--2-prove-the-meter-works-before-you-trust-it">2. Prove the meter works before you trust it</a><a href="#multimeter-md--3-testing-a-tactile-switch-pre-flight-p1">3. Testing a tactile switch — pre-flight P1</a><a href="#multimeter-md--4-testing-an-led-pre-flight-p3">4. Testing an LED — pre-flight P3</a><a href="#multimeter-md--5-testing-a-resistor-pre-flight-p2">5. Testing a resistor — pre-flight P2</a><a href="#multimeter-md--6-the-three-checks-you-will-repeat-all-build">6. The three checks you will repeat all build</a><a href="#multimeter-md--7-what-the-display-is-telling-you">7. What the display is telling you</a><a class="doc" href="#soldering-md">Soldering<small>practice course, do this before the real board</small></a><a href="#soldering-md--1-before-this-how-connections-work">1. Before this: how connections work</a><a href="#soldering-md--1b-and-the-other-tool-you-cannot-skip">1b. And the other tool you cannot skip</a><a href="#soldering-md--2-safety-briefly">2. Safety, briefly</a><a href="#soldering-md--3-setting-up">3. Setting up</a><a href="#soldering-md--4-practice-do-these-on-a-spare-kit-board">4. Practice — do these on a spare kit board</a><a href="#soldering-md--5-the-motion-precisely">5. The motion, precisely</a><a href="#soldering-md--6-reading-a-joint">6. Reading a joint</a><a href="#soldering-md--7-habits-that-prevent-most-problems">7. Habits that prevent most problems</a><a href="#soldering-md--8-when-it-goes-wrong">8. When it goes wrong</a><a href="#soldering-md--9-worth-watching-before-you-start">9. Worth watching before you start</a><a href="#soldering-md--10-then-build">10. Then build</a><a class="doc" href="#build-md">Build manual<small>parts, board, pre-flight, then steps 1-7</small></a><a href="#build-md--two-rules">Two rules</a><a href="#build-md--1-parts-and-tools">1. Parts and tools</a><a href="#build-md--2-the-case-deferred">2. The case — deferred</a><a href="#build-md--3-the-board">3. The board</a><a href="#build-md--4-soldering-if-you-ve-never-done-it">4. Soldering, if you've never done it</a><a href="#build-md--5-build-in-order">5. Build, in order</a><a href="#build-md--6-software">6. Software</a><a href="#build-md--7-final-acceptance-test">7. Final acceptance test</a><a href="#build-md--8-troubleshooting">8. Troubleshooting</a><a href="#build-md--9-if-it-goes-wrong">9. If it goes wrong</a><a class="doc" href="#breadboard-md">Breadboard<small>rebuild the working prototype (fallback)</small></a><a href="#breadboard-md--the-rules-that-make-it-all-work">The rules that make it all work</a><a href="#breadboard-md--step-1-ground-do-this-first">Step 1 — ground (do this first)</a><a href="#breadboard-md--step-2-lcd-4-wires-straight-to-the-esp32">Step 2 — LCD (4 wires, straight to the ESP32)</a><a href="#breadboard-md--step-3-the-four-leds">Step 3 — the four LEDs</a><a href="#breadboard-md--step-4-the-seven-buttons">Step 4 — the seven buttons</a><a href="#breadboard-md--complete-pin-list">Complete pin list</a><a href="#breadboard-md--step-5-bring-it-up">Step 5 — bring it up</a><a href="#breadboard-md--if-something-misbehaves">If something misbehaves</a><a class="doc" href="#claude-md">Architecture<small>software side: hooks, daemon, protocol</small></a><a href="#claude-md--platform">Platform</a><a href="#claude-md--architecture">Architecture</a><a href="#claude-md--files">Files</a><a href="#claude-md--install-the-hooks-live-outside-the-repo">Install (the hooks live outside the repo)</a><a href="#claude-md--serial-protocol">Serial protocol</a><a href="#claude-md--pin-map-do-not-change-without-asking">Pin map — do not change without asking</a><a href="#claude-md--constraints">Constraints</a><a href="#claude-md--what-you-cannot-verify">What you cannot verify</a><a href="#claude-md--testing-note">Testing note</a><a href="#claude-md--context-usage">Context usage</a><a href="#claude-md--status">Status</a>
+<h2>Figures</h2>
+<a href="schematics.html">Schematics &amp; board layout</a>
+<a href="build-plan.html">Tickable checklist</a>
+</nav>
+<main>
+<h1>Agent Pad — build documentation</h1>
+<p style="color:var(--mut);margin-top:-.2em">Everything in reading order. Figures open separately:</p>
+<p><a class="figlink" href="schematics.html">Schematics &amp; board layout</a>
+<a class="figlink" href="build-plan.html">Tickable build checklist</a></p>
+<section class="docwrap" id="start-here-md"><h1>Start here — how the whole thing fits together</h1>
+<p>Read this once. It's the map; everything else is detail.</p>
+<hr />
+<h2 id="start-here-md--what-you-re-building">What you're building</h2>
+<p>A physical control surface for Claude Code. Four agents run as tmux windows on your Mac.
+The board shows you what each one is doing, and lets you answer them without touching the
+keyboard.</p>
+<pre><code>   ┌─────────────────────────────────────────┐
+   │  A3 BLOCKED 4:21                        │   16x2 LCD — which agent, what state,
+   │  1w 2i 3B 4d  34%                       │   how long, context used
+   └─────────────────────────────────────────┘
+
+     ●        ●        ●        ●               4 LEDs — one per agent, colour = identity,
+    ┌───┐    ┌───┐    ┌───┐    ┌───┐            blink pattern = state
+    │ 1 │    │ 2 │    │ 3 │    │ 4 │            4 colour buttons — launch or focus
+    └───┘    └───┘    └───┘    └───┘            that agent's tmux window
+
+      ▫         ▫         ▫                     3 small buttons — answer the prompt
+     AA        no        yes                    that's on screen right now
+</code></pre>
+<p><strong>One USB cable to the Mac.</strong> That's the only connection. No WiFi, no battery, no second
+device.</p>
+<hr />
+<h2 id="start-here-md--the-whole-loop-once">The whole loop, once</h2>
+<p>This is the thing to hold in your head. Follow one permission prompt all the way round:</p>
+<pre><code>  1. You press  yes                     (a switch closes, pulling GPIO 19 to ground)
+        │
+  2.    └─►  ESP32 firmware debounces, prints  &quot;B 4&quot;  down the USB serial line
+        │
+  3.    └─►  daemon.py reads that line, checks the interlock, and does
+        │      tmux send-keys -t &lt;the focused agent's pane&gt; &quot;1&quot; Enter
+        │
+  4.    └─►  Claude Code in that pane receives the keystroke and runs the command
+        │
+  5.    └─►  Claude Code fires its Stop hook  →  ~/.claude/agentpad.sh
+        │
+  6.    └─►  that appends one JSON line to  events.jsonl
+        │
+  7.    └─►  daemon.py is tailing that file, sees state &quot;done&quot; for that pane
+        │
+  8.    └─►  daemon writes  &quot;L 2 done&quot;  back down the serial line
+        │
+  9.    └─►  firmware sets LED 3's blink pattern. You see it change.
+</code></pre>
+<p><strong>Steps 1–2 and 8–9 are the hardware you're about to build. Steps 3–7 already work and are
+not changing.</strong></p>
+<p>Press to keystroke (steps 1–4) is faster than you can perceive — the firmware debounces
+for 50ms and the daemon reads the port on a 100ms timeout. The LED (steps 5–9) changes
+whenever the agent's state actually changes, which for a real command is however long that
+command takes. The part that had to be fast is the <em>blocked</em> light, and that comes from the
+<code>PermissionRequest</code> hook at +0.00s.</p>
+<hr />
+<h2 id="start-here-md--the-three-layers">The three layers</h2>
+<p><strong>Layer 1 — the board.</strong> Dumb on purpose. It reads seven switches and drives four LEDs
+and an LCD. It has no idea what Claude Code is. Its entire vocabulary is five line-based
+serial commands, which you can type by hand into the Arduino Serial Monitor to test it.</p>
+<table>
+<thead>
+<tr>
+<th>Mac → ESP32</th>
+<th>meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>L &lt;0-3&gt; &lt;none\|idle\|working\|blocked\|done&gt;</code></td>
+<td>set an LED's pattern</td>
+</tr>
+<tr>
+<td><code>D0 &lt;text&gt;</code> / <code>D1 &lt;text&gt;</code></td>
+<td>write an LCD row</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>ESP32 → Mac</th>
+<th>meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>B &lt;0-6&gt;</code></td>
+<td>a button was pressed. 0–3 select an agent, 4 approve, 5 deny, 6 always-allow</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Layer 2 — the daemon.</strong> <code>daemon.py</code> on your Mac. It owns the serial port, launches each
+agent's tmux window on first press, remembers which pane belongs to which slot, and
+translates between the board and tmux.</p>
+<p><strong>Layer 3 — Claude Code's hooks.</strong> Five hooks, configured globally in
+<code>~/.claude/settings.json</code>, each appending one line to <code>events.jsonl</code>. That file is how the
+agents tell the daemon what they're doing.</p>
+<blockquote>
+<p><strong>Why <code>PermissionRequest</code> and not <code>Notification</code>?</strong> Measured on this hardware:
+<code>Notification</code> fires <strong>6.00 seconds</strong> after the prompt appears — it exists to chase a
+user who walked away. <code>PermissionRequest</code> fires at <strong>+0.00s</strong>. That one measurement is
+why the board feels instant instead of broken.</p>
+</blockquote>
+<hr />
+<h2 id="start-here-md--how-the-board-maps-onto-that">How the board maps onto that</h2>
+<p>The board is <strong>one 30 × 42 hole PCB, 120 × 80mm</strong>, split into two zones:</p>
+<pre><code>   cols 1–28  the control surface              cols 30–40  the ESP32
+   ─────────────────────────────────────────   ──────────────────────────
+   row  2   LED anodes (+)      → GPIO          the module plugs into two
+   row  3   LED cathodes (−)                    15-way sockets and can be
+   row  4   220Ω top                            pulled out any time
+   row  8   ── GND bus ──  and 220Ω bottom
+   row 11   colour button signal legs           cols 30–33, row 2:
+   row 16   ── GND bus ──  and their gnd legs     the 4-pin LCD port
+   row 19   AA / no / yes signal legs
+   row 21   ── GND bus ──  and their gnd legs   USB points at the bottom edge
+</code></pre>
+<p>Three ideas make the layout work, and they're the ones worth understanding before you
+solder anything:</p>
+<p><strong>1. Perfboard connects nothing.</strong> Every hole is an isolated island. A breadboard hides
+metal clips that join each row of five for you; this has none. <em>You</em> are the wiring. →
+<a href="#connections-md"><code>CONNECTIONS.md</code></a></p>
+<p><strong>2. A "bus" is how you avoid 11 ground wires.</strong> Ground has to reach 11 legs — four
+resistor bottoms, four colour-button ground legs, three answer-button ground legs. Instead
+of 11 wires you lay <strong>one bare wire along a row and solder it to every pad</strong>.
+That turns a row of islands into one shared node. There are three of them — rows 8, 16 and
+21 — joined down column 1. Every ground leg on the board lands directly on one, so there
+are <strong>zero ground jumpers</strong>.</p>
+<p><strong>3. Only 12 wires actually go anywhere.</strong> Everything else is a component leg sitting in
+the right hole. Those 12 run from a component pad to the matching pad at the ESP32 socket,
+plus 4 more for the LCD port. Sixteen wires total.</p>
+<hr />
+<h2 id="start-here-md--the-parts-that-are-not-permanent">The parts that are not permanent</h2>
+<p>Two things must survive the build, and both unplug:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>why</th>
+<th>how</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>The ESP32</strong></td>
+<td>you have exactly one</td>
+<td>it sits in a <strong>socket</strong>, never soldered</td>
+</tr>
+<tr>
+<td><strong>The LCD</strong></td>
+<td>you have exactly one</td>
+<td>4 F-F jumpers to a <strong>port</strong> on the board, never soldered</td>
+</tr>
+</tbody>
+</table>
+<p>The LCD port exists because of a detail that's easy to miss: once the ESP32 is seated, its
+own pins are <em>inside</em> the socket, so nothing can clip onto them. The board therefore carries
+its own 4-pin male header, wired to the socket pads.</p>
+<hr />
+<h2 id="start-here-md--what-you-ll-actually-do-in-order">What you'll actually do, in order</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th>ends with</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>See the wiring</strong></td>
+<td><a href="#wiring-md"><code>WIRING.md</code></a> — every wire, every leg, every socket slot, in flat tables</td>
+<td>you can look up any connection in one place</td>
+</tr>
+<tr>
+<td><strong>Learn the moves</strong></td>
+<td><a href="#connections-md"><code>CONNECTIONS.md</code></a> — the five actions the whole build is made of</td>
+<td>you understand what "bend the cathode onto the next pad" means</td>
+</tr>
+<tr>
+<td><strong>Learn the meter</strong></td>
+<td><a href="#multimeter-md"><code>MULTIMETER.md</code></a></td>
+<td>you can tell a cold joint from a good one</td>
+</tr>
+<tr>
+<td><strong>Practise</strong></td>
+<td><a href="#soldering-md"><code>SOLDERING.md</code></a> §4, six exercises on a spare kit board</td>
+<td>shiny joint first try, every try</td>
+</tr>
+<tr>
+<td><strong>Pre-flight</strong></td>
+<td><a href="#build-md"><code>BUILD.md</code></a> P1–P5</td>
+<td>parts confirmed, board confirmed, sockets cut</td>
+</tr>
+<tr>
+<td><strong>Step 1</strong></td>
+<td>the ESP32 socket</td>
+<td><code>firmware/blink</code> runs</td>
+</tr>
+<tr>
+<td><strong>Step 2</strong></td>
+<td>first GND bus + the ground wire</td>
+<td>the bus beeps end to end</td>
+</tr>
+<tr>
+<td><strong>Step 3</strong></td>
+<td>LEDs, resistors, their 4 wires</td>
+<td><code>firmware/ledtest</code> — all four cycle</td>
+</tr>
+<tr>
+<td><strong>Step 4</strong></td>
+<td>colour buttons, second bus, the link, 4 wires</td>
+<td><code>firmware/btntest</code> prints 0–3</td>
+</tr>
+<tr>
+<td><strong>Step 5</strong></td>
+<td>AA / no / yes, third bus, 3 wires</td>
+<td><code>btntest</code> prints 0–6</td>
+</tr>
+<tr>
+<td><strong>Step 6</strong></td>
+<td>the LCD port</td>
+<td><code>firmware/lcdtest</code> finds <code>0x27</code></td>
+</tr>
+<tr>
+<td><strong>Step 7</strong></td>
+<td>real firmware, then screw it to the wood</td>
+<td>the whole thing works</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Every step ends in a test that exercises what you just built.</strong> Not a beep — a program
+that lights the LEDs or prints the button numbers. If a step fails, exactly one thing has
+changed since the last one that passed.</p>
+<hr />
+<h2 id="start-here-md--the-things-most-likely-to-bite-you">The things most likely to bite you</h2>
+<p>Not a general list — these are the ones that have actually happened on this project.</p>
+<p><strong>A bus wire lying over the hole centres instead of beside them.</strong> The lead you push in
+later stops on the wire and never reaches copper, but solder bridges the gap. The joint
+looks perfect from underneath and it beeps. <strong>11 joints</strong> on this board are at risk.
+<code>SOLDERING.md</code> Exercise 4 exists solely to teach you this.</p>
+<p><strong>Several buttons dead at once.</strong> It's the ground bus or the column-1 link — not the
+switches. This happened twice on the breadboard.</p>
+<p><strong>Soldering all four legs of a switch.</strong> Don't. <strong>One leg gets clipped off</strong> before you
+seat it. On this kit the switch's internally-joined pairs run the long way, which would put
+a signal leg straight onto the ground bus. Clipping is safe whichever way your switches
+are made.</p>
+<p><strong>Uploading firmware while the daemon is running.</strong> Fails with <em>"serial noise or
+corruption"</em>, which reads like a hardware fault. Only one process can hold the port — stop
+the daemon first.</p>
+<hr />
+<h2 id="start-here-md--everything-is-generated-from-one-file">Everything is generated from one file</h2>
+<p><code>tools/layout.py</code> holds every row, column and GPIO. The tables in <code>BUILD.md</code>, all the
+figures, and the verifier all derive from it, so a drawing cannot disagree with a table.</p>
+<pre><code class="language-bash">mise exec -- python tools/verify-layout.py   # checks the design, ~20 assertions
+mise exec -- python tools/gen-tables.py      # rebuilds BUILD.md's tables
+mise exec -- python tools/gen-wiring.py      # rebuilds WIRING.md, the flat wire list
+mise exec -- python tools/schematic.py       # rebuilds the figures
+mise exec -- python tools/view-docs.py       # this documentation, in a browser
+</code></pre>
+<p>The docs drifted from the layout four times before this existed. The last time, the wire
+table would have shorted seven buttons to ground.</p>
+<p><strong>Never hand-edit a row, column or GPIO in a document.</strong> Change <code>layout.py</code>, then re-run
+those three.</p>
+<hr />
+<p>Next: <a href="#connections-md"><code>CONNECTIONS.md</code></a>.</p></section><section class="docwrap" id="wiring-md"><h1>Wiring reference</h1>
+<p><strong>Generated from <code>tools/layout.py</code> — do not edit.</strong> Re-run <code>mise exec -- python tools/gen-wiring.py</code> after any layout change.</p>
+<p>Board: 30 rows × 42 columns, 120 × 80 mm. Grid reference col 1, row 1 = top-left, viewed from the <strong>component side</strong>.</p>
+<p>ESP32 seated with <strong>USB pointing at the bottom edge</strong>. Pin positions are counted <strong>from the USB end</strong>, so position 1 is the bottom socket (row 22) and position 15 is the top (row 8). The <strong>3V3 column is board col 30</strong> (nearest the controls); the <strong>VIN column is col 40</strong>.</p>
+<hr />
+<h2 id="wiring-md--a-every-wire">A. Every wire</h2>
+<p><strong>12 soldered signal/ground wires + 4 LCD-port wires = 16 total.</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">#</th>
+<th>Wire</th>
+<th>From — hardware</th>
+<th>From — hole</th>
+<th>To — socket hole</th>
+<th>ESP32 pin</th>
+<th>Slot</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td>LED 1 red</td>
+<td>LED 1 (red) anode, long leg</td>
+<td>col 4, row 2</td>
+<td><strong>col 40, row 20</strong></td>
+<td><code>D13</code></td>
+<td>VIN side, pos 3</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td>LED 2 green</td>
+<td>LED 2 (green) anode, long leg</td>
+<td>col 11, row 2</td>
+<td><strong>col 40, row 18</strong></td>
+<td><code>D14</code></td>
+<td>VIN side, pos 5</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td>LED 3 blue</td>
+<td>LED 3 (blue) anode, long leg</td>
+<td>col 18, row 2</td>
+<td><strong>col 40, row 17</strong></td>
+<td><code>D27</code></td>
+<td>VIN side, pos 6</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td>LED 4 yellow</td>
+<td>LED 4 (yellow) anode, long leg</td>
+<td>col 25, row 2</td>
+<td><strong>col 40, row 16</strong></td>
+<td><code>D26</code></td>
+<td>VIN side, pos 7</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td>button 1 red</td>
+<td>Button 1 (red) signal leg</td>
+<td>col 3, row 11</td>
+<td><strong>col 40, row 13</strong></td>
+<td><code>D32</code></td>
+<td>VIN side, pos 10</td>
+</tr>
+<tr>
+<td style="text-align: right;">6</td>
+<td>button 2 green</td>
+<td>Button 2 (green) signal leg</td>
+<td>col 10, row 11</td>
+<td><strong>col 40, row 14</strong></td>
+<td><code>D33</code></td>
+<td>VIN side, pos 9</td>
+</tr>
+<tr>
+<td style="text-align: right;">7</td>
+<td>button 3 blue</td>
+<td>Button 3 (blue) signal leg</td>
+<td>col 17, row 11</td>
+<td><strong>col 40, row 15</strong></td>
+<td><code>D25</code></td>
+<td>VIN side, pos 8</td>
+</tr>
+<tr>
+<td style="text-align: right;">8</td>
+<td>button 4 yellow</td>
+<td>Button 4 (yellow) signal leg</td>
+<td>col 24, row 11</td>
+<td><strong>col 30, row 18</strong></td>
+<td><code>D4</code></td>
+<td>3V3 side, pos 5</td>
+</tr>
+<tr>
+<td style="text-align: right;">9</td>
+<td>AA (always allow)</td>
+<td>'AA' switch signal leg</td>
+<td>col 4, row 19</td>
+<td><strong>col 30, row 8</strong></td>
+<td><code>D23</code></td>
+<td>3V3 side, pos 15</td>
+</tr>
+<tr>
+<td style="text-align: right;">10</td>
+<td>no (deny)</td>
+<td>'no' switch signal leg</td>
+<td>col 13, row 19</td>
+<td><strong>col 30, row 14</strong></td>
+<td><code>D18</code></td>
+<td>3V3 side, pos 9</td>
+</tr>
+<tr>
+<td style="text-align: right;">11</td>
+<td>yes (approve)</td>
+<td>'yes' switch signal leg</td>
+<td>col 22, row 19</td>
+<td><strong>col 30, row 13</strong></td>
+<td><code>D19</code></td>
+<td>3V3 side, pos 10</td>
+</tr>
+<tr>
+<td style="text-align: right;">12</td>
+<td>ground</td>
+<td>GND bus (row 8)</td>
+<td>col 28, row 8</td>
+<td><strong>col 30, row 21</strong></td>
+<td><code>GND</code></td>
+<td>3V3 side, pos 2</td>
+</tr>
+<tr>
+<td style="text-align: right;">—</td>
+<td>LCD GND</td>
+<td>LCD port male pin</td>
+<td>col 30, row 2</td>
+<td><strong>col 40, row 21</strong></td>
+<td><code>GND</code></td>
+<td>VIN side, pos 2</td>
+</tr>
+<tr>
+<td style="text-align: right;">—</td>
+<td>LCD VCC</td>
+<td>LCD port male pin</td>
+<td>col 31, row 2</td>
+<td><strong>col 40, row 22</strong></td>
+<td><code>VIN</code></td>
+<td>VIN side, pos 1</td>
+</tr>
+<tr>
+<td style="text-align: right;">—</td>
+<td>LCD SDA</td>
+<td>LCD port male pin</td>
+<td>col 32, row 2</td>
+<td><strong>col 30, row 12</strong></td>
+<td><code>D21</code></td>
+<td>3V3 side, pos 11</td>
+</tr>
+<tr>
+<td style="text-align: right;">—</td>
+<td>LCD SCL</td>
+<td>LCD port male pin</td>
+<td>col 33, row 2</td>
+<td><strong>col 30, row 9</strong></td>
+<td><code>D22</code></td>
+<td>3V3 side, pos 14</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>The LCD itself is <strong>not</strong> on this list — it reaches the port with 4 F-F jumpers and is never soldered.</p>
+</blockquote>
+<hr />
+<h2 id="wiring-md--b-the-esp32-socket-slot-by-slot">B. The ESP32 socket, slot by slot</h2>
+<p>All 30 sockets. <strong>16 carry a wire</strong>, the rest are soldered but unused. Leave a 2mm stub on the ones marked ●; trim the others flush.</p>
+<h3 id="wiring-md--3v3-side-board-column-30">3V3 side — board column 30</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Pos</th>
+<th>Pin</th>
+<th>Board hole</th>
+<th style="text-align: center;"></th>
+<th>Connected to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td>3V3</td>
+<td>col 30, row 22</td>
+<td style="text-align: center;"></td>
+<td><em>unused — trim flush</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td><strong>GND</strong></td>
+<td>col 30, row 21</td>
+<td style="text-align: center;">●</td>
+<td>wire 12 — ground, from col 28, row 8</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td>D15</td>
+<td>col 30, row 20</td>
+<td style="text-align: center;"></td>
+<td><em>unused — trim flush</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td>D2</td>
+<td>col 30, row 19</td>
+<td style="text-align: center;"></td>
+<td><em>unused — trim flush</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td><strong>D4</strong></td>
+<td>col 30, row 18</td>
+<td style="text-align: center;">●</td>
+<td>wire 8 — button 4 yellow, from col 24, row 11</td>
+</tr>
+<tr>
+<td style="text-align: right;">6</td>
+<td>RX2</td>
+<td>col 30, row 17</td>
+<td style="text-align: center;"></td>
+<td><em>unused — trim flush</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">7</td>
+<td>TX2</td>
+<td>col 30, row 16</td>
+<td style="text-align: center;"></td>
+<td><em>unused — trim flush</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">8</td>
+<td>D5</td>
+<td>col 30, row 15</td>
+<td style="text-align: center;"></td>
+<td><em>unused — trim flush</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">9</td>
+<td><strong>D18</strong></td>
+<td>col 30, row 14</td>
+<td style="text-align: center;">●</td>
+<td>wire 10 — no (deny), from col 13, row 19</td>
+</tr>
+<tr>
+<td style="text-align: right;">10</td>
+<td><strong>D19</strong></td>
+<td>col 30, row 13</td>
+<td style="text-align: center;">●</td>
+<td>wire 11 — yes (approve), from col 22, row 19</td>
+</tr>
+<tr>
+<td style="text-align: right;">11</td>
+<td><strong>D21</strong></td>
+<td>col 30, row 12</td>
+<td style="text-align: center;">●</td>
+<td>LCD SDA, from LCD port, col 32 row 2</td>
+</tr>
+<tr>
+<td style="text-align: right;">12</td>
+<td>RX0</td>
+<td>col 30, row 11</td>
+<td style="text-align: center;"></td>
+<td><em>unused — trim flush</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">13</td>
+<td>TX0</td>
+<td>col 30, row 10</td>
+<td style="text-align: center;"></td>
+<td><em>unused — trim flush</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">14</td>
+<td><strong>D22</strong></td>
+<td>col 30, row 9</td>
+<td style="text-align: center;">●</td>
+<td>LCD SCL, from LCD port, col 33 row 2</td>
+</tr>
+<tr>
+<td style="text-align: right;">15</td>
+<td><strong>D23</strong></td>
+<td>col 30, row 8</td>
+<td style="text-align: center;">●</td>
+<td>wire 9 — AA (always allow), from col 4, row 19</td>
+</tr>
+</tbody>
+</table>
+<h3 id="wiring-md--vin-side-board-column-40">VIN side — board column 40</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Pos</th>
+<th>Pin</th>
+<th>Board hole</th>
+<th style="text-align: center;"></th>
+<th>Connected to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td><strong>VIN</strong></td>
+<td>col 40, row 22</td>
+<td style="text-align: center;">●</td>
+<td>LCD VCC, from LCD port, col 31 row 2</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td><strong>GND</strong></td>
+<td>col 40, row 21</td>
+<td style="text-align: center;">●</td>
+<td>LCD GND, from LCD port, col 30 row 2</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td><strong>D13</strong></td>
+<td>col 40, row 20</td>
+<td style="text-align: center;">●</td>
+<td>wire 1 — LED 1 red, from col 4, row 2</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td>D12</td>
+<td>col 40, row 19</td>
+<td style="text-align: center;"></td>
+<td><em>unused — trim flush</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td><strong>D14</strong></td>
+<td>col 40, row 18</td>
+<td style="text-align: center;">●</td>
+<td>wire 2 — LED 2 green, from col 11, row 2</td>
+</tr>
+<tr>
+<td style="text-align: right;">6</td>
+<td><strong>D27</strong></td>
+<td>col 40, row 17</td>
+<td style="text-align: center;">●</td>
+<td>wire 3 — LED 3 blue, from col 18, row 2</td>
+</tr>
+<tr>
+<td style="text-align: right;">7</td>
+<td><strong>D26</strong></td>
+<td>col 40, row 16</td>
+<td style="text-align: center;">●</td>
+<td>wire 4 — LED 4 yellow, from col 25, row 2</td>
+</tr>
+<tr>
+<td style="text-align: right;">8</td>
+<td><strong>D25</strong></td>
+<td>col 40, row 15</td>
+<td style="text-align: center;">●</td>
+<td>wire 7 — button 3 blue, from col 17, row 11</td>
+</tr>
+<tr>
+<td style="text-align: right;">9</td>
+<td><strong>D33</strong></td>
+<td>col 40, row 14</td>
+<td style="text-align: center;">●</td>
+<td>wire 6 — button 2 green, from col 10, row 11</td>
+</tr>
+<tr>
+<td style="text-align: right;">10</td>
+<td><strong>D32</strong></td>
+<td>col 40, row 13</td>
+<td style="text-align: center;">●</td>
+<td>wire 5 — button 1 red, from col 3, row 11</td>
+</tr>
+<tr>
+<td style="text-align: right;">11</td>
+<td>D35</td>
+<td>col 40, row 12</td>
+<td style="text-align: center;"></td>
+<td><em>unused — trim flush</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">12</td>
+<td>D34</td>
+<td>col 40, row 11</td>
+<td style="text-align: center;"></td>
+<td><em>unused — trim flush</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">13</td>
+<td>VN</td>
+<td>col 40, row 10</td>
+<td style="text-align: center;"></td>
+<td><em>unused — trim flush</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">14</td>
+<td>VP</td>
+<td>col 40, row 9</td>
+<td style="text-align: center;"></td>
+<td><em>unused — trim flush</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">15</td>
+<td>EN</td>
+<td>col 40, row 8</td>
+<td style="text-align: center;"></td>
+<td><em>unused — trim flush</em></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="wiring-md--c-every-component-every-leg">C. Every component, every leg</h2>
+<p>Legs that are <strong>not</strong> on this list do not exist — they were clipped off.</p>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Leg</th>
+<th>Hole</th>
+<th>What it connects to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>LED 1 (red)</strong></td>
+<td>anode, long leg (+)</td>
+<td>col 4, row 2</td>
+<td>wire 1 → <code>D13</code></td>
+</tr>
+<tr>
+<td></td>
+<td>cathode, short leg (−)</td>
+<td>col 4, row 3</td>
+<td>bent flat on the underside onto the row-4 pad</td>
+</tr>
+<tr>
+<td><strong>220Ω R1</strong></td>
+<td>top lead</td>
+<td>col 4, row 4</td>
+<td>joins that bent cathode leg</td>
+</tr>
+<tr>
+<td></td>
+<td>bottom lead</td>
+<td>col 4, row 8</td>
+<td>lands <strong>on the GND bus</strong></td>
+</tr>
+<tr>
+<td><strong>LED 2 (green)</strong></td>
+<td>anode, long leg (+)</td>
+<td>col 11, row 2</td>
+<td>wire 2 → <code>D14</code></td>
+</tr>
+<tr>
+<td></td>
+<td>cathode, short leg (−)</td>
+<td>col 11, row 3</td>
+<td>bent flat on the underside onto the row-4 pad</td>
+</tr>
+<tr>
+<td><strong>220Ω R2</strong></td>
+<td>top lead</td>
+<td>col 11, row 4</td>
+<td>joins that bent cathode leg</td>
+</tr>
+<tr>
+<td></td>
+<td>bottom lead</td>
+<td>col 11, row 8</td>
+<td>lands <strong>on the GND bus</strong></td>
+</tr>
+<tr>
+<td><strong>LED 3 (blue)</strong></td>
+<td>anode, long leg (+)</td>
+<td>col 18, row 2</td>
+<td>wire 3 → <code>D27</code></td>
+</tr>
+<tr>
+<td></td>
+<td>cathode, short leg (−)</td>
+<td>col 18, row 3</td>
+<td>bent flat on the underside onto the row-4 pad</td>
+</tr>
+<tr>
+<td><strong>220Ω R3</strong></td>
+<td>top lead</td>
+<td>col 18, row 4</td>
+<td>joins that bent cathode leg</td>
+</tr>
+<tr>
+<td></td>
+<td>bottom lead</td>
+<td>col 18, row 8</td>
+<td>lands <strong>on the GND bus</strong></td>
+</tr>
+<tr>
+<td><strong>LED 4 (yellow)</strong></td>
+<td>anode, long leg (+)</td>
+<td>col 25, row 2</td>
+<td>wire 4 → <code>D26</code></td>
+</tr>
+<tr>
+<td></td>
+<td>cathode, short leg (−)</td>
+<td>col 25, row 3</td>
+<td>bent flat on the underside onto the row-4 pad</td>
+</tr>
+<tr>
+<td><strong>220Ω R4</strong></td>
+<td>top lead</td>
+<td>col 25, row 4</td>
+<td>joins that bent cathode leg</td>
+</tr>
+<tr>
+<td></td>
+<td>bottom lead</td>
+<td>col 25, row 8</td>
+<td>lands <strong>on the GND bus</strong></td>
+</tr>
+<tr>
+<td><strong>Button 1 (red)</strong></td>
+<td>signal</td>
+<td>col 3, row 11</td>
+<td>wire 5 → <code>D32</code></td>
+</tr>
+<tr>
+<td></td>
+<td>anchor</td>
+<td>col 5, row 11</td>
+<td>soldered, no connection</td>
+</tr>
+<tr>
+<td></td>
+<td>~~clipped~~</td>
+<td>~~col 3, row 16~~</td>
+<td><strong>cut this leg off</strong></td>
+</tr>
+<tr>
+<td></td>
+<td>ground</td>
+<td>col 5, row 16</td>
+<td>lands <strong>on the GND bus</strong></td>
+</tr>
+<tr>
+<td><strong>Button 2 (green)</strong></td>
+<td>signal</td>
+<td>col 10, row 11</td>
+<td>wire 6 → <code>D33</code></td>
+</tr>
+<tr>
+<td></td>
+<td>anchor</td>
+<td>col 12, row 11</td>
+<td>soldered, no connection</td>
+</tr>
+<tr>
+<td></td>
+<td>~~clipped~~</td>
+<td>~~col 10, row 16~~</td>
+<td><strong>cut this leg off</strong></td>
+</tr>
+<tr>
+<td></td>
+<td>ground</td>
+<td>col 12, row 16</td>
+<td>lands <strong>on the GND bus</strong></td>
+</tr>
+<tr>
+<td><strong>Button 3 (blue)</strong></td>
+<td>signal</td>
+<td>col 17, row 11</td>
+<td>wire 7 → <code>D25</code></td>
+</tr>
+<tr>
+<td></td>
+<td>anchor</td>
+<td>col 19, row 11</td>
+<td>soldered, no connection</td>
+</tr>
+<tr>
+<td></td>
+<td>~~clipped~~</td>
+<td>~~col 17, row 16~~</td>
+<td><strong>cut this leg off</strong></td>
+</tr>
+<tr>
+<td></td>
+<td>ground</td>
+<td>col 19, row 16</td>
+<td>lands <strong>on the GND bus</strong></td>
+</tr>
+<tr>
+<td><strong>Button 4 (yellow)</strong></td>
+<td>signal</td>
+<td>col 24, row 11</td>
+<td>wire 8 → <code>D4</code></td>
+</tr>
+<tr>
+<td></td>
+<td>anchor</td>
+<td>col 26, row 11</td>
+<td>soldered, no connection</td>
+</tr>
+<tr>
+<td></td>
+<td>~~clipped~~</td>
+<td>~~col 24, row 16~~</td>
+<td><strong>cut this leg off</strong></td>
+</tr>
+<tr>
+<td></td>
+<td>ground</td>
+<td>col 26, row 16</td>
+<td>lands <strong>on the GND bus</strong></td>
+</tr>
+<tr>
+<td><strong>'AA' (always allow)</strong></td>
+<td>signal</td>
+<td>col 4, row 19</td>
+<td>wire 9 → <code>D23</code></td>
+</tr>
+<tr>
+<td></td>
+<td>anchor</td>
+<td>col 6, row 19</td>
+<td>soldered, no connection</td>
+</tr>
+<tr>
+<td></td>
+<td>~~clipped~~</td>
+<td>~~col 4, row 21~~</td>
+<td><strong>cut this leg off</strong></td>
+</tr>
+<tr>
+<td></td>
+<td>ground</td>
+<td>col 6, row 21</td>
+<td>lands <strong>on the GND bus</strong></td>
+</tr>
+<tr>
+<td><strong>'no' (deny)</strong></td>
+<td>signal</td>
+<td>col 13, row 19</td>
+<td>wire 10 → <code>D18</code></td>
+</tr>
+<tr>
+<td></td>
+<td>anchor</td>
+<td>col 15, row 19</td>
+<td>soldered, no connection</td>
+</tr>
+<tr>
+<td></td>
+<td>~~clipped~~</td>
+<td>~~col 13, row 21~~</td>
+<td><strong>cut this leg off</strong></td>
+</tr>
+<tr>
+<td></td>
+<td>ground</td>
+<td>col 15, row 21</td>
+<td>lands <strong>on the GND bus</strong></td>
+</tr>
+<tr>
+<td><strong>'yes' (approve)</strong></td>
+<td>signal</td>
+<td>col 22, row 19</td>
+<td>wire 11 → <code>D19</code></td>
+</tr>
+<tr>
+<td></td>
+<td>anchor</td>
+<td>col 24, row 19</td>
+<td>soldered, no connection</td>
+</tr>
+<tr>
+<td></td>
+<td>~~clipped~~</td>
+<td>~~col 22, row 21~~</td>
+<td><strong>cut this leg off</strong></td>
+</tr>
+<tr>
+<td></td>
+<td>ground</td>
+<td>col 24, row 21</td>
+<td>lands <strong>on the GND bus</strong></td>
+</tr>
+<tr>
+<td><strong>LCD port</strong></td>
+<td>pin 1 — GND</td>
+<td>col 30, row 2</td>
+<td>wire to <code>GND</code> at col 40, row 21</td>
+</tr>
+<tr>
+<td><strong>LCD port</strong></td>
+<td>pin 2 — VCC</td>
+<td>col 31, row 2</td>
+<td>wire to <code>VIN</code> at col 40, row 22</td>
+</tr>
+<tr>
+<td><strong>LCD port</strong></td>
+<td>pin 3 — SDA</td>
+<td>col 32, row 2</td>
+<td>wire to <code>D21</code> at col 30, row 12</td>
+</tr>
+<tr>
+<td><strong>LCD port</strong></td>
+<td>pin 4 — SCL</td>
+<td>col 33, row 2</td>
+<td>wire to <code>D22</code> at col 30, row 9</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="wiring-md--d-the-buses">D. The buses</h2>
+<table>
+<thead>
+<tr>
+<th>Bus</th>
+<th style="text-align: right;">Row</th>
+<th>Spans</th>
+<th>Carries</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GND</td>
+<td style="text-align: right;"><strong>8</strong></td>
+<td>cols 1 → 28</td>
+<td>the four 220Ω bottom leads</td>
+</tr>
+<tr>
+<td>GND</td>
+<td style="text-align: right;"><strong>16</strong></td>
+<td>cols 1 → 28</td>
+<td>the four colour-button ground legs</td>
+</tr>
+<tr>
+<td>GND</td>
+<td style="text-align: right;"><strong>21</strong></td>
+<td>cols 1 → 28</td>
+<td>the three answer-button ground legs</td>
+</tr>
+</tbody>
+</table>
+<p>All three are joined by a bare wire down <strong>column 1</strong>, rows 8–21. One wire (#12) carries ground from col 28, row 8 to the ESP32's <code>GND</code> at col 30, row 21. There are <strong>no other ground connections</strong> — every ground leg sits directly on a bus.</p></section><section class="docwrap" id="connections-md"><h1>How you actually connect things</h1>
+<p>Read this once before <code>BUILD.md</code>. Everything in that document is one of the five moves
+below, repeated. If these make sense, the build is just following a list.</p>
+<hr />
+<h2 id="connections-md--the-one-idea-everything-rests-on">The one idea everything rests on</h2>
+<p><strong>A perfboard hole is an island.</strong></p>
+<p>Each hole has a ring of copper around it — a <strong>pad</strong>. (Your board is double-sided, so
+there is a pad on each face; we solder on one face throughout, which keeps things simple
+and means the design works whether or not the holes are plated through.) Pads are not connected to each other. Not to the one next door, not to the one
+across the board. <strong>Nothing is connected to anything until you connect it.</strong></p>
+<p>That's the whole difference from a breadboard, where the plastic hides little metal clips
+that join each row of five holes for you. Perfboard has none of that. You are the wiring.</p>
+<pre><code>   TOP  (components live here)          UNDERSIDE (every joint made here)
+
+   ┌───────────────────────┐            ┌───────────────────────┐
+   │  ◎   ◎   ◎   ◎   ◎    │            │  ◎   ◎   ◎   ◎   ◎    │  ◎ = copper pad
+   │  ◎   ◎   ◎   ◎   ◎    │            │  ◎   ◎   ◎   ◎   ◎    │
+   └───────────────────────┘            └───────────────────────┘
+     pads here too — we ignore them       every pad isolated
+</code></pre>
+<blockquote>
+<p><strong>"The copper face" means nothing on this board.</strong> Yours is <strong>double-sided</strong>: there is a
+pad on <em>both</em> faces of every hole. That phrase was left over from the single-sided kit
+boards. Throughout these documents, <strong>"the underside" means the face you solder on</strong> —
+the one facing away from the components — and <strong>every joint in this build is made there</strong>,
+including all three ground buses. The top pads are simply left bare.</p>
+<p>Why one face? Because then the design doesn't care whether your holes are plated through.
+If they are, a joint underneath also reaches the top pad — a bonus, not a requirement.</p>
+</blockquote>
+<p>So when the build sheet says <em>"LED 1 anode, col 4 row 2 → D13"</em>, that means: the LED's long
+leg goes through the hole at column 4, row 2, and <strong>you</strong> run a wire from that pad to the
+D13 pad at the ESP32 socket. Nothing happens automatically.</p>
+<hr />
+<h2 id="connections-md--move-1-put-a-component-in-and-solder-it">Move 1 — put a component in and solder it</h2>
+<p>The basic action. Everything else is a variation.</p>
+<ol>
+<li><strong>From the TOP</strong>, push the component's legs down through its holes.</li>
+<li>Turn the board over. The legs stick out through the pads.</li>
+<li><strong>Splay each leg outward ~30°</strong> so the part can't fall out while you work.</li>
+<li>Touch the iron so it heats <strong>the pad and the leg at the same time</strong>, ~2 seconds.</li>
+<li>Feed solder <strong>into the joint</strong> — not onto the iron. It flows and wets flat.</li>
+<li>Solder away first, then the iron. Don't move it while it cools.</li>
+<li><strong>Snip the leg flush</strong> with flush cutters.</li>
+</ol>
+<pre><code>   side view, mid-solder
+
+      component body
+   ═════╤═══════╤═════   ← top face
+        │       │
+   ─────┴───────┴─────   ← board
+        ▲       ▲
+     ╱▔▔▔╲   ╱▔▔▔╲       ← solder fillet: shiny, concave, volcano-shaped
+     leg      leg
+</code></pre>
+<p>That is one <strong>joint</strong>. This build has about 149 of them.</p>
+<hr />
+<h2 id="connections-md--move-2-a-bare-wire-that-joins-a-whole-row-a-bus">Move 2 — a bare wire that joins a whole row (a "bus")</h2>
+<p>Ground has to reach 11 different legs — four resistor bottoms, four colour-button
+ground legs and three answer-button ground legs. Running 11 separate wires would be
+miserable, so
+instead you lay <strong>one bare wire along a row of pads and solder it to each one</strong>. That turns
+a row of islands into a single connected node. That node is called a <strong>bus</strong>.</p>
+<p>This board has <strong>three GND buses</strong>, joined to each other down <strong>column 1</strong>. Anything that
+needs ground just has to reach the nearest bus.</p>
+<blockquote>
+<p><strong>Why column 1 and not the right-hand end?</strong> The link is <em>bare</em> wire. Every signal wire
+on this board leaves its component at column 3 or higher and runs <em>right</em>, toward the
+ESP32 — so the far-left column is the one line none of them cross. When the link lived at
+column 28, all seven button and answer wires ran straight over it, each one a nicked
+insulator away from a dead short. <code>verify-layout.py</code> now fails if that ever comes back.</p>
+</blockquote>
+<p><strong>How to lay one:</strong></p>
+<ol>
+<li>Cut a bare (or tinned) wire a bit longer than the row. <strong>24AWG</strong>, not 22 — thinner is
+   far easier to heat.</li>
+<li>Lay it on the <strong>underside</strong>, along the row of pads.</li>
+<li>⚠️ <strong>Beside the hole centres, not across them.</strong> Tangent to the pads, so the holes stay
+   clear.</li>
+<li>Tack one end. Check it's straight. Solder it to every second or third pad.</li>
+</ol>
+<pre><code>   underside, looking at a bus row
+
+   ◎───◎───◎───◎───◎───◎     ← RIGHT: wire runs beside the pads, holes clear
+   ═══════════════════════
+
+   ◉═══◉═══◉═══◉═══◉═══◉     ← WRONG: wire over the hole centres.
+                                A lead pushed down later hits it and stops.
+</code></pre>
+<p><strong>Why that matters so much:</strong> if the wire covers the hole, a component lead pushed in later
+never reaches the copper — but solder still bridges the gap and <strong>the joint looks perfect
+from underneath</strong>. Eighteen joints on this board could fail that way, invisibly.</p>
+<p><strong>Consequence for the build order:</strong> rows 16 and 21 carry a bus <em>and</em> button legs. On those
+rows, <strong>fit the buttons first</strong>, bend their ground legs flat along the row, then lay the bus
+on top of the bent legs and solder once. Only row 8 is empty enough to bus first.</p>
+<hr />
+<h2 id="connections-md--move-1b-clipping-a-leg-you-must-not-fit">Move 1b — clipping a leg you must NOT fit</h2>
+<p>Every tactile switch on this board goes in with <strong>three legs, not four.</strong> The fourth — the
+one in the signal column on the ground-bus row — gets snipped flush with the body before
+the switch is seated.</p>
+<p>The reason is that a switch's two internally-joined pairs may run along its short axis or
+its long axis depending on the part, and this kit's run the long way. If they do, that
+fourth leg is on the <em>signal</em> node, and dropping it onto the ground bus welds the button
+closed. Clipping it is correct either way, so the board does not care which switch you
+bought. <code>tools/verify-layout.py</code> simulates both pairings and fails if the design ever
+assumes all four legs can be fitted.</p>
+<p>Three legs is plenty of anchoring for a part this size.</p>
+<hr />
+<h2 id="connections-md--move-3-bending-a-leg-to-reach-a-neighbouring-pad">Move 3 — bending a leg to reach a neighbouring pad</h2>
+<p>Used once per LED. The LED's cathode is in row 3 and its resistor's top lead is in row 4 —
+next-door pads that must be joined.</p>
+<p>Rather than adding a wire, <strong>use the LED's own leg</strong>:</p>
+<ol>
+<li>Solder the LED's cathode in its own hole as normal, <strong>but don't snip it</strong>.</li>
+<li>Bend the leftover length flat along the underside until it lies on the row-3 pad.</li>
+<li>Solder it there too — same joint as the resistor lead.</li>
+<li>Now snip.</li>
+</ol>
+<pre><code>   underside
+
+   row 3  ◎  ← LED cathode soldered here
+          │
+          ╰──╮   leg bent flat along the underside
+   row 4  ◎◄─╯  ← and soldered onto this pad, where the resistor already sits
+</code></pre>
+<p>An LED leg is ~20mm; you need 2.54mm. There's plenty.</p>
+<blockquote>
+<p><strong>Why not just put both leads in the same hole?</strong> A hole is 1.0mm; two leads are ~1.25mm
+side by side, and there'd be no room left for solder. <strong>One lead per hole, always.</strong></p>
+</blockquote>
+<hr />
+<h2 id="connections-md--move-4-a-signal-wire-across-the-board">Move 4 — a signal wire across the board</h2>
+<p>Sixteen of these — 12 from the control surface to the ESP32 socket, and 4 more from the
+LCD port to the socket. All identical:</p>
+<ol>
+<li>Cut 22AWG solid wire, generously long — you can always shorten.</li>
+<li><strong>Strip ~4mm</strong> off each end.</li>
+<li><strong>Tin both ends</strong>: melt a little solder into the bare copper so it turns silver. Tinned
+   wire slides into a joint predictably; untinned wire frays and wanders.</li>
+<li>Push one end down through its hole <strong>from the top</strong>, solder underneath, snip.</li>
+<li>Do the same at the far end, into the pad under the ESP32 socket pin it serves.</li>
+</ol>
+<blockquote>
+<p><strong>Label both ends before you solder the second one.</strong> Sixteen identical wires become
+indistinguishable the moment they're in a bundle. Masking-tape flags with the signal
+name.</p>
+</blockquote>
+<p><strong>The LCD's own four wires are not soldered.</strong> They're F-F jumpers from the LCD's header to
+the board's 4-pin <strong>LCD port</strong> — a male header at cols 30–33, row 2. The port exists because
+the ESP32's pins disappear inside the socket the moment the module is seated, so there is
+nothing left to clip a jumper onto. The port's four <em>wires</em> (port → socket pads) are soldered
+like any other; the LCD itself just plugs in.</p>
+<hr />
+<h2 id="connections-md--move-5-soldering-a-wire-onto-a-pad-that-already-has-a-pin-in-it">Move 5 — soldering a wire onto a pad that already has a pin in it</h2>
+<p>Each signal wire lands on a pad that already holds a socket pin. You don't need a free
+hole — <strong>you solder the wire onto the pin's existing joint</strong>.</p>
+<p>First, the thing people expect and shouldn't: <strong>you do not add a male pin to the socket.</strong>
+The female strip is an ordinary component. It sits on top, its own pins come through the
+board, and you solder those to the pads underneath. That's the whole joint.</p>
+<pre><code>   TOP        ┌──────────┐  ← female socket strip. The ESP32 plugs in HERE, later.
+              │ ⌷ ⌷ ⌷ ⌷ │
+   ═══════════╪═╪═╪═╪═══╪═══  ← the board
+              │ │ │ │
+   UNDERSIDE  ▼ ▼ ▼ ▼   ← the strip's own pins poke through. THIS is what you solder,
+             ╱▔╲            and later what each signal wire laps onto.
+</code></pre>
+<p>Then, for each wire:</p>
+<ol>
+<li>Do all 30 socket joints first.</li>
+<li>Lay the tinned wire end against the target pin's solder blob — or hook it around the
+   2mm stub, if you left one there (<code>BUILD.md</code> step 1 says which 16 pads to leave stubs on).</li>
+<li>Touch the iron to both until the existing solder melts and takes the wire.</li>
+<li>Remove the iron, hold still 2 seconds.</li>
+</ol>
+<p>That's called a <em>lap joint</em> and it's completely normal. One joint, holding two things.</p>
+<hr />
+<h2 id="connections-md--putting-it-together-one-led-start-to-finish">Putting it together — one LED, start to finish</h2>
+<p>Every part of the build is these moves in sequence. Here's LED 1 in full:</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Move</th>
+<th>What you do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Move 1</td>
+<td>LED long leg (+) into <strong>col 4, row 2</strong>; short leg (−) into <strong>col 4, row 3</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td>Move 1</td>
+<td>220Ω into <strong>col 4, row 4</strong> and <strong>col 4, row 8</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td>Move 3</td>
+<td>Bend the LED's cathode leg from row 3 onto the row-4 pad and solder</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Move 2</td>
+<td>The resistor's bottom lead is in row 8 — <strong>that row is a GND bus</strong>, so it's grounded the moment the bus is on</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Move 4</td>
+<td>Wire from <strong>col 4, row 2</strong> to the <strong>D13</strong> pad at the ESP32 socket (col 30, row 10) — both ends are lap joints, Move 5</td>
+</tr>
+</tbody>
+</table>
+<p>Follow the current: <strong>D13 → wire → LED anode → through the LED → cathode → bent leg →
+resistor → GND bus → back to the ESP32's GND.</strong> Every step is a connection you made.</p>
+<hr />
+<h2 id="connections-md--the-mental-checklist-for-any-connection">The mental checklist for any connection</h2>
+<p>Before you solder anything, ask:</p>
+<ol>
+<li><strong>Which two pads am I joining?</strong></li>
+<li><strong>What joins them</strong> — a component lead, a bent leg, a bus, or a wire?</li>
+<li><strong>Is either pad already part of a bus?</strong> If so, it's already connected to everything else
+   on that bus. Ground legs land <em>on</em> a bus deliberately; signal legs must never touch one.</li>
+</ol>
+<p>That third question is the one that bites. A signal leg landing on a ground bus is a dead
+short, and it looks completely normal.</p>
+<hr />
+<p>Next: <a href="#soldering-md"><code>SOLDERING.md</code></a> to practise the moves, then <a href="#build-md"><code>BUILD.md</code></a> to
+do them in order.</p></section><section class="docwrap" id="multimeter-md"><h1>Using the multimeter, from zero</h1>
+<p>Written for this build. The meter is the single most useful tool here — nearly every
+failure in a project like this is a cold joint or an invisible bridge, and both are
+silent until you beep them.</p>
+<p>Everything in this document is done with <strong>nothing plugged in and no power anywhere</strong>.
+The meter supplies a couple of milliamps of its own; you cannot hurt yourself or the parts.</p>
+<hr />
+<h2 id="multimeter-md--1-set-it-up-once">1. Set it up — once</h2>
+<p><strong>Two jacks matter.</strong></p>
+<pre><code>   ┌──────────────────────┐
+   │   [ 10A ]  [ VΩmA ]  │   ← red lead here
+   │           [  COM  ]  │   ← black lead here, always
+   └──────────────────────┘
+</code></pre>
+<ul>
+<li><strong>Black → COM.</strong> It never moves.</li>
+<li><strong>Red → VΩmA</strong> (may read <code>VΩ</code>, <code>mAVΩ</code>, or <code>+</code>).</li>
+<li><strong>Never the 10A jack.</strong> That jack is for measuring current and is a dead short across
+  the probes. It is the classic first-day mistake.</li>
+</ul>
+<p><strong>Three dial positions:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Name</th>
+<th>Used for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>•)))</code> sound waves</td>
+<td><strong>continuity</strong></td>
+<td>joints, buses, buttons — beeps when two points are connected</td>
+</tr>
+<tr>
+<td><code>▶\|</code> arrow into a bar</td>
+<td><strong>diode</strong></td>
+<td>LEDs — which way current flows, and is it alive</td>
+</tr>
+<tr>
+<td><code>Ω</code></td>
+<td><strong>resistance</strong></td>
+<td>the 220Ω resistors</td>
+</tr>
+</tbody>
+</table>
+<p>On most cheap meters <strong>continuity and diode share one dial position</strong>. Land on it, then
+press <code>MODE</code> / <code>SELECT</code> to cycle. The little symbol in the corner of the display tells you
+which mode you are actually in.</p>
+<hr />
+<h2 id="multimeter-md--2-prove-the-meter-works-before-you-trust-it">2. Prove the meter works before you trust it</h2>
+<p>Dial to continuity. <strong>Touch the probe tips together.</strong></p>
+<ul>
+<li>Beeps continuously, reads near <code>0.0</code> / <code>000</code>.</li>
+<li>Pull apart: silence, display shows <strong><code>OL</code></strong> or <strong><code>1.</code></strong></li>
+</ul>
+<p><code>OL</code> means <em>open loop</em> — no connection. It is the reading you will see most of the time
+and it is not an error.</p>
+<p>No beep with the tips touching → flat battery, or the red lead is in the wrong jack.</p>
+<hr />
+<h2 id="multimeter-md--3-testing-a-tactile-switch-pre-flight-p1">3. Testing a tactile switch — pre-flight P1</h2>
+<p>A 4-leg tactile switch is <strong>two pairs</strong>. The legs within a pair are joined permanently;
+pressing connects one pair to the other.</p>
+<p><strong>Which pair is which varies by part.</strong> On this kit's switches, the joined pairs run the
+<strong>long way, down the columns</strong> — measured, not assumed. An early draft of this layout
+assumed the opposite and would have shorted all seven buttons to ground.</p>
+<p><strong>The board no longer depends on it.</strong> The build clips one leg off every switch, and
+<code>verify-layout.py</code> proves the remaining three work whichever way the pairs run. So this
+test is now just confirming the parts are alive and behave like switches.</p>
+<p><strong>The test:</strong></p>
+<ol>
+<li>Continuity mode. One spare colored switch, one spare small switch.</li>
+<li>Beep all six leg pairings <strong>without pressing</strong>.</li>
+<li>Press and hold, then beep any pair that was silent.</li>
+</ol>
+<p>Doing it systematically beats free-handing it: <strong>clip the black lead to one leg</strong> and touch
+red to the other three, then move the clip to the next leg. That covers all six pairs with
+one lead never moving.</p>
+<table>
+<thead>
+<tr>
+<th>Result</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Exactly two pairs beep unpressed; all four beep pressed</strong></td>
+<td>Normal. Use it</td>
+</tr>
+<tr>
+<td>Only one pair beeps</td>
+<td>Probe slipped, or a leg is lacquered — scrape it and retry. If it repeats, the switch is faulty</td>
+</tr>
+<tr>
+<td>Three or more pairs beep unpressed</td>
+<td>Shorted internally. Discard it</td>
+</tr>
+<tr>
+<td>Nothing changes when pressed</td>
+<td>Dead switch, or you are not pressing hard enough to latch it</td>
+</tr>
+</tbody>
+</table>
+<p>You do <strong>not</strong> need to record which pair is which, and the square small buttons do <strong>not</strong>
+need marking — the signal leg and the clipped leg are defined by <em>position on the board</em>,
+not by the switch's internals. Any orientation works.</p>
+<hr />
+<h2 id="multimeter-md--4-testing-an-led-pre-flight-p3">4. Testing an LED — pre-flight P3</h2>
+<p><strong>Diode mode <code>▶|</code>, not continuity.</strong> Continuity mode does not push enough voltage through
+an LED to tell you anything.</p>
+<ol>
+<li><strong>Red probe on the long leg</strong> (anode), <strong>black on the short leg</strong> (cathode).</li>
+<li>Reads roughly <code>1.8</code>–<code>2.4</code> for red/yellow, <code>2.6</code>–<code>3.2</code> for green/blue — the forward
+   voltage. <strong>The LED glows faintly</strong>, lit by the meter's own test current.</li>
+<li><strong>Swap the probes.</strong> Now it reads <code>OL</code>.</li>
+</ol>
+<p>That is a good LED, and it identifies the legs: <strong>the leg on the red probe when it lights
+is the anode</strong>, and that is the one that goes in row 2.</p>
+<blockquote>
+<p><strong>Both directions <code>OL</code> on a blue LED?</strong> Suspect the meter, not the LED. Some cheap meters
+only push ~2.5V in diode mode, below a blue LED's forward voltage. Test a red one first
+to confirm your technique before condemning a blue one.</p>
+</blockquote>
+<hr />
+<h2 id="multimeter-md--5-testing-a-resistor-pre-flight-p2">5. Testing a resistor — pre-flight P2</h2>
+<p>Dial to <strong><code>Ω</code></strong>. Manual-ranging meter: pick the <code>2k</code> range.</p>
+<p>Probe both ends — resistors are not polarised, direction does not matter. You want
+<strong>209–231Ω</strong>. It may read <code>218</code> or <code>0.218</code> depending on range.</p>
+<p>Bands are <strong>red · red · brown · gold</strong>. ~100Ω means you grabbed brown-black-brown;
+~2.2kΩ means red-red-red. Both "work" but the LEDs end up too bright or too dim.</p>
+<hr />
+<h2 id="multimeter-md--6-the-three-checks-you-will-repeat-all-build">6. The three checks you will repeat all build</h2>
+<p>Once soldering starts, these three are most of the debugging:</p>
+<p><strong>Is this joint actually connected?</strong> Continuity. One probe on the component lead <em>above</em>
+the board, one on the pad below. Beeps = the solder wetted both. Silent = cold joint,
+reflow it with flux.</p>
+<p><strong>Is this bus continuous?</strong> Continuity. Probe the two far ends of the bus. Then probe a few
+holes along it. All should beep to each other.</p>
+<p><strong>Did I bridge something?</strong> Continuity. Probe each GND bus against the signal row next to
+it. <strong>It must never beep.</strong> Do this after every stage — a bridge found now is one joint to
+fix; found later it is thirty joints to search.</p>
+<blockquote>
+<p><strong>The trap that beeps clean and still fails:</strong> a bus wire lying <em>over</em> the hole centres
+instead of beside them. A lead pushed in from the top stops on the wire and never reaches
+copper, but the solder bridges the gap and the joint looks perfect from underneath, and
+beeps. That is why <code>SOLDERING.md</code> Exercise 4 has you push a lead through a bussed hole and
+confirm it reaches the copper on the underside.</p>
+</blockquote>
+<hr />
+<h2 id="multimeter-md--7-what-the-display-is-telling-you">7. What the display is telling you</h2>
+<table>
+<thead>
+<tr>
+<th>Shows</th>
+<th>Means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OL</code> or <code>1.</code> on the left</td>
+<td>Open — no connection. Normal most of the time</td>
+</tr>
+<tr>
+<td><code>0.0</code> and beeping</td>
+<td>Connected</td>
+</tr>
+<tr>
+<td><code>0.4</code>–<code>2.0</code> and beeping weakly</td>
+<td>Connected but resistive — usually a cold joint</td>
+</tr>
+<tr>
+<td>Numbers drifting around</td>
+<td>Probes not making firm contact; press harder or scrape the flux off</td>
+</tr>
+<tr>
+<td>Reading changes when you press on a joint</td>
+<td><strong>Cold joint.</strong> Reflow it</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p>Next: the six soldering exercises in <a href="#soldering-md"><code>SOLDERING.md</code></a>, then the pre-flight
+section of <a href="#build-md"><code>BUILD.md</code></a>.</p></section><section class="docwrap" id="soldering-md"><h1>Learning to solder, from zero</h1>
+<p>Written for this build specifically. You have never soldered; by the end of section 4 you
+will have made ~30 practice joints and will be ready to touch the real board.</p>
+<p>Budget <strong>one hour of practice</strong> before you start. It is the highest-return hour in the
+whole project — a beginner who practises first builds this in an evening; one who doesn't
+spends the evening debugging cold joints.</p>
+<hr />
+<h2 id="soldering-md--1-before-this-how-connections-work">1. Before this: how connections work</h2>
+<p><strong>Perfboard has no wires in it.</strong> Every hole is an island; nothing is joined until you join
+it. That single fact drives the whole design.</p>
+<p><strong>→ <a href="#connections-md"><code>CONNECTIONS.md</code></a> explains the five moves</strong> you'll use to join things:
+putting a part in, laying a bus, bending a leg to a neighbouring pad, running a wire
+between boards, and soldering onto an existing joint.</p>
+<p>Read it first. This document teaches your hands; that one teaches the plan.</p>
+<hr />
+<h2 id="soldering-md--1b-and-the-other-tool-you-cannot-skip">1b. And the other tool you cannot skip</h2>
+<p><strong>→ <a href="#multimeter-md"><code>MULTIMETER.md</code></a></strong> — the jacks, continuity vs diode mode, and the three
+checks you will repeat on every joint in this build. If you have never used a meter, read it
+before Exercise 1; several exercises below end in "beep it".</p>
+<hr />
+<h2 id="soldering-md--2-safety-briefly">2. Safety, briefly</h2>
+<ul>
+<li>The iron is ~340°C. It looks identical hot and cold. <strong>Park it in its stand every time.</strong></li>
+<li>Solder fumes are flux, not lead — still, work near an open window or a fan.</li>
+<li>Leaded solder: don't eat while working, wash hands after.</li>
+<li>Never "flick" solder off the iron; wipe it on brass wool or a damp sponge.</li>
+<li>Trimmed leads fly. Cup your hand over the cutters or wear glasses.</li>
+</ul>
+<hr />
+<h2 id="soldering-md--3-setting-up">3. Setting up</h2>
+<ol>
+<li><strong>Tin the tip immediately</strong> when it reaches temperature: melt a little solder onto it,
+   wipe on brass wool. A shiny silver tip transfers heat; a dull grey one barely does.
+   Re-tin every few minutes. <strong>A dirty tip is the #1 cause of "my solder won't melt".</strong></li>
+<li>Set the iron to <strong>~340°C</strong> for leaded solder.</li>
+<li>Board held in helping hands or taped down. You need both hands free.</li>
+<li>Solder in your dominant hand, iron in the other. Yes, really — the iron just sits there,
+   the solder does the moving.</li>
+</ol>
+<hr />
+<h2 id="soldering-md--4-practice-do-these-on-a-spare-kit-board">4. Practice — do these on a spare kit board</h2>
+<p>You have three boards. <strong>Sacrifice most of one.</strong> Work through these in order; each takes
+a few minutes.</p>
+<h3 id="soldering-md--exercise-1-wet-a-pad-10">Exercise 1 — wet a pad (×10)</h3>
+<p>Touch the iron to a copper ring for one second, feed solder in, remove. Aim for a small
+shiny dome. Repeat on ten holes.
+<em>Learning:</em> how fast solder melts, and what "flowing" looks like.</p>
+<h3 id="soldering-md--exercise-2-solder-a-wire-into-a-hole-5">Exercise 2 — solder a wire into a hole (×5)</h3>
+<p>Push a wire offcut through, heat the pad <strong>and</strong> the wire together, feed solder, remove
+solder then iron. Trim flush.
+<em>Pass:</em> the joint is shiny and cone-shaped, and the wire doesn't wiggle.</p>
+<h3 id="soldering-md--exercise-3-make-a-bridge-on-purpose-then-remove-it-3">Exercise 3 — make a bridge on purpose, then remove it (×3)</h3>
+<p>Solder two adjacent pads so they merge. Now remove it: lay desoldering braid over the
+blob, press the iron on top, watch the solder wick into the braid.
+<em>Learning:</em> mistakes are undoable. This removes most of the fear.</p>
+<h3 id="soldering-md--exercise-4-a-bus-1-the-important-one">Exercise 4 — a bus (×1, the important one)</h3>
+<p>Lay a bare wire across ten holes in a row — <strong>beside the hole centres, not over them</strong>,
+tangent to the pads. Tack one end, check it's straight, solder every second pad.
+<em>Pass:</em> multimeter beeps between all ten holes.</p>
+<p>Now the part that matters: <strong>push a component lead down through one of those holes from
+the top.</strong> It must reach the underside and sit alongside the wire. If your bus is lying
+<em>over</em> the hole, the lead stops at the board and connects to nothing — and the joint still
+looks perfect from underneath. That single mistake would hit <strong>11 joints</strong> on the real
+board.</p>
+<blockquote>
+<p>On the real board, rows that carry a bus get their <strong>components inserted first</strong>. Bend
+the ground leads flat along the row on the underside, lay the bus wire on top of them,
+and solder once. Bus-first only works on rows with nothing else in them.</p>
+</blockquote>
+<h3 id="soldering-md--exercise-5-a-resistor-and-an-led-2">Exercise 5 — a resistor and an LED (×2)</h3>
+<p>Stand a resistor in two holes, bend the leads to hold it, solder, trim. Then an LED:
+<strong>long leg = +</strong>. Solder, then check the LED still points straight up.
+<em>Learning:</em> parts move while you solder. Tack one leg, correct the alignment, then do the rest.</p>
+<h3 id="soldering-md--exercise-6-a-header-strip-1">Exercise 6 — a header strip (×1)</h3>
+<p>Solder a 5-pin piece of female header. Tack <strong>one</strong> pin, check it sits flat and square,
+then do the rest.
+<em>Learning:</em> headers tilt if you solder both ends first. This is exactly Step 1 of the build.</p>
+<p><strong>You are ready when Exercise 2 produces a shiny joint first try, every try.</strong></p>
+<hr />
+<h2 id="soldering-md--5-the-motion-precisely">5. The motion, precisely</h2>
+<ol>
+<li><strong>Heat both</strong> — iron touches the pad <em>and</em> the lead at once. ~2 seconds.</li>
+<li><strong>Feed solder into the joint</strong> — never onto the iron tip. It should flow instantly and
+   wick flat around the lead.</li>
+<li><strong>Solder away first, then the iron.</strong></li>
+<li><strong>Don't move it</strong> for ~2 seconds while it solidifies.</li>
+<li><strong>Trim</strong> the lead flush once cool.</li>
+</ol>
+<p><strong>Total iron contact: 2–4 seconds.</strong> Longer than 5 lifts the copper pad off the board — a
+permanent injury to that hole.</p>
+<blockquote>
+<p>If it isn't flowing, <strong>stop</strong>. Add flux, re-tin the tip, try again. Holding the iron
+there harder never works; it just cooks the part.</p>
+</blockquote>
+<hr />
+<h2 id="soldering-md--6-reading-a-joint">6. Reading a joint</h2>
+<table>
+<thead>
+<tr>
+<th>Looks like</th>
+<th>Verdict</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Shiny, concave, volcano around the lead</td>
+<td>Good</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Dull, grey, blobby ball</td>
+<td><strong>Cold joint</strong> — the classic failure</td>
+<td>Add flux, reheat until it flows flat</td>
+</tr>
+<tr>
+<td>Solder spanning two pads</td>
+<td><strong>Bridge</strong></td>
+<td>Desoldering braid</td>
+</tr>
+<tr>
+<td>Pad barely covered, lead visible</td>
+<td>Starved</td>
+<td>Reheat, add a little solder</td>
+</tr>
+<tr>
+<td>Ring of copper lifted off the board</td>
+<td>Lifted pad</td>
+<td>That hole is dead — use a neighbour and a jumper</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cold joints are the enemy.</strong> They often <em>look</em> connected and even test connected when
+cold, then fail intermittently. If something works when you press on it, it's a cold joint.</p>
+<hr />
+<h2 id="soldering-md--7-habits-that-prevent-most-problems">7. Habits that prevent most problems</h2>
+<ul>
+<li><strong>Solder the lowest parts first</strong> so the board still lies flat — but see the bus rule
+  below: on a row that carries a bus, the components go in <em>before</em> the bus wire.</li>
+<li><strong>Tack one leg, verify, then finish.</strong> Applies to every multi-leg part.</li>
+<li><strong>Beep every new joint</strong> with the multimeter before moving on.</li>
+<li><strong>After every stage, beep each GND bus against the neighbouring signal rows.</strong> They must
+  never beep. If they do you've bridged something — find it now, not ten joints later.
+  (The control surface carries no 5V at all, so the classic GND↔5V check belongs at the
+  ESP32 socket, between its VIN and GND pads.)</li>
+<li><strong>Trim leads as you go.</strong> Long leads touch each other and create shorts you can't see.</li>
+<li>Wipe the tip before every joint. Two seconds, saves minutes.</li>
+</ul>
+<hr />
+<h2 id="soldering-md--8-when-it-goes-wrong">8. When it goes wrong</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Almost always</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Solder won't melt / balls up</td>
+<td>Dirty or cold tip — re-tin it</td>
+</tr>
+<tr>
+<td>Joint dull and lumpy</td>
+<td>Not enough heat <em>on the pad</em> — you heated only the lead</td>
+</tr>
+<tr>
+<td>Part falls out while soldering</td>
+<td>Bend the leads out slightly to hold it before soldering</td>
+</tr>
+<tr>
+<td>Two things connected that shouldn't be</td>
+<td>Bridge — braid it off</td>
+</tr>
+<tr>
+<td>Nothing works after adding one part</td>
+<td>Beep the GND bus against its neighbouring signal row</td>
+</tr>
+<tr>
+<td>Several buttons dead at once</td>
+<td>The <strong>ground bus</strong>, not the switches (this happened twice on the breadboard)</td>
+</tr>
+<tr>
+<td>A joint works when pressed</td>
+<td>Cold joint — reflow it</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="soldering-md--9-worth-watching-before-you-start">9. Worth watching before you start</h2>
+<ul>
+<li><a href="https://learn.sparkfun.com/tutorials/how-to-solder-through-hole-soldering/all">SparkFun — How to Solder: Through-Hole Soldering</a> — the best single written tutorial; skim the photos of good vs bad joints</li>
+<li><a href="https://learn.adafruit.com/adafruit-guide-excellent-soldering?view=all">Adafruit Guide to Excellent Soldering</a> — especially its joint-quality gallery</li>
+<li><a href="https://www.ladyada.net/learn/soldering/thm.html">Ladyada's soldering tutorial</a> — short, and links NASA's series</li>
+</ul>
+<p>Twenty minutes of these plus the six exercises above and you'll be ahead of most people
+who've soldered a dozen kits.</p>
+<hr />
+<h2 id="soldering-md--10-then-build">10. Then build</h2>
+<p>Follow <code>BUILD.md</code> section 5. Every step ends in a test with a pass condition — do not
+carry on past a failing one. The order exists so that when something breaks, exactly one
+thing has changed.</p>
+<p>Open the figures alongside it:</p>
+<pre><code class="language-bash">mise exec -- python tools/schematic.py        # schematic + a figure per solder step
+mise exec -- python tools/view-plan.py        # tickable checklist
+</code></pre></section><section class="docwrap" id="build-md"><h1>Agent Pad — complete build manual</h1>
+<p>Takes you from loose parts to a working, mounted device. Read section 4 before you touch
+the iron; everything else follows in order.</p>
+<p><strong>Scope:</strong> 1 LCD + 4 LEDs + 7 buttons on <strong>one 30 × 42 double-sided PCB</strong>, screwed to a wooden
+backing. ~149 solder joints, 4–6 hours.</p>
+<p><strong>Done means:</strong> press a color button → a tinted <code>claude</code> window opens and focuses; its LED
+heartbeats; ask it something needing permission → LED blinks fast → press <code>yes</code> → the
+command runs. One USB cable to the Mac.</p>
+<hr />
+<h2 id="build-md--two-rules">Two rules</h2>
+<p><strong>1. You have ONE ESP32 — it must stay removable.</strong> That's why it goes in a socket rather
+than being soldered down.</p>
+<p><strong>Be clear-eyed about the fallback.</strong> Once the board is soldered you will have <strong>zero
+colored buttons and zero LCDs left</strong> (the kit has exactly 4 and 1; LEDs, resistors and
+small buttons do have spares). <code>BREADBOARD.md</code> is only a true fallback if you buy 4 spare
+12mm tactile switches. The LCD is already safe: it is <strong>never soldered</strong> — 4 F-F jumpers,
+female onto its own header and female onto the board's 4-pin LCD port, so it unplugs and moves.</p>
+<p><strong>2. Solder nothing you haven't already proven on the breadboard.</strong> Everything here is
+validated. Don't add features and solder them the same day.</p>
+<hr />
+<h2 id="build-md--1-parts-and-tools">1. Parts and tools</h2>
+<h3 id="build-md--from-the-freenove-kit">From the Freenove kit</h3>
+<p>ESP32 · I²C LCD1602 · 4 LEDs (R/G/B/Y) · 4× 220Ω · 4 capped push buttons · 3 plain push
+buttons · <strong>40-pin stacking header</strong> (cut into two 15-socket strips) · a <strong>4-pin male
+header</strong> for the LCD port · <strong>3× PY-5CM*7CM perfboards</strong> — <em>not</em> the build surface any
+more, but sacrifice one for the soldering practice in <code>SOLDERING.md</code>.</p>
+<h3 id="build-md--bought-separately">Bought separately</h3>
+<p><strong>One 30 × 42 hole double-sided PCB, 120 × 80mm</strong> — silkscreen reads <code>12*8CM 2.54MM</code>.
+This is what everything is built on. It arrives with <strong>four factory corner mounting holes</strong>,
+so no drilling is needed.</p>
+<h3 id="build-md--buy-tools">Buy — tools</h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Temperature-controlled soldering iron</td>
+<td>~340°C for leaded solder</td>
+</tr>
+<tr>
+<td>Solder, 60/40 <strong>leaded</strong>, 0.6–0.8mm</td>
+<td>Far more forgiving than lead-free for a first build</td>
+</tr>
+<tr>
+<td>Flux pen</td>
+<td>The difference between clean joints and blobs</td>
+</tr>
+<tr>
+<td><strong>Multimeter with continuity beep</strong></td>
+<td><strong>Non-negotiable.</strong> Nearly every failure is a cold joint or invisible bridge. Never used one? <a href="#multimeter-md"><code>MULTIMETER.md</code></a></td>
+</tr>
+<tr>
+<td>Wire strippers · flush cutters</td>
+<td></td>
+</tr>
+<tr>
+<td>Helping hands / small vise</td>
+<td>You need both hands for iron and solder</td>
+</tr>
+<tr>
+<td>Desoldering braid</td>
+<td>For when — not if — you bridge two pads</td>
+</tr>
+</tbody>
+</table>
+<h3 id="build-md--buy-materials">Buy — materials</h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>22AWG solid-core hookup wire</td>
+<td>The 12 signal wires and the 4 LCD-port wires</td>
+</tr>
+<tr>
+<td>Bare or tinned 24AWG</td>
+<td>The three GND buses and the link — thinner is far easier to heat</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>You can cannibalise the kit's breadboard jumpers</strong> for the 16 signal wires: cut the
+connector off, strip 4mm, tin it. Two exceptions —
+<strong>keep 4 F-F jumpers intact</strong> (that is how the LCD reaches its port), and <strong>do not use
+stranded jumpers for the buses.</strong> A bare stranded wire lying along a row frays, and one
+stray strand touching a signal pad is a short you will never find.</p>
+<p><strong>Free bus wire:</strong> the leads you clip off the resistors and LEDs are solid, pre-tinned
+and ideal. You will have sixteen of them at 15–25mm each; a bus row is 71mm, so it is
+three or four pieces laid end to end — which is fine, since you solder to every second
+or third pad anyway.
+| Heat-shrink, assorted | |
+| Wood backing plate | ~150 × 200mm, any offcut |
+| <strong>M3 × 12mm screws</strong> + nylon washers + 6mm standoffs | Mounting the board through its factory corner holes — measure one first |
+| M3 × 16mm screws + 12–15mm standoffs | Mounting the LCD by its own 4 holes |
+| 4 × F-F jumper wires | LCD to the board's LCD port — never soldered |</p>
+</blockquote>
+<h3 id="build-md--nice-to-have">Nice to have</h3>
+<p>Isopropyl + brush (clean flux so you can see joints) · Kapton tape (holds parts while you
+tack the first pin) · a second ESP32 if you ever see one in stock.</p>
+<hr />
+<h2 id="build-md--2-the-case-deferred">2. The case — deferred</h2>
+<p><strong>The demo does not depend on a case.</strong> The deliverable is the soldered board plus the LCD,
+screwed to a wooden plate. That is a solid object you can hand to someone, and it needs no
+printer. If a case ever happens, generate it <em>from</em> <code>tools/layout.py</code> — the part positions
+there are already measured — rather than building the board to fit a case.</p>
+<hr />
+<h2 id="build-md--3-the-board">3. The board</h2>
+<p>One <strong>30 × 42 hole double-sided board, 120 × 80mm</strong>, oriented <strong>42 columns across, 30 rows
+down</strong>. Grid reference: col 1, row 1 = top-left. The silkscreen letters along the bottom
+edge run A–Z then A–P — that is your 42 columns — and there are four factory-drilled
+mounting holes at the corners.</p>
+<p>Everything lives on it — the control surface in <strong>columns 1–28</strong>, the ESP32's socket in
+<strong>columns 30–40</strong>. There is no second board and no inter-board loom.</p>
+<p><strong>Measured footprints</strong> (calipers, on the real parts):</p>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Pins across</th>
+<th>Pins long</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Colored button</td>
+<td><strong>3 holes</strong> (1 between)</td>
+<td><strong>6 holes</strong> (4 between)</td>
+</tr>
+<tr>
+<td>Small button</td>
+<td><strong>3 holes</strong></td>
+<td><strong>3 holes</strong></td>
+</tr>
+<tr>
+<td>ESP32</td>
+<td><strong>11 holes</strong> (pin rows 1.0″ apart)</td>
+<td><strong>15 holes</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="build-md--why-this-board-changed-the-design">Why this board changed the design</h3>
+<p>The previous plan used two of the kit's small single-sided boards, because a single-sided
+board cannot socket the ESP32 underneath and there was no room for it on top. At 30 × 42
+the question disappears: the ESP32 simply sits <strong>beside</strong> the controls in its own socket,
+mounted the ordinary way — body on top, pins down, soldered underneath.</p>
+<p>That drops the second board, the 12-wire inter-board loom and ~30 joints, <strong>and</strong> roughly
+doubles every clearance:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>old 18×24</th>
+<th>this board</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Between button bodies</td>
+<td>3.24mm</td>
+<td><strong>5.78mm</strong></td>
+</tr>
+<tr>
+<td>Resistor → button</td>
+<td>5.43mm</td>
+<td><strong>9.90mm</strong></td>
+</tr>
+<tr>
+<td>Button → answer row</td>
+<td>4.97mm</td>
+<td><strong>7.51mm</strong></td>
+</tr>
+<tr>
+<td>Spare rows</td>
+<td>10</td>
+<td><strong>22</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Because every joint stays on one face, the design does <strong>not</strong> depend on whether your
+holes are plated through. If they are, that's a bonus (sturdier pads); if not, nothing
+changes.</p>
+<blockquote>
+<p><strong>The LCD is still never soldered</strong> — but it cannot clip onto the ESP32's pins either,
+because those are <em>inside the socket</em> the moment the module is seated. So the board
+carries a <strong>4-pin male LCD port</strong> of its own (cols 30–33, row 2), wired to the socket
+pads, and the LCD reaches it with 4 F-F jumpers. The LCD stays a reusable part, and the
+only 5V on the board is that one port — nowhere near the control surface.</p>
+</blockquote>
+<!-- GEN:rowplan -->
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Row</th>
+<th>What</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;"><strong>2</strong></td>
+<td><strong>LED anodes (+)</strong> — each also takes that LED's wire to the socket · cols 4, 11, 18, 25 · <strong>LCD port</strong> — 4 male pins · cols 30–33</td>
+</tr>
+<tr>
+<td style="text-align: right;"><strong>3</strong></td>
+<td><strong>LED cathodes (−)</strong> — lead bends over on the underside to the row-4 pad</td>
+</tr>
+<tr>
+<td style="text-align: right;"><strong>4</strong></td>
+<td>220Ω top lead (the only lead <em>in</em> this hole; the cathode lands on its pad)</td>
+</tr>
+<tr>
+<td style="text-align: right;"><strong>8</strong></td>
+<td>220Ω bottom lead — lands straight on the bus · <strong>GND bus</strong> — bare wire, cols 1 → 28</td>
+</tr>
+<tr>
+<td style="text-align: right;"><strong>11</strong></td>
+<td><strong>Colored button legs — signal node</strong> · cols 3+5, 10+12, 17+19, 24+26</td>
+</tr>
+<tr>
+<td style="text-align: right;"><strong>16</strong></td>
+<td><strong>GND bus</strong> — bare wire, cols 1 → 28 · <strong>Colored button legs — ground node</strong> · cols 3+5, 10+12, 17+19, 24+26</td>
+</tr>
+<tr>
+<td style="text-align: right;"><strong>19</strong></td>
+<td><strong>AA / no / yes legs — signal node</strong> · cols 4+6, 13+15, 22+24</td>
+</tr>
+<tr>
+<td style="text-align: right;"><strong>21</strong></td>
+<td><strong>GND bus</strong> — bare wire, cols 1 → 28 · <strong>AA / no / yes legs — ground node</strong> · cols 4+6, 13+15, 22+24</td>
+</tr>
+</tbody>
+</table>
+<p>The 3 GND buses join together down <strong>column 1</strong> — the far left. Every signal wire leaves its part at column 3 or higher and runs <em>right</em>, so nothing ever crosses that bare link.</p>
+<p>Genuinely free rows on the control surface, cols 1–28 (no lead <em>and</em> no component body above them): <strong>1, 9, 10, 17, 18, 22, 23, 24, 25, 26, 27, 28, 29, 30</strong>.</p>
+<!-- /GEN:rowplan -->
+
+<p>Verified clearances and spare rows come straight from <code>tools/verify-layout.py</code>; re-run it
+after any change.</p>
+<h3 id="build-md--the-esp32-socket">The ESP32 socket</h3>
+<p>Cut two <strong>15-socket</strong> lengths from the kit's 40-pin stacking header (count 15, cut through
+the 16th). They go at <strong>columns 30 and 40, rows 8 → 22</strong>.</p>
+<ol>
+<li>Plug <strong>both strips onto the ESP32's pins</strong> — the ESP32 now holds them at exactly the
+   right spacing and squareness</li>
+<li>Lower that assembly onto the board <strong>from the top</strong>, pins through the holes</li>
+<li>Confirm the strips land in columns 30 and 40 (10 apart — your ESP32 measures 11 holes
+   across)</li>
+<li>Solder <strong>one pin per strip</strong> on the underside, check it sits flat, then do the rest</li>
+<li>Trim the pins flush and pull the ESP32 out</li>
+</ol>
+<p>Soldering the strips separately and <em>then</em> trying to seat the ESP32 is how people end up
+desoldering a 15-pin strip. Let the ESP32 hold them.</p>
+<p><strong>Where the USB ends up.</strong> The module's 55mm body overhangs its 15-pin rows by about 4
+rows at each end, so with the socket at rows 8–22 the USB connector stops <strong>13mm short of
+the bottom edge</strong> — it does <em>not</em> overhang. That is fine: the module rides ~8mm up on the
+socket pins, so the plug and cable pass clear over the board. What it does mean is that
+<strong>rows 26–30 at columns 30–40 must stay empty</strong> — that strip is the cable's exit path.
+<code>verify-layout.py</code> checks it.</p>
+<h3 id="build-md--the-wires">The wires</h3>
+<!-- GEN:wiretable -->
+<p><strong>12 soldered wires</strong>, each from a component pad to the pad of the ESP32 socket pin it serves. All on the same board — short runs, no inter-board loom.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">#</th>
+<th>Signal</th>
+<th>From — component hole</th>
+<th>To — socket hole</th>
+<th>ESP32 pin</th>
+<th>Fitted in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td>LED 1 red</td>
+<td>col 4, row 2</td>
+<td><strong>col 40, row 20</strong></td>
+<td>D13 (VIN 3)</td>
+<td>step 3</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td>LED 2 green</td>
+<td>col 11, row 2</td>
+<td><strong>col 40, row 18</strong></td>
+<td>D14 (VIN 5)</td>
+<td>step 3</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td>LED 3 blue</td>
+<td>col 18, row 2</td>
+<td><strong>col 40, row 17</strong></td>
+<td>D27 (VIN 6)</td>
+<td>step 3</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td>LED 4 yellow</td>
+<td>col 25, row 2</td>
+<td><strong>col 40, row 16</strong></td>
+<td>D26 (VIN 7)</td>
+<td>step 3</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td>button 1 red</td>
+<td>col 3, row 11</td>
+<td><strong>col 40, row 13</strong></td>
+<td>D32 (VIN 10)</td>
+<td>step 4</td>
+</tr>
+<tr>
+<td style="text-align: right;">6</td>
+<td>button 2 green</td>
+<td>col 10, row 11</td>
+<td><strong>col 40, row 14</strong></td>
+<td>D33 (VIN 9)</td>
+<td>step 4</td>
+</tr>
+<tr>
+<td style="text-align: right;">7</td>
+<td>button 3 blue</td>
+<td>col 17, row 11</td>
+<td><strong>col 40, row 15</strong></td>
+<td>D25 (VIN 8)</td>
+<td>step 4</td>
+</tr>
+<tr>
+<td style="text-align: right;">8</td>
+<td>button 4 yellow</td>
+<td>col 24, row 11</td>
+<td><strong>col 30, row 18</strong></td>
+<td>D4 (3V3 5)</td>
+<td>step 4</td>
+</tr>
+<tr>
+<td style="text-align: right;">9</td>
+<td>AA (always allow)</td>
+<td>col 4, row 19</td>
+<td><strong>col 30, row 8</strong></td>
+<td>D23 (3V3 15)</td>
+<td>step 5</td>
+</tr>
+<tr>
+<td style="text-align: right;">10</td>
+<td>no (deny)</td>
+<td>col 13, row 19</td>
+<td><strong>col 30, row 14</strong></td>
+<td>D18 (3V3 9)</td>
+<td>step 5</td>
+</tr>
+<tr>
+<td style="text-align: right;">11</td>
+<td>yes (approve)</td>
+<td>col 22, row 19</td>
+<td><strong>col 30, row 13</strong></td>
+<td>D19 (3V3 10)</td>
+<td>step 5</td>
+</tr>
+<tr>
+<td style="text-align: right;">12</td>
+<td>ground</td>
+<td>col 28, row 8</td>
+<td><strong>col 30, row 21</strong></td>
+<td>GND (3V3 2)</td>
+<td>step 2</td>
+</tr>
+</tbody>
+</table>
+<p>Plus the <strong>LCD port</strong> — 4 male header pins soldered into the board in step 6, each wired to a socket pad. The LCD itself reaches them with 4 F-F jumpers and is <strong>never soldered</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>LCD pin</th>
+<th>Board hole (male pin)</th>
+<th>Wires to socket hole</th>
+<th>ESP32 pin</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GND</td>
+<td>col 30, row 2</td>
+<td>col 40, row 21</td>
+<td><strong>GND</strong></td>
+</tr>
+<tr>
+<td>VCC</td>
+<td>col 31, row 2</td>
+<td>col 40, row 22</td>
+<td><strong>VIN</strong></td>
+</tr>
+<tr>
+<td>SDA</td>
+<td>col 32, row 2</td>
+<td>col 30, row 12</td>
+<td><strong>D21</strong></td>
+</tr>
+<tr>
+<td>SCL</td>
+<td>col 33, row 2</td>
+<td>col 30, row 9</td>
+<td><strong>D22</strong></td>
+</tr>
+</tbody>
+</table>
+<p>That is <strong>7 wires onto the 3V3 column (col 30, the near one) and 9 onto the VIN column (col 40)</strong> — 16 of the socket's 30 pads take a wire.</p>
+<blockquote>
+<p><strong>Never wire to RX0 or TX0</strong> (3V3 column, positions 12–13 from the USB end). Those carry the USB serial link; touching them breaks uploads <em>and</em> the daemon, and looks like a dead board.</p>
+<p><strong>The LCD port carries 5V</strong> (VIN). It is the only 5V on the board and it lives at columns 30–33, well away from the control surface. Keep it that way.</p>
+</blockquote>
+<!-- /GEN:wiretable -->
+
+<p><strong>Label both ends before soldering the second end.</strong> Identical wires get confusing fast.</p>
+<h3 id="build-md--how-much-soldering-this-is">How much soldering this is</h3>
+<!-- GEN:joints -->
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th style="text-align: right;">Joints</th>
+<th>What</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GND buses + link</td>
+<td style="text-align: right;">46</td>
+<td>3 bare wires soldered every 2nd pad, plus the column-1 link</td>
+</tr>
+<tr>
+<td>Component legs</td>
+<td style="text-align: right;">37</td>
+<td>4 LEDs + 4 resistors (2 each), 7 switches (<strong>3 legs each</strong> — the fourth is clipped)</td>
+</tr>
+<tr>
+<td>ESP32 socket</td>
+<td style="text-align: right;">30</td>
+<td>two 15-way strips</td>
+</tr>
+<tr>
+<td>Signal wires</td>
+<td style="text-align: right;">24</td>
+<td>12 wires, both ends</td>
+</tr>
+<tr>
+<td>LCD port</td>
+<td style="text-align: right;">12</td>
+<td>4 male pins + 4 wires</td>
+</tr>
+<tr>
+<td><strong>total</strong></td>
+<td style="text-align: right;"><strong>~149</strong></td>
+<td>at 1–2 min each including inspection, that is <strong>4–6 hours</strong></td>
+</tr>
+</tbody>
+</table>
+<!-- /GEN:joints -->
+
+<h3 id="build-md--mounting-to-wood">Mounting to wood</h3>
+<!-- GEN:mounts -->
+<p><strong>Your board already has four mounting holes</strong>, drilled at the factory in the corners, outside the pad grid. Use them. <strong>Do not drill anything.</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Board</td>
+<td>120 × 80 mm — silkscreen reads <code>12*8CM 2.54MM</code></td>
+</tr>
+<tr>
+<td>Grid</td>
+<td>30 rows × 42 columns, 2.54mm pitch</td>
+</tr>
+<tr>
+<td>Margin outside the grid</td>
+<td>7.9 mm at the sides, 3.2 mm top and bottom</td>
+</tr>
+<tr>
+<td>Corner holes</td>
+<td>factory-drilled, typically 3.0–3.2mm → <strong>M3</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Measure one corner hole before buying screws. 3.0–3.2mm takes M3; if yours are smaller, M2.5 or M2 with a washer will still hold a board this light.</p>
+</blockquote>
+<!-- /GEN:mounts -->
+
+<p>Every solder joint is on the underside, so <strong>nothing sits flat on the wood</strong> — each piece
+stands off on spacers.</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Fixing</th>
+<th>Spacer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The board</td>
+<td>M3 × 12mm + nylon washer, through the four factory corner holes</td>
+<td><strong>6mm</strong></td>
+</tr>
+<tr>
+<td>LCD</td>
+<td>its own 4 × M3 holes — no drilling</td>
+<td><strong>12–15mm</strong> (its I²C backpack sticks ~10mm off the back)</td>
+</tr>
+<tr>
+<td>ESP32</td>
+<td>none — it plugs into the socket</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Pilot-drill the wood at 2mm</strong> for M3, or it splits.</li>
+<li><strong>Nylon washer under every screw head</strong> — perfboard cracks if you overtighten onto bare FR4.</li>
+<li>Leave the bottom-right of the board clear of clips and cable ties: that is where the USB
+  cable comes out, 8mm above the surface.</li>
+</ul>
+<p>Lay it out the way it reads: <strong>LCD at the top, the board below it</strong>, with the ESP32's USB
+end facing you so the cable exits toward the front and can be strain-relieved to the wood.</p>
+<hr />
+<h2 id="build-md--4-soldering-if-you-ve-never-done-it">4. Soldering, if you've never done it</h2>
+<p><strong>→ Full beginner course with practice exercises: <a href="#soldering-md"><code>SOLDERING.md</code></a>.</strong> Do the
+six exercises there on a spare kit board <em>before</em> touching the real one — about an hour,
+and it's the highest-return hour in the project.</p>
+<p>The condensed version follows.</p>
+<blockquote>
+<p><strong>The thing that surprises everyone:</strong> perfboard has <strong>no wires in it</strong>. Every hole is
+isolated. Nothing is connected until you connect it — with a bent lead, a solder bridge,
+or a jumper. That's why the layout has <em>buses</em>: a bare wire soldered across a row, which
+turns 20 isolated holes into one shared node.</p>
+</blockquote>
+<p><strong>Setup.</strong> Damp sponge or brass wool. Iron at ~340°C. Ventilate — flux fumes are the
+irritant, not the metal. Wash hands after handling leaded solder.</p>
+<p><strong>Tin the tip</strong> the moment it's hot: melt a little solder on it, wipe on brass wool. A
+dull grey tip transfers almost no heat; a shiny silver one is ready.</p>
+<p><strong>The actual motion</strong> — this is the part people get wrong:</p>
+<ol>
+<li>Touch the iron so it heats <strong>both</strong> the pad and the lead at once (~2 seconds)</li>
+<li>Feed solder <strong>into the joint</strong>, not onto the iron</li>
+<li>It should flow and wet flat almost instantly</li>
+<li>Remove solder, then iron</li>
+<li>Don't move the joint while it cools (~2s)</li>
+</ol>
+<p><strong>Total contact: 2–4 seconds.</strong> Longer lifts pads and cooks parts. If it isn't flowing,
+stop, add flux, retry — don't just hold the iron there.</p>
+<table>
+<thead>
+<tr>
+<th>Joint</th>
+<th>Looks like</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Good</td>
+<td>Shiny, concave, volcano-shaped</td>
+<td>Solid</td>
+</tr>
+<tr>
+<td>Cold</td>
+<td>Dull, rounded, blobby</td>
+<td>Reheat with flux</td>
+</tr>
+<tr>
+<td>Bridge</td>
+<td>Solder across two pads</td>
+<td>Wick it off with braid</td>
+</tr>
+<tr>
+<td>Starved</td>
+<td>Pad barely covered</td>
+<td>Add solder</td>
+</tr>
+</tbody>
+</table>
+<p><strong>First-timer order:</strong> practise on 5–10 spare holes with scrap wire before touching the
+real board. Ten minutes here saves hours.</p>
+<p><strong>Wire prep:</strong> strip 4–5mm, twist stranded ends, tin them before fitting. Tinned wire goes
+into a joint far more predictably.</p>
+<p><strong>Rule of thumb:</strong> solder the <strong>lowest-profile parts first</strong> so the board still lies flat —
+with one exception: on a row that carries both a bus <em>and</em> component legs, the components go
+in first and the bus wire lies on top of their bent legs. §5 gives the order that respects both.</p>
+<hr />
+<h2 id="build-md--5-build-in-order">5. Build, in order</h2>
+<p>Each step ends with a test that <strong>exercises the thing you just built</strong>, not just a beep.
+<strong>Do not proceed past a failing test</strong> — one new joint is easy to debug, thirty is an
+all-nighter.</p>
+<p>Two habits for the whole build:</p>
+<ul>
+<li><strong>Beep every new joint</strong> before moving on, and after each stage beep each GND bus
+  against the neighbouring signal rows. They must never beep. (There is no 5V on the
+  control surface, so the classic GND↔5V check belongs at the LCD port and the socket's
+  VIN/GND pads.)</li>
+<li><strong>Label both ends of every wire before you solder the second end.</strong> Sixteen identical
+  wires become indistinguishable the moment they are in a bundle.</li>
+</ul>
+<blockquote>
+<p><strong>Read <a href="#connections-md"><code>CONNECTIONS.md</code></a> first.</strong> Every action below is one of its five
+moves. If "bend the cathode leg onto the next pad" doesn't mean anything to you yet,
+that document is where it's explained.</p>
+</blockquote>
+<h3 id="build-md--pre-flight-before-any-solder">Pre-flight — before any solder</h3>
+<blockquote>
+<p><strong>Never used a multimeter?</strong> <a href="#multimeter-md"><code>MULTIMETER.md</code></a> walks through the jacks,
+the dial, and each of these tests. Twenty minutes and you will use it all build.</p>
+</blockquote>
+<!-- GEN:preflight -->
+<p>Twenty minutes here. Every one of these has bitten someone building this exact board.</p>
+<h4>P1 — confirm your switches behave like a switch</h4>
+<p>A 4-leg tactile switch is two pairs of two. The legs within a pair are joined permanently; pressing connects one pair to the other. <strong>On this kit's switches the joined pairs run the long way, down the columns</strong> — measured with a meter, not assumed.</p>
+<p>You do not have to match that. The build <strong>clips one leg off every switch</strong>, which makes the board work whichever way the pairs run — <code>verify-layout.py</code> proves it for both cases. This check is just to confirm the parts are alive and behave normally.</p>
+<ol>
+<li>Multimeter to continuity. Take one spare colored switch and one spare small switch.</li>
+<li>Beep all six leg pairings without pressing. <strong>Exactly two pairings beep.</strong></li>
+<li>Press and hold: all four legs beep together. Release: back to two.</li>
+</ol>
+<p>✅ <strong>Pass:</strong> two pairs unpressed, everything joined when pressed.</p>
+<p>❌ <strong>If only one pair beeps,</strong> or nothing changes when you press, that switch is faulty — try another. <strong>If three or more pairs beep unpressed,</strong> it is shorted; discard it.</p>
+<blockquote>
+<p>Full meter walkthrough: <a href="#multimeter-md"><code>MULTIMETER.md</code></a>.</p>
+</blockquote>
+<h4>P2 — confirm the resistors are 220Ω</h4>
+<p>Bands <strong>red · red · brown · gold</strong>. Meter across one: 209–231Ω.
+Brown-black-brown is 100Ω and will look fine but run the LEDs bright; red-red-red is 2.2kΩ and they will look dim.</p>
+<h4>P3 — LED polarity and brightness</h4>
+<p>Long leg is the anode (+) and goes in row 2. Also look <em>into</em> the LED: the small flag inside is the cathode. Test each LED with a 220Ω resistor on a breadboard before it is soldered in — a dead LED found now costs nothing.</p>
+<h4>P4 — check the board itself</h4>
+<p>Before anything is soldered to it, confirm the board is what the layout thinks it is.</p>
+<ol>
+<li><strong>Calipers across it.</strong> Should be 120 × 80 mm.</li>
+<li><strong>Count the grid.</strong> 42 columns (the silkscreen letters run A–Z then A–P) × 30 rows.</li>
+<li><strong>Beep adjacent pads.</strong> Take any two neighbouring holes and check continuity. <strong>They must NOT beep.</strong> Do this in four or five places across the board, including along the edges. <em>Positive control first:</em> both probes on the same pad ring <strong>must</strong> beep — otherwise you are measuring oxide, not isolation, and every silent reading is meaningless.</li>
+<li><strong>Beep the elongated edge pads to each other.</strong> If they beep, your board has power rails down the edges — tell me before soldering, because the layout puts a GND bus in column 1 and a rail there changes things.</li>
+<li><strong>Beep top pad to bottom pad of the same hole.</strong> Beeping means the holes are plated through (sturdier pads, and a joint on one face reaches the other). Silent means they are not — which is fine, the design solders one face only either way.</li>
+</ol>
+<p>✅ <strong>Test:</strong> neighbours silent, dimensions match, grid counts match. <em>(Confirmed on the real board: adjacent pads isolated, edge pads individual.)</em></p>
+<p>❌ <strong>If neighbouring pads beep:</strong> stop. That is stripboard, not perfboard, and every row is pre-connected. The entire layout would have to change.</p>
+<h4>P5 — cut the socket strips</h4>
+<p>Count <strong>15 sockets</strong>, cut through the 16th. You need two. Cutting a stacking header sacrifices the socket you cut through — that is normal and the 40-pin strip has enough.</p>
+<p>✅ <strong>Test:</strong> both strips push fully onto the ESP32's pin rows with no gap.</p>
+<!-- /GEN:preflight -->
+
+<h3 id="build-md--the-build">The build</h3>
+<!-- GEN:steps -->
+<h4>Step 1 — the ESP32 socket  ·  <em>Move 1</em></h4>
+<p>Two 15-way strips at <strong>columns 30 and 40, rows 8 → 22</strong>. This goes first because it proves the ESP32 and the cable still work before anything else can be blamed.</p>
+<ol>
+<li>Push <strong>both strips onto the ESP32's pins</strong> first. The module now holds them at exactly the right spacing and squareness — soldering them separately is how people end up desoldering a 15-pin strip.</li>
+<li>Lower the whole assembly onto the board from the top, pins through the holes.</li>
+<li>Check the strips landed in columns 30 and 40 — 10 apart — and that the module's USB end points at the <strong>bottom</strong> edge.</li>
+<li>Solder <strong>one pin on each strip</strong>. Turn it over, check it sits flat and square. Only then do the other 28.</li>
+<li><strong>Trim the pins — but not all flush.</strong> The 16 pads that take a wire later are much easier to solder if you leave a <strong>~2mm stub</strong> to hook the wire around; trim the other 14 flush. Never more than 2mm — at 2.54mm pitch a long stub finds its neighbour.</li>
+<li>Pull the ESP32 back out.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Leave a 2mm stub on these rows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>col 30</strong></td>
+<td>8, 9, 12, 13, 14, 18, 21</td>
+</tr>
+<tr>
+<td><strong>col 40</strong></td>
+<td>13, 14, 15, 16, 17, 18, 20, 21, 22</td>
+</tr>
+</tbody>
+</table>
+<p>✅ <strong>Test:</strong> beep from each socket pad on the underside to the matching ESP32 pin (module seated), then beep each pad to its neighbour — no neighbour may beep. Then plug in USB: <code>ls /dev/cu.*</code> shows a new port, and <code>firmware/blink</code> uploads and blinks.</p>
+<p>❌ <strong>If it fails:</strong> A blink that works proves nothing about the socket — the ESP32's own USB carries power and serial, so every socket joint could be cold. Trust the beep test, not the blink.</p>
+<h4>Step 2 — the first GND bus and the ground wire  ·  <em>Moves 2 and 4</em></h4>
+<p>Row <strong>8</strong> is the only bus row with nothing else in it, so it can go on now. Rows 16, 21 carry button legs and must wait until those buttons are seated (steps 4 and 5).</p>
+<ol>
+<li>Cut bare 24AWG a little longer than 28 holes.</li>
+<li>Lay it on the underside along row <strong>8</strong>, columns 1 → 28, <strong>beside the pad centres, never across them</strong>. A wire lying over a hole blocks the lead you push in later, and the joint still looks perfect from underneath.</li>
+<li>Tack one end. Check it is straight and clear of every hole. Then solder every 2nd–3rd pad.</li>
+<li>Leave ~10mm of tail at column 1 — the other two buses join it there.</li>
+<li>Run wire <strong>12</strong>: from <strong>col 28, row 8</strong> to the socket's <strong>GND</strong> pad at <strong>col 30, row 21</strong>. This is the board's only ground wire.</li>
+</ol>
+<p>✅ <strong>Test:</strong> every pad in row 8 beeps to every other, and to the socket's GND pad. No other row beeps to it. Push a spare lead down through a row-8 hole from the top — it must reach the copper, not stop on the bus wire.</p>
+<h4>Step 3 — LEDs, resistors and their four wires  ·  <em>Moves 1, 3 and 4</em></h4>
+<p>Do <strong>LED 1 completely, including its wire and the test</strong>, before starting LED 2. The first one teaches you the bent-leg move; the other three are then quick.</p>
+<table>
+<thead>
+<tr>
+<th>LED</th>
+<th>long leg (+)</th>
+<th>short leg (−)</th>
+<th>220Ω top</th>
+<th>220Ω bottom</th>
+<th>wire # → socket</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 red</td>
+<td>col 4, row 2</td>
+<td>col 4, row 3</td>
+<td>col 4, row 4</td>
+<td>col 4, row 8</td>
+<td><strong>1</strong> → col 40, row 20 (D13)</td>
+</tr>
+<tr>
+<td>2 green</td>
+<td>col 11, row 2</td>
+<td>col 11, row 3</td>
+<td>col 11, row 4</td>
+<td>col 11, row 8</td>
+<td><strong>2</strong> → col 40, row 18 (D14)</td>
+</tr>
+<tr>
+<td>3 blue</td>
+<td>col 18, row 2</td>
+<td>col 18, row 3</td>
+<td>col 18, row 4</td>
+<td>col 18, row 8</td>
+<td><strong>3</strong> → col 40, row 17 (D27)</td>
+</tr>
+<tr>
+<td>4 yellow</td>
+<td>col 25, row 2</td>
+<td>col 25, row 3</td>
+<td>col 25, row 4</td>
+<td>col 25, row 8</td>
+<td><strong>4</strong> → col 40, row 16 (D26)</td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li><strong>Resistor first</strong> — it is the lower part. Legs into rows 4 and 8 of the same column; bend them so the 6.3mm body sits centred in the 10.2mm span. Solder both, trim.</li>
+<li><strong>LED next</strong> — long leg into row 2, short leg into row 3. Solder the <strong>anode only</strong>. Leave the cathode leg full length.</li>
+<li><strong>Move 3 — the bent leg.</strong> On the underside, bend the cathode's leftover length flat until it lies on the <strong>row-4 pad</strong>, where the resistor's top lead already is. Solder it into that same joint. <em>Now</em> trim both.</li>
+<li>The resistor's bottom lead is already in row 8 — the bus. It is grounded; there is nothing else to do.</li>
+<li>Run that LED's wire from <strong>its own column, row 2</strong> to its socket pad. <strong>Both ends are lap joints</strong> (<em>Move 5</em>) — the anode hole holds the LED's own leg and the socket hole holds a header pin, so you are soldering onto existing blobs, not into free holes.</li>
+</ol>
+<p>✅ <strong>Test:</strong> beep col 4, row 3 to col 4, row 4 — <strong>must beep</strong> (that is the bent leg doing its job). Beep row 2 to the bus — must <strong>not</strong>. With all four done, seat the ESP32 and run <code>firmware/ledtest</code>: all four cycle in order red, green, blue, yellow.</p>
+<p>❌ <strong>If it fails:</strong> One LED dark and backwards → its legs are swapped; desolder the anode, rotate, redo. All four dark → the ground wire or the row-8 bus. Wrong LED lighting → two wires swapped at the socket end, which is why you label both ends.</p>
+<h4>Step 4 — the four colored buttons, the second bus, the link  ·  <em>Moves 1, 2 and 4</em></h4>
+<table>
+<thead>
+<tr>
+<th>Button</th>
+<th>signal leg (takes the wire)</th>
+<th>anchor leg</th>
+<th><strong>CLIP this one</strong></th>
+<th>ground leg (on the bus)</th>
+<th>wire #</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 red</td>
+<td>col 3, row 11</td>
+<td>col 5, row 11</td>
+<td>~~col 3, row 16~~</td>
+<td>col 5, row 16</td>
+<td><strong>5</strong> → col 40, row 13 (D32)</td>
+</tr>
+<tr>
+<td>2 green</td>
+<td>col 10, row 11</td>
+<td>col 12, row 11</td>
+<td>~~col 10, row 16~~</td>
+<td>col 12, row 16</td>
+<td><strong>6</strong> → col 40, row 14 (D33)</td>
+</tr>
+<tr>
+<td>3 blue</td>
+<td>col 17, row 11</td>
+<td>col 19, row 11</td>
+<td>~~col 17, row 16~~</td>
+<td>col 19, row 16</td>
+<td><strong>7</strong> → col 40, row 15 (D25)</td>
+</tr>
+<tr>
+<td>4 yellow</td>
+<td>col 24, row 11</td>
+<td>col 26, row 11</td>
+<td>~~col 24, row 16~~</td>
+<td>col 26, row 16</td>
+<td><strong>8</strong> → col 30, row 18 (D4)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Clip one leg off every switch before you seat it</strong> — the one at <strong>column c, row 16</strong>, directly below the signal leg. Snip it flush with the body so it cannot reach the board. Solder the other three.</p>
+<p><strong>Why.</strong> A tactile switch's two internally-joined pairs may run along the rows or down the columns depending on the part — this kit's run down the columns. If they do, that row-16 leg is on the <em>signal</em> node, and soldering it onto the GND bus shorts the button closed forever. Clipping it is safe <strong>either way</strong>, so the board does not depend on which switch you bought. Do not solder all four to 'anchor it better' — <code>verify-layout.py</code> fails if the design ever assumes that.</p>
+</blockquote>
+<ol>
+<li><strong>Clip the row-16 leg in the signal column</strong> off all four switches first, while they are still loose and easy to hold.</li>
+<li>Seat all four. The remaining three legs span rows 11→16 and columns c → c+2. Tack one leg, sight along the row to check the cap is square, then finish.</li>
+<li>Solder both <strong>row-11</strong> legs and trim them.</li>
+<li>Solder the remaining <strong>row-16</strong> leg but <strong>leave it long</strong>; bend it flat along the row.</li>
+<li>Lay the row-16 bus <strong>on top of those bent legs</strong>, cols 1 → 28, and solder through both at once. (Bus-first does not work on this row — the wire would block the holes.)</li>
+<li><strong>Link the buses:</strong> bare wire down column 1 from row 8 to row 16. Column 1 is chosen because no signal wire ever runs left of column 3, so nothing crosses this bare wire.</li>
+<li>Run the four button wires from the row-11 leg in the signal column.</li>
+</ol>
+<p>✅ <strong>Test:</strong> every row-16 leg beeps to row 8 and to the socket GND. <strong>No</strong> row-11 leg beeps to any bus while the button is released — and every one does while it is pressed. Then <code>firmware/btntest</code> prints <code>button 0</code>…<code>button 3</code>.</p>
+<p>❌ <strong>If it fails:</strong> Several buttons dead at once is the bus or the link, not the switches — that failed twice on the breadboard. <strong>One button permanently pressed almost certainly means you soldered the leg you were told to clip</strong> — desolder it and snip it off. A button that never registers means its signal wire or its row-11 joint.</p>
+<h4>Step 5 — AA / no / yes, the third bus  ·  <em>same moves</em></h4>
+<table>
+<thead>
+<tr>
+<th>Button</th>
+<th>signal leg</th>
+<th>anchor leg</th>
+<th><strong>CLIP this one</strong></th>
+<th>ground leg</th>
+<th>wire #</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AA (always allow)</td>
+<td>col 4, row 19</td>
+<td>col 6, row 19</td>
+<td>~~col 4, row 21~~</td>
+<td>col 6, row 21</td>
+<td><strong>9</strong> → col 30, row 8 (D23)</td>
+</tr>
+<tr>
+<td>no (deny)</td>
+<td>col 13, row 19</td>
+<td>col 15, row 19</td>
+<td>~~col 13, row 21~~</td>
+<td>col 15, row 21</td>
+<td><strong>10</strong> → col 30, row 14 (D18)</td>
+</tr>
+<tr>
+<td>yes (approve)</td>
+<td>col 22, row 19</td>
+<td>col 24, row 19</td>
+<td>~~col 22, row 21~~</td>
+<td>col 24, row 21</td>
+<td><strong>11</strong> → col 30, row 13 (D19)</td>
+</tr>
+</tbody>
+</table>
+<p>Identical sequence to step 4 — <strong>including clipping one leg off each switch first</strong>. These are square, and because one leg is clipped <strong>it does not matter which way round they go</strong> — the wire and the clip are defined by position, not by the switch's internals. Solder the row-19 legs, leave the row-21 leg long and bent, bus over it, extend the column-1 link from row 16 to row 21, and run the three wires.</p>
+<p>✅ <strong>Test:</strong> all three ground legs beep to row 8. No signal leg beeps to a bus when released. <code>firmware/btntest</code> now prints <code>button 0</code> … <code>button 6</code> — <strong>all seven</strong>.</p>
+<p>❌ <strong>If it fails:</strong> btntest reading only some buttons has been a real failure here: an old copy of that sketch scanned 4 pins instead of 7 and made three good switches look dead. Check the sketch declares all 7 GPIOs before you unsolder anything.</p>
+<h4>Step 6 — the LCD port  ·  <em>Moves 1 and 4</em></h4>
+<p>The LCD is never soldered, so it needs somewhere to plug into. Once the ESP32 is seated its pins are <strong>inside the socket</strong> and nothing can clip onto them — so the board carries its own 4-pin male header at <strong>cols 30–33, row 2</strong>, wired to the socket pads.</p>
+<table>
+<thead>
+<tr>
+<th>LCD pin</th>
+<th>Male pin at</th>
+<th>Wire to socket hole</th>
+<th>ESP32 pin</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GND</td>
+<td>col 30, row 2</td>
+<td>col 40, row 21</td>
+<td><strong>GND</strong></td>
+</tr>
+<tr>
+<td>VCC</td>
+<td>col 31, row 2</td>
+<td>col 40, row 22</td>
+<td><strong>VIN</strong></td>
+</tr>
+<tr>
+<td>SDA</td>
+<td>col 32, row 2</td>
+<td>col 30, row 12</td>
+<td><strong>D21</strong></td>
+</tr>
+<tr>
+<td>SCL</td>
+<td>col 33, row 2</td>
+<td>col 30, row 9</td>
+<td><strong>D22</strong></td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li>Cut a <strong>4-pin male</strong> strip. Seat it at cols 30–33, row 2, short side down through the board.</li>
+<li>Tack one pin, check it stands square, solder the rest.</li>
+<li>Run the four wires to the socket pads in the table. <strong>Mark the VCC wire</strong> — it is the only 5V on the board.</li>
+<li>Connect the LCD with <strong>4 F-F jumpers</strong>, female onto the LCD's own male header, female onto this port. Match the labels, not the colours.</li>
+</ol>
+<p>✅ <strong>Test:</strong> beep each port pin to its socket pad, and beep <strong>VCC to GND</strong> — that one must <strong>not</strong>. Then <code>firmware/lcdtest</code>: serial prints <code>found device at 0x27</code> and text appears.</p>
+<p>❌ <strong>If it fails:</strong> Backlit but blank is the contrast pot on the back. Completely dead: try address <code>0x3F</code>, and check SDA/SCL are not swapped — the two middle wires are the easy pair to cross.</p>
+<h4>Step 7 — real firmware, then mount it</h4>
+<pre><code class="language-bash">arduino-cli compile -u -p /dev/cu.usbserial-0001 --fqbn esp32:esp32:esp32 firmware/agentpad
+</code></pre>
+<p>From a serial monitor at 115200, line ending <strong>Newline</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Send</th>
+<th>Expect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>L 0 working</code></td>
+<td>red LED solid</td>
+</tr>
+<tr>
+<td><code>L 1 blocked</code></td>
+<td>green LED blinks fast</td>
+</tr>
+<tr>
+<td><code>L 2 working</code></td>
+<td>blue LED solid</td>
+</tr>
+<tr>
+<td><code>L 3 blocked</code></td>
+<td>yellow LED blinks fast</td>
+</tr>
+<tr>
+<td><code>D0 hello</code></td>
+<td>top LCD row changes</td>
+</tr>
+<tr>
+<td>press each button</td>
+<td><code>B 0</code> … <code>B 6</code></td>
+</tr>
+</tbody>
+</table>
+<p>Only once all of that passes, screw the board and the LCD to the wood — then <strong>run the whole test again</strong>. Assembly is when wires get pinched and joints get stressed.</p>
+<p>✅ <strong>Test:</strong> every line above, before and after mounting.</p>
+<!-- /GEN:steps -->
+
+<blockquote>
+<p><strong>The 3.3V vs 5V question — settled, don't relitigate.</strong></p>
+<p>The LCD1602 is a 5V part and the ESP32's GPIOs are not 5V tolerant. That sounds like a
+problem but isn't, because <strong>I²C is open-drain</strong>: devices only pull the line <em>down</em>,
+never drive it up. The only 5V path into the ESP32 is through the backpack's pull-ups,
+leaking <strong>~0.36mA</strong> (4.7kΩ) or <strong>~0.17mA</strong> (10kΩ) into the clamp diodes — far below
+anything harmful, and how most ESP32 + LCD1602 projects are wired. The breadboard
+prototype ran exactly this for hours with a stable display.</p>
+<p><strong>Optional free upgrade:</strong> move the LCD port's VCC wire from the VIN pad to the <strong>3V3</strong>
+pad (<strong>col 40, row 8</strong>) — one wire, one end. If it's readable, keep
+it and the out-of-spec condition disappears at no cost. 1602 modules often dim at 3.3V —
+adjust the contrast pot; if it washes out, move back to VIN, no worse off. A level
+shifter is the textbook fix but adds a part you don't have and another failure mode.</p>
+</blockquote>
+<hr />
+<h2 id="build-md--6-software">6. Software</h2>
+<p>Only needed if this is a fresh Mac; your current one is already set up.</p>
+<pre><code class="language-bash">cd ~/projects/agentpad
+cp hooks/agentpad.sh        ~/.claude/agentpad.sh        &amp;&amp; chmod +x ~/.claude/agentpad.sh
+cp hooks/agentpad-status.sh ~/.claude/agentpad-status.sh &amp;&amp; chmod +x ~/.claude/agentpad-status.sh
+mise install                      # Python 3.13 + venv
+mise exec -- pip install pyserial
+</code></pre>
+<p><code>~/.claude/settings.json</code> needs five hooks, each running <code>~/.claude/agentpad.sh &lt;state&gt;</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Hook</th>
+<th>State</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SessionStart</code></td>
+<td><code>idle</code></td>
+</tr>
+<tr>
+<td><code>UserPromptSubmit</code></td>
+<td><code>working</code></td>
+</tr>
+<tr>
+<td><code>PermissionRequest</code></td>
+<td><code>blocked</code></td>
+</tr>
+<tr>
+<td><code>Stop</code></td>
+<td><code>done</code></td>
+</tr>
+<tr>
+<td><code>SessionEnd</code></td>
+<td><code>none</code></td>
+</tr>
+</tbody>
+</table>
+<p>plus <code>statusLine</code> → <code>~/.claude/agentpad-status.sh</code> for the context percentage.</p>
+<blockquote>
+<p><strong>Use <code>PermissionRequest</code>, never <code>Notification</code>.</strong> Measured on this hardware,
+<code>Notification</code> fires <strong>6.00 seconds</strong> after the prompt appears — it exists to chase a
+user who walked away. <code>PermissionRequest</code> fires at +0.00s.</p>
+</blockquote>
+<p><strong>Run it:</strong></p>
+<pre><code class="language-bash">cd ~/projects/agentpad &amp;&amp; mise exec -- python daemon.py
+tmux attach -t agentpad        # in another terminal
+</code></pre>
+<p><strong>Stop the daemon before uploading firmware.</strong> Only one process can hold the serial port;
+uploading while it runs fails with <em>"Serial data stream stopped: possible serial noise or
+corruption"</em>, which reads like a hardware fault but isn't.</p>
+<hr />
+<h2 id="build-md--7-final-acceptance-test">7. Final acceptance test</h2>
+<ol>
+<li>Press each color button → its window opens, tinted, and focuses</li>
+<li>Each LED heartbeats when its agent is idle</li>
+<li>In one agent: <code>run: curl -sI https://example.com</code> → <strong>LED blinks fast</strong></li>
+<li>Press <code>yes</code> → command runs, LED returns to working</li>
+<li>Repeat, press <code>no</code> → declined</li>
+<li>Type <code>/model</code> in an agent → LED blinks (proves non-permission menus work); press Esc</li>
+<li>LCD bottom row shows the four states plus context %</li>
+<li>Unplug USB, replug → daemon reconnects on its own</li>
+<li>Pull the ESP32 out of its socket and push it back → everything still works. That is the
+   one part you cannot replace, and the socket is what protects it.</li>
+</ol>
+<blockquote>
+<p><strong>Demo tip:</strong> only sandbox-escaping commands prompt. <code>curl</code> prompts reliably; <code>date</code> and
+<code>df -h</code> do <strong>not</strong>. Use curl.</p>
+</blockquote>
+<hr />
+<h2 id="build-md--8-troubleshooting">8. Troubleshooting</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No <code>/dev/cu.*</code> port</td>
+<td>Charge-only cable, or a header pin not soldered through</td>
+</tr>
+<tr>
+<td>Upload: "Failed to connect"</td>
+<td>Hold BOOT during "Connecting…"</td>
+</tr>
+<tr>
+<td>Upload: "serial noise or corruption"</td>
+<td>The daemon is holding the port — stop it</td>
+</tr>
+<tr>
+<td>LCD backlit, blank</td>
+<td>Contrast pot on its back</td>
+</tr>
+<tr>
+<td>LCD dead</td>
+<td>Change <code>0x27</code> → <code>0x3F</code> in the firmware; check SDA/SCL aren't swapped</td>
+</tr>
+<tr>
+<td>LCD dead, port beeps fine</td>
+<td>The two middle port wires are crossed — SDA and SCL</td>
+</tr>
+<tr>
+<td>LCD backlight flickers</td>
+<td>VCC wire is on 3V3, not VIN — fine electrically, but some backpacks need 5V</td>
+</tr>
+<tr>
+<td>Board shorted the moment the last bus went on</td>
+<td>A signal wire crossing the bare GND link. It runs down <strong>column 1</strong> for exactly this reason — check nothing routes left of column 3</td>
+</tr>
+<tr>
+<td>One LED never lights</td>
+<td>It's backwards — flip it</td>
+</tr>
+<tr>
+<td><strong>Several buttons dead at once</strong></td>
+<td><strong>GND bus break — not the switches</strong></td>
+</tr>
+<tr>
+<td>One button always pressed</td>
+<td>Both wires on the same internal pair; rotate 90°</td>
+</tr>
+<tr>
+<td>Everything dead after adding a part</td>
+<td>Solder bridge — beep each GND bus against the neighbouring signal rows</td>
+</tr>
+<tr>
+<td>LCD flashes <code>not blocked</code></td>
+<td>Interlock refused: no live prompt, or you're not on an agent window. Check <code>daemon.log</code></td>
+</tr>
+<tr>
+<td><code>pane</code> empty in events.jsonl</td>
+<td>Claude Code isn't running inside tmux</td>
+</tr>
+<tr>
+<td>Port name changed</td>
+<td>Update <code>PORT</code> in <code>daemon.py</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="build-md--9-if-it-goes-wrong">9. If it goes wrong</h2>
+<ul>
+<li><strong>The breadboard prototype is the fallback</strong>, but rebuilding it means pulling the ESP32
+  back out of the socket — which is exactly why it is socketed. Budget 20 minutes and follow
+  <code>BREADBOARD.md</code>; you will also need 4 spare 12mm switches, since the kit's four are now
+  soldered down.</li>
+<li><strong>Record a backup video</strong> of the working device before you start. Ten minutes of
+  insurance against a demo-table failure.</li>
+<li>A half-finished case with working guts still demos fine. A perfect case around a dead
+  board does not — so keep the electronics passing tests at every step.</li>
+</ul></section><section class="docwrap" id="breadboard-md"><h1>Rebuilding the breadboard prototype</h1>
+<p>This is the <strong>working demo</strong> — the version that was verified end-to-end. If the soldered
+build isn't finished, this is what you present. Rebuild takes about 20 minutes.</p>
+<p><strong>Unplug USB before wiring anything. Plug it in only at the end.</strong></p>
+<hr />
+<h2 id="breadboard-md--the-rules-that-make-it-all-work">The rules that make it all work</h2>
+<ol>
+<li><strong>The ESP32 does NOT go on the breadboard.</strong> It's ~1 inch wide and would cover the
+   centre channel. It sits <em>beside</em> the board; female-to-male jumpers reach across.</li>
+<li><strong>The blue <code>–</code> rail is ground.</strong> Nothing grounds to the ESP32 directly except one
+   wire. Everything else grounds to the rail.</li>
+<li><strong>Buttons straddle the centre trench</strong> and use <strong>diagonally opposite</strong> legs.</li>
+<li><strong>If your rail has a gap halfway along</strong>, the two halves are separate. Either keep
+   everything on one half, or bridge the gap with a short jumper. <em>This caused two
+   separate multi-button failures during the original build.</em></li>
+</ol>
+<p>Jumper types: <strong>F-M</strong> = female end on an ESP32 pin, male end in the breadboard.
+<strong>M-M</strong> = both ends in the breadboard. <strong>F-F</strong> = both ends on pins (LCD only).</p>
+<hr />
+<h2 id="breadboard-md--step-1-ground-do-this-first">Step 1 — ground (do this first)</h2>
+<table>
+<thead>
+<tr>
+<th>From</th>
+<th>To</th>
+<th>Jumper</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ESP32 <strong>GND</strong> (the one near 3V3)</td>
+<td>breadboard <strong>blue <code>–</code> rail</strong></td>
+<td>F-M</td>
+</tr>
+</tbody>
+</table>
+<p>Nothing works without this and it is the easiest thing to forget.</p>
+<hr />
+<h2 id="breadboard-md--step-2-lcd-4-wires-straight-to-the-esp32">Step 2 — LCD (4 wires, straight to the ESP32)</h2>
+<p>The LCD never touches the breadboard. Use <strong>F-F</strong> jumpers pin-to-pin:</p>
+<table>
+<thead>
+<tr>
+<th>LCD pin</th>
+<th>ESP32 pin</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GND</td>
+<td><strong>GND</strong> (the one next to VIN)</td>
+</tr>
+<tr>
+<td>VCC</td>
+<td><strong>VIN</strong></td>
+</tr>
+<tr>
+<td>SDA</td>
+<td><strong>D21</strong></td>
+</tr>
+<tr>
+<td>SCL</td>
+<td><strong>D22</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Address is <strong>0x27</strong>. If it's backlit but blank, turn the contrast pot on its back.</p>
+<hr />
+<h2 id="breadboard-md--step-3-the-four-leds">Step 3 — the four LEDs</h2>
+<p>Left to right, in this order. For each one:</p>
+<ol>
+<li>Long leg (+) and short leg (−) in <strong>two different rows</strong></li>
+<li><strong>220Ω</strong> resistor from the short-leg row → <strong>blue <code>–</code> rail</strong></li>
+<li><strong>F-M</strong> jumper from the long-leg row → the ESP32 pin below</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>LED</th>
+<th>ESP32 pin</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Red</td>
+<td><strong>GPIO 13</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td>Green</td>
+<td><strong>GPIO 14</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td>Blue</td>
+<td><strong>GPIO 27</strong></td>
+</tr>
+<tr>
+<td>4</td>
+<td>Yellow</td>
+<td><strong>GPIO 26</strong></td>
+</tr>
+</tbody>
+</table>
+<p>A dark LED is simply backwards — flip it, no harm done.</p>
+<hr />
+<h2 id="breadboard-md--step-4-the-seven-buttons">Step 4 — the seven buttons</h2>
+<p>Straddle the trench. <strong>One leg → its GPIO (F-M). The diagonally opposite leg → blue rail
+(M-M).</strong> No resistors — the firmware turns on the ESP32's internal pull-ups.</p>
+<table>
+<thead>
+<tr>
+<th>Button</th>
+<th>Cap</th>
+<th>ESP32 pin</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent 1</td>
+<td>Red</td>
+<td><strong>GPIO 32</strong></td>
+</tr>
+<tr>
+<td>Agent 2</td>
+<td>Green</td>
+<td><strong>GPIO 33</strong></td>
+</tr>
+<tr>
+<td>Agent 3</td>
+<td>Blue</td>
+<td><strong>GPIO 25</strong></td>
+</tr>
+<tr>
+<td>Agent 4</td>
+<td>Yellow</td>
+<td><strong>GPIO 4</strong></td>
+</tr>
+<tr>
+<td><strong>Approve</strong></td>
+<td>plain</td>
+<td><strong>GPIO 19</strong></td>
+</tr>
+<tr>
+<td><strong>Deny</strong></td>
+<td>plain</td>
+<td><strong>GPIO 18</strong></td>
+</tr>
+<tr>
+<td><strong>Always allow</strong></td>
+<td>plain</td>
+<td><strong>GPIO 23</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>A button that fires constantly has its second leg not reaching the rail.
+A button that does nothing while others work is usually the same thing.
+<strong>Several buttons dead at once = the ground rail, not the switches.</strong></p>
+</blockquote>
+<hr />
+<h2 id="breadboard-md--complete-pin-list">Complete pin list</h2>
+<p>Everything on the ESP32, in one place:</p>
+<table>
+<thead>
+<tr>
+<th>ESP32 pin</th>
+<th>Goes to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GND (near 3V3)</td>
+<td>blue <code>–</code> rail</td>
+</tr>
+<tr>
+<td>GND (near VIN)</td>
+<td>LCD GND</td>
+</tr>
+<tr>
+<td>VIN</td>
+<td>LCD VCC</td>
+</tr>
+<tr>
+<td>D21</td>
+<td>LCD SDA</td>
+</tr>
+<tr>
+<td>D22</td>
+<td>LCD SCL</td>
+</tr>
+<tr>
+<td>GPIO 13</td>
+<td>red LED (+)</td>
+</tr>
+<tr>
+<td>GPIO 14</td>
+<td>green LED (+)</td>
+</tr>
+<tr>
+<td>GPIO 27</td>
+<td>blue LED (+)</td>
+</tr>
+<tr>
+<td>GPIO 26</td>
+<td>yellow LED (+)</td>
+</tr>
+<tr>
+<td>GPIO 32</td>
+<td>red button</td>
+</tr>
+<tr>
+<td>GPIO 33</td>
+<td>green button</td>
+</tr>
+<tr>
+<td>GPIO 25</td>
+<td>blue button</td>
+</tr>
+<tr>
+<td>GPIO 4</td>
+<td>yellow button</td>
+</tr>
+<tr>
+<td>GPIO 19</td>
+<td>approve button</td>
+</tr>
+<tr>
+<td>GPIO 18</td>
+<td>deny button</td>
+</tr>
+<tr>
+<td>GPIO 23</td>
+<td>always-allow button</td>
+</tr>
+</tbody>
+</table>
+<p>Plus, on the breadboard only: 4 × 220Ω from each LED's cathode row to the blue rail, and
+7 × M-M from each button's diagonal leg to the blue rail.</p>
+<p><strong>Jumper budget:</strong> 11 F-M (4 LED + 7 button) + 1 F-M for ground = 12, plus 4 F-F for the
+LCD and 7 M-M for button grounds. The kit only has 10 F-M, so you'll need the extra pack.</p>
+<hr />
+<h2 id="breadboard-md--step-5-bring-it-up">Step 5 — bring it up</h2>
+<pre><code class="language-bash">ls /dev/cu.*                     # expect /dev/cu.usbserial-0001
+cd ~/projects/agentpad
+arduino-cli compile -u -p /dev/cu.usbserial-0001 --fqbn esp32:esp32:esp32 firmware/agentpad
+mise exec -- python daemon.py
+</code></pre>
+<p>Then in another terminal: <code>tmux attach -t agentpad</code></p>
+<p><strong>Stop the daemon before uploading firmware</strong> — only one process can hold the serial port.</p>
+<h3 id="breadboard-md--test-in-this-order">Test in this order</h3>
+<ol>
+<li>LCD shows <code>A1 --</code> / <code>1- 2- 3- 4-</code>, all LEDs dark</li>
+<li>Press each color button → a tinted <code>claude</code> window spawns and focuses</li>
+<li>In one agent: <code>run: curl -sI https://example.com</code> → its LED blinks fast</li>
+<li>Press <strong>yes</strong> → the command runs</li>
+<li>Type <code>/model</code> in an agent → LED still blinks (non-permission menus work too); Esc</li>
+</ol>
+<blockquote>
+<p>Only sandbox-escaping commands prompt. <strong><code>curl</code> prompts; <code>date</code> and <code>df -h</code> do not.</strong>
+Use curl when demoing.</p>
+</blockquote>
+<hr />
+<h2 id="breadboard-md--if-something-misbehaves">If something misbehaves</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No <code>/dev/cu.*</code></td>
+<td>Charge-only cable, or the board came unplugged</td>
+</tr>
+<tr>
+<td>LCD backlit but blank</td>
+<td>Contrast pot on the back</td>
+</tr>
+<tr>
+<td>LCD completely dead</td>
+<td>Try address <code>0x3F</code>; check SDA/SCL aren't swapped</td>
+</tr>
+<tr>
+<td>One LED never lights</td>
+<td>It's backwards — flip it</td>
+</tr>
+<tr>
+<td><strong>Several buttons dead</strong></td>
+<td><strong>Ground rail</strong> — check the split-rail gap</td>
+</tr>
+<tr>
+<td>One button always pressed</td>
+<td>Both wires on the same internal pair — rotate it 90°</td>
+</tr>
+<tr>
+<td>Everything dead</td>
+<td>Missing GND jumper (Step 1)</td>
+</tr>
+<tr>
+<td>LCD flashes <code>not blocked</code></td>
+<td>The interlock refused: no live prompt, or you're not on an agent window</td>
+</tr>
+</tbody>
+</table>
+<p>Full detail in <code>BUILD.md</code>; live state in <code>daemon.log</code>.</p></section><section class="docwrap" id="claude-md"><h1>Agent Pad</h1>
+<p>Physical control surface for Claude Code — a self-contained "code micro" clone. Four LEDs + an LCD show what four agents are doing. Seven buttons on the board do everything: the four color buttons each <strong>launch a color-tinted tmux <code>claude</code> session (if not running) and focus it</strong>; three more <strong>approve / deny / always-allow</strong> the on-screen agent's permission prompt. <strong>Single device — there is no game controller.</strong> Don't reintroduce one.</p>
+<p><strong>Soldered build: <code>BUILD.md</code> + <code>SOLDERING.md</code>. Breadboard prototype: <code>BREADBOARD.md</code>.</strong>
+<code>docs-archive-breadboard-era.md</code> is the superseded milestone guide — do not build from it.</p>
+<h2 id="claude-md--platform">Platform</h2>
+<ul>
+<li><strong>macOS.</strong> No WSL, no Windows paths.</li>
+<li>ESP32 (ESP-WROOM-32, CP2102, 30-pin) over USB serial at 115200</li>
+<li>Agents run as tmux <strong>windows</strong> in one session named <code>agentpad</code>, which the daemon creates itself; daemon runs natively; all on the same machine</li>
+<li><strong>Python via mise: project-local venv on Python 3.13</strong> (see <code>mise.toml</code>). Run all Python from inside this dir so mise activates <code>.venv</code>.</li>
+<li>Python deps: <code>pyserial</code> only.</li>
+</ul>
+<h2 id="claude-md--architecture">Architecture</h2>
+<pre><code>Claude Code hooks → events.jsonl → daemon → serial → ESP32 (LEDs, LCD)
+                                    daemon ← serial ← ESP32 (7 buttons)
+                                    daemon → tmux new-window/select-window/send-keys
+                                    daemon → tmux capture-pane (has the prompt cleared?)
+</code></pre>
+<p>The daemon <em>launches</em> each agent's tmux window (running <code>claude</code>) on the first color-button press and records that window's pane id, so it maps pane → agent slot directly. Hook events (<code>$TMUX_PANE</code> + state) then light the matching LED. Approve/Deny send keystrokes to whichever agent window is <strong>on screen</strong>, gated by the <code>blocked</code> interlock.</p>
+<p>The four agent windows are each tinted a dark color (<code>window-style bg=…</code>) matching their LED/button. Attach with <code>tmux attach -t agentpad</code>.</p>
+<h3 id="claude-md--blocked-comes-from-the-permissionrequest-hook-do-not-simplify-this"><code>blocked</code> comes from the PermissionRequest hook — do not "simplify" this</h3>
+<p>Measured on this hardware, three ways to learn an agent is waiting:</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Latency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Notification</code> hook</td>
+<td><strong>+6.00s</strong> — fires late <em>by design</em> (it exists to chase a user who walked away)</td>
+</tr>
+<tr>
+<td>screen scraping</td>
+<td>+0.24s — plus fragile string matching</td>
+</tr>
+<tr>
+<td><strong><code>PermissionRequest</code> hook</strong></td>
+<td><strong>+0.00s</strong> — used</td>
+</tr>
+</tbody>
+</table>
+<p><code>PermissionRequest</code> fires only when a prompt is genuinely shown (verified: <code>df -h</code> auto-allowed → no hook; <code>curl -sI</code> prompts → hook), and it covers every prompt shape — tool permission, plan approval, trust dialogs — with no text matching, so Claude's own prose can never trigger it.</p>
+<p>Screen reading survives only to notice the prompt has been <strong>answered</strong>, and matches prompt <em>structure</em> (numbered option rows), not wording — so it also handles "Would you like to proceed?", not just "Do you want to proceed?".</p>
+<h2 id="claude-md--files">Files</h2>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>What</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>daemon.py</code></td>
+<td>The brain: serial ↔ tmux ↔ LEDs/LCD. Launches/focuses agents, approve/deny.</td>
+</tr>
+<tr>
+<td><code>test.py</code></td>
+<td>Serial smoke test</td>
+</tr>
+<tr>
+<td><code>hooks/agentpad.sh</code></td>
+<td>Source of truth for the hook script — <strong>copy to <code>~/.claude/agentpad.sh</code></strong> (see Install)</td>
+</tr>
+<tr>
+<td><code>hooks/agentpad-status.sh</code></td>
+<td>statusLine script — the only source of context-window %</td>
+</tr>
+<tr>
+<td><code>firmware/agentpad/agentpad.ino</code></td>
+<td>The real firmware. Folder name matches the <code>.ino</code> so <code>arduino-cli</code> can build it.</td>
+</tr>
+<tr>
+<td><code>firmware/{blink,lcdtest,ledtest,btntest}/</code></td>
+<td>Milestone test sketches, kept for hardware debugging</td>
+</tr>
+<tr>
+<td><code>BUILD.md</code></td>
+<td>The soldered build — parts, board layout, wiring, steps. Tables between <code>&lt;!-- GEN:… --&gt;</code> markers are GENERATED</td>
+</tr>
+<tr>
+<td><code>SOLDERING.md</code></td>
+<td>From-zero soldering course with practice exercises</td>
+</tr>
+<tr>
+<td><code>MULTIMETER.md</code></td>
+<td>From-zero multimeter guide — continuity, diode and resistance tests</td>
+</tr>
+<tr>
+<td><code>BREADBOARD.md</code></td>
+<td>Rebuilding the breadboard prototype</td>
+</tr>
+<tr>
+<td><code>START-HERE.md</code></td>
+<td><strong>The map</strong> — how board, daemon and hooks fit together. Read first</td>
+</tr>
+<tr>
+<td><code>WIRING.md</code></td>
+<td><strong>GENERATED</strong> flat point-to-point list: every wire, leg and socket slot</td>
+</tr>
+<tr>
+<td><code>CONNECTIONS.md</code></td>
+<td><strong>How you physically join two points on perfboard</strong></td>
+</tr>
+<tr>
+<td><code>tools/layout.py</code></td>
+<td><strong>Single source of truth</strong> for every row, column, GPIO, mount hole and connector</td>
+</tr>
+<tr>
+<td><code>tools/verify-layout.py</code></td>
+<td>Checks bodies, overlaps, hole occupancy and connectivity</td>
+</tr>
+<tr>
+<td><code>tools/gen-tables.py</code></td>
+<td>Regenerates BUILD.md's tables from <code>layout.py</code></td>
+</tr>
+<tr>
+<td><code>tools/gen-wiring.py</code></td>
+<td>Regenerates <code>WIRING.md</code> from <code>layout.py</code></td>
+</tr>
+<tr>
+<td><code>tools/view-docs.py</code></td>
+<td>Renders every doc into one browsable <code>docs.html</code></td>
+</tr>
+<tr>
+<td><code>tools/schematic.py</code></td>
+<td>Generates <code>schematics.html</code> from <code>layout.py</code></td>
+</tr>
+<tr>
+<td><code>tools/view-plan.py</code></td>
+<td>Renders BUILD.md into a tickable bench checklist</td>
+</tr>
+<tr>
+<td><code>docs-archive-breadboard-era.md</code></td>
+<td>Superseded milestone guide — do not build from it</td>
+</tr>
+<tr>
+<td><code>mise.toml</code></td>
+<td>Python 3.13 venv definition</td>
+</tr>
+<tr>
+<td><code>events.jsonl</code>, <code>daemon.log</code></td>
+<td>Runtime state; both gitignored</td>
+</tr>
+<tr>
+<td><code>~/.claude/agentpad.sh</code></td>
+<td>Installed copy of the hook script (appends one JSON line per event)</td>
+</tr>
+<tr>
+<td><code>~/.claude/settings.json</code></td>
+<td>Five hooks pointing at that script (global, not in this repo)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="claude-md--install-the-hooks-live-outside-the-repo">Install (the hooks live outside the repo)</h2>
+<p>The daemon is deaf without these, and they are <strong>not</strong> version-controlled by default:</p>
+<pre><code class="language-bash">cp hooks/agentpad.sh ~/.claude/agentpad.sh &amp;&amp; chmod +x ~/.claude/agentpad.sh
+</code></pre>
+<p>Then <code>~/.claude/settings.json</code> needs five hooks, each running <code>~/.claude/agentpad.sh &lt;state&gt;</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Hook event</th>
+<th>State</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SessionStart</code></td>
+<td><code>idle</code></td>
+</tr>
+<tr>
+<td><code>UserPromptSubmit</code></td>
+<td><code>working</code></td>
+</tr>
+<tr>
+<td><code>PermissionRequest</code></td>
+<td><code>blocked</code></td>
+</tr>
+<tr>
+<td><code>Stop</code></td>
+<td><code>done</code></td>
+</tr>
+<tr>
+<td><code>SessionEnd</code></td>
+<td><code>none</code></td>
+</tr>
+</tbody>
+</table>
+<p>Run the daemon with <code>mise exec -- python daemon.py</code> from this directory.</p>
+<p><strong>Path note:</strong> the code repo lives at <code>~/projects/agentpad</code>, not <code>~/agentpad</code>. The events file and all Python live here too; the hook script writes to <code>~/projects/agentpad/events.jsonl</code>. If you copy commands from an older draft that used <code>~/agentpad</code>, fix the path.</p>
+<h2 id="claude-md--serial-protocol">Serial protocol</h2>
+<p>Line-based, human-readable on purpose — it must stay testable by typing into the Arduino Serial Monitor.</p>
+<p><strong>Mac → ESP32</strong></p>
+<pre><code>L &lt;0-3&gt; &lt;none|idle|working|blocked|done&gt;
+D0 &lt;up to 16 chars&gt;
+D1 &lt;up to 16 chars&gt;
+</code></pre>
+<p><strong>ESP32 → Mac</strong></p>
+<pre><code>B &lt;0-6&gt;     # 0-3 select/launch agent, 4 approve, 5 deny, 6 always-allow
+</code></pre>
+<p>Do not replace this with a binary or JSON protocol.</p>
+<h2 id="claude-md--pin-map-do-not-change-without-asking">Pin map — do not change without asking</h2>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>GPIO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LEDs (red, green, blue, yellow = agents 1-4)</td>
+<td>13, 14, 27, 26</td>
+</tr>
+<tr>
+<td>Agent-select buttons (same color order)</td>
+<td>32, 33, 25, 4</td>
+</tr>
+<tr>
+<td>Approve button</td>
+<td>19</td>
+</tr>
+<tr>
+<td>Deny button</td>
+<td>18</td>
+</tr>
+<tr>
+<td>Always-allow button ("yes, don't ask again")</td>
+<td>23</td>
+</tr>
+<tr>
+<td>LCD I²C SDA / SCL</td>
+<td>21, 22</td>
+</tr>
+<tr>
+<td><em>free</em></td>
+<td>5, 16, 17</td>
+</tr>
+</tbody>
+</table>
+<p>GPIO 34-39 are input-only with no internal pull-up. GPIO 0, 2, 12, 15 are boot strapping pins. Avoid all of them.</p>
+<h2 id="claude-md--constraints">Constraints</h2>
+<ul>
+<li><strong>Serial only.</strong> Do not convert the ESP32 to WiFi/HTTP. The venue network is not trusted and serial is debuggable from the Serial Monitor.</li>
+<li><strong><code>/dev/cu.*</code> never <code>/dev/tty.*</code></strong> — pyserial hangs forever on tty.</li>
+<li><strong>Keep the approve/deny interlock.</strong> The daemon must refuse to send keystrokes unless the agent is genuinely blocked. Two independent conditions must agree — the <code>PermissionRequest</code> state <em>and</em> a prompt visible on screen — and the state is cleared immediately after sending so a double press can't type into the normal input box. This is what stops junk being injected into a prompt.</li>
+<li><strong>Only panes the daemon launched may receive keystrokes.</strong> The hooks are global, so every Claude session on the machine writes to <code>events.jsonl</code>; unknown panes must never be assigned a slot.</li>
+<li><strong><code>APPROVE</code> and <code>DENY</code> stay top-level config constants.</strong> Permission menu numbering varies; these get tuned live.</li>
+<li><strong>Debounce lives in firmware</strong>, not Python. 50ms.</li>
+<li>LEDs are single-color. Color = agent identity. Blink pattern = state.</li>
+</ul>
+<h2 id="claude-md--what-you-cannot-verify">What you cannot verify</h2>
+<p>You cannot see the hardware. You cannot confirm an LED lit, the LCD shows text, or a button registered. When a step depends on physical observation, say so and wait for the human to report back rather than assuming success.</p>
+<p>Serial port name is measured on real hardware, not guessed (this build: <code>/dev/cu.usbserial-0001</code>).</p>
+<p>Firmware <em>compilation</em> can be verified without hardware via <code>arduino-cli compile --fqbn esp32:esp32:esp32 firmware/agentpad</code>. Upload with <code>arduino-cli compile -u -p &lt;port&gt; --fqbn esp32:esp32:esp32 &lt;sketch&gt;</code> — bare <code>upload</code> does not compile and fails on a clean cache.</p>
+<p><strong>Never hand-edit a row, column or GPIO in BUILD.md or schematic.py.</strong> Change <code>tools/layout.py</code>, then run <code>verify-layout.py</code>, <code>gen-tables.py</code> and <code>schematic.py</code>. The docs drifted from the layout four times; the last time the wire table would have shorted seven buttons to ground. That is why the tables are generated.</p>
+<p><strong>Stop the daemon before uploading.</strong> Only one process can hold the serial port; uploading while the daemon runs fails with "Serial data stream stopped: Possible serial noise or corruption", which reads like a hardware fault but isn't.</p>
+<h2 id="claude-md--testing-note">Testing note</h2>
+<p>Permission prompts only fire for commands that escape the sandbox. <strong><code>curl -sI https://example.com</code> prompts reliably; <code>date</code> and <code>df -h</code> do not</strong> (this machine runs <code>bypassPermissions</code> globally, and the daemon launches agent windows with <code>--permission-mode manual</code> so they still prompt). Use curl when demoing or testing the interlock — otherwise the LED just goes solid "working" and never blinks.</p>
+<h2 id="claude-md--context-usage">Context usage</h2>
+<p>The focused agent's context-window usage shows on the LCD bottom row (<code>1w 2B 3i 4d 34%</code>). It comes from Claude Code's <strong>statusLine</strong> payload (<code>context_window.used_percentage</code>) — the only place that value is exposed — and is attributed per agent because the statusLine command inherits <code>$TMUX_PANE</code> inside a tmux window. See <code>hooks/agentpad-status.sh</code>.</p>
+<p>An LED bar graph was designed and coded (74HC595, <code>G &lt;0-100&gt;</code> serial command, battery semantics: full = fresh) but <strong>deliberately not wired</strong> — see <code>BUILD.md</code>. The firmware and daemon support is still present and harmless, so it can be added later without other changes.</p>
+<h2 id="claude-md--status">Status</h2>
+<p><strong>Working end-to-end.</strong> Hardware built and verified: LCD@0x27, 4 LEDs, <strong>7 buttons</strong> (4 select + approve/deny/always-allow). Firmware, daemon, and hooks all confirmed on real hardware: color button → tmux window spawn/focus → hooks → LED state → approve/deny/always button → keystroke lands in the correct pane. Survives unplug/replug of the ESP32.</p>
+<p>Next: soldered build on <strong>one 30 × 42 double-sided PCB</strong> (control surface in cols 1–28, ESP32 socketed at cols 30–40, 4-pin LCD port at cols 30–33 row 2), screwed to a wooden plate — see <code>BUILD.md</code>, <code>SOLDERING.md</code>, <code>BREADBOARD.md</code>.</p>
+<p><strong>On the soldered board the LCD plugs into a board-mounted 4-pin male port, not the ESP32's pins</strong> — those are inside the socket once the module is seated. On the <em>breadboard</em> prototype the jumpers do go straight onto the ESP32's pins; both are correct for their own build.</p></section>
+</main>
+<a class="top" href="#">↑ top</a>
+</body></html>

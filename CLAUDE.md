@@ -54,10 +54,14 @@ Screen reading survives only to notice the prompt has been **answered**, and mat
 | `SOLDERING.md` | From-zero soldering course with practice exercises |
 | `MULTIMETER.md` | From-zero multimeter guide — continuity, diode and resistance tests |
 | `BREADBOARD.md` | Rebuilding the breadboard prototype |
-| `CONNECTIONS.md` | **How you physically join two points on perfboard** — read first |
+| `START-HERE.md` | **The map** — how board, daemon and hooks fit together. Read first |
+| `WIRING.md` | **GENERATED** flat point-to-point list: every wire, leg and socket slot |
+| `CONNECTIONS.md` | **How you physically join two points on perfboard** |
 | `tools/layout.py` | **Single source of truth** for every row, column, GPIO, mount hole and connector |
 | `tools/verify-layout.py` | Checks bodies, overlaps, hole occupancy and connectivity |
 | `tools/gen-tables.py` | Regenerates BUILD.md's tables from `layout.py` |
+| `tools/gen-wiring.py` | Regenerates `WIRING.md` from `layout.py` |
+| `tools/view-docs.py` | Renders every doc into one browsable `docs.html` |
 | `tools/schematic.py` | Generates `schematics.html` from `layout.py` |
 | `tools/view-plan.py` | Renders BUILD.md into a tickable bench checklist |
 | `docs-archive-breadboard-era.md` | Superseded milestone guide — do not build from it |

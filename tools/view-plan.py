@@ -7,7 +7,7 @@ build; ticks persist in localStorage, so closing the tab doesn't lose your place
 
     mise exec -- python tools/view-plan.py
 """
-import os, re, subprocess, webbrowser
+import os, re, subprocess, sys, webbrowser
 import markdown
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -119,4 +119,5 @@ page = f"""<!doctype html>
 
 open(OUT, "w").write(page)
 print(OUT)
-subprocess.run(["open", OUT], check=False)
+if "--no-open" not in sys.argv:
+    subprocess.run(["open", "-a", "Google Chrome", OUT], check=False)
