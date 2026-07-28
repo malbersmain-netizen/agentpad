@@ -131,7 +131,7 @@ def respond(keystroke):
     # so a quick press would be refused on a stale state. Wait briefly for `blocked`
     # to land. Still never types unless the agent really is blocked.
     if p and info.get(p, {}).get("state") != "blocked":
-        deadline = time.time() + 1.5
+        deadline = time.time() + 0.5   # just covers the 200ms screen-poll interval
         while time.time() < deadline and info.get(p, {}).get("state") != "blocked":
             time.sleep(0.05)
     st = info.get(p, {}).get("state") if p else None
@@ -163,8 +163,8 @@ def tail_events():
         while True:
             line = f.readline()
             if not line:
-                time.sleep(0.1)
-                continue
+                time.sleep(0.02)   # tight poll: the LED should blink the moment
+                continue           # the prompt appears, not 100ms later
             try:
                 e = json.loads(line)
             except Exception:
@@ -176,6 +176,8 @@ def tail_events():
             if i is None:
                 continue
             st = e.get("state", "idle")
+            if st == "blocked":
+                continue    # screen detection owns `blocked`; the hook is ~6s stale
             prev = info.get(pane)
             if not prev or prev["state"] != st:
                 info[pane] = {"state": st, "since": time.time()}  # state changed: reset timer
@@ -197,6 +199,43 @@ def read_serial():
         if   0 <= n <= 3: launch_or_focus(n)
         elif n == 4:      respond(APPROVE)
         elif n == 5:      respond(DENY)
+
+def prompt_visible(pane):
+    """True if a live permission prompt is on that pane's screen RIGHT NOW.
+
+    Claude Code delays the Notification hook by ~6s (measured), because notifications
+    are meant to chase an absent user. That's far too slow for a status light, so
+    `blocked` is detected by reading the screen instead -- which is instant.
+    Requires both the question and the numbered selector so Claude's prose about
+    permission prompts can't trigger a false positive.
+    """
+    txt = tmux("capture-pane", "-p", "-t", pane).stdout
+    tail = "\n".join(txt.splitlines()[-25:])
+    return "Do you want" in tail and "1. Yes" in tail
+
+def watch_prompts():
+    """Poll each agent's screen so the LED blinks the moment the prompt appears."""
+    while True:
+        time.sleep(0.2)
+        for i, p in enumerate(slots):
+            if not p:
+                continue
+            try:
+                vis = prompt_visible(p)
+            except Exception:
+                continue
+            cur = info.get(p, {}).get("state")
+            if vis and cur != "blocked":
+                info[p] = {"state": "blocked", "since": time.time()}
+                send(f"L {i} blocked")
+                log(f"screen-detect BLOCKED pane={p} slot={i}")
+                refresh()
+            elif not vis and cur == "blocked":
+                # prompt cleared (answered here or from the pad) -- back to working
+                info[p] = {"state": "working", "since": time.time()}
+                send(f"L {i} working")
+                log(f"screen-detect cleared pane={p} slot={i}")
+                refresh()
 
 def tick():
     """Re-render the LCD every second so the state timer counts live, and follow
@@ -241,6 +280,7 @@ recover_state()   # restore last-known LED states + interlock after a restart
 threading.Thread(target=tail_events, daemon=True).start()
 threading.Thread(target=read_serial, daemon=True).start()
 threading.Thread(target=tick, daemon=True).start()
+threading.Thread(target=watch_prompts, daemon=True).start()
 
 refresh()
 print("agentpad running. ctrl-c to quit.")
