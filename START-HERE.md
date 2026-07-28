@@ -217,9 +217,11 @@ changed since the last one that passed.
 Not a general list — these are the ones that have actually happened on this project.
 
 **A bus wire lying over the hole centres instead of beside them.** The lead you push in
-later stops on the wire and never reaches copper, but solder bridges the gap. The joint
-looks perfect from underneath and it beeps. **11 joints** on this board are at risk.
-`SOLDERING.md` Exercise 4 exists solely to teach you this.
+later stops on the wire, and the part sits proud. Exposure here is **4 joints** — only row
+8's bus goes on before its components. And since every bussed hole is a *ground* hole, a
+lead touching just the wire is still grounded, so the symptom is mechanical rather than
+electrical. `SOLDERING.md` Exercise 4 still teaches the habit, because on a board where a
+bus crossed a signal hole this would be an invisible dead short's quieter cousin.
 
 **Several buttons dead at once.** It's the ground bus or the column-1 link — not the
 switches. This happened twice on the breadboard.
