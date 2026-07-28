@@ -4,3 +4,4 @@ __pycache__/
 events.jsonl
 daemon.log
 .claude/settings.local.json
+context.jsonl
