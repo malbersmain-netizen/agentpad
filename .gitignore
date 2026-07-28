@@ -7,3 +7,6 @@ daemon.log
 context.jsonl
 build-plan.html
 build-figures.html
+assembly-guide.html
+case/*.stl
+case/err.txt
