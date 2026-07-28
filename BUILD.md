@@ -43,12 +43,34 @@ ESP32 (the spare) · I²C LCD1602 · 4 LEDs (R/G/B/Y) · 4× 220Ω · 4 capped p
 ### Buy — materials
 | Item | Notes |
 |---|---|
-| Perfboard, **plated through-holes**, 0.1" | **Buy 2.** Unplated phenolic lifts pads the moment you rework. Need ≥86 × 127mm |
+| Perfboard, **plated through-holes**, 0.1" | **Buy 2.** See the warning below — the kit does **not** include one. Need ≥86 × 127mm (9×15cm ideal, 8×12cm minimum) |
 | Female header strip, 0.1" | ESP32 is 30-pin = **15 per side** |
 | 22AWG solid-core wire | Board runs; holds its shape |
 | 24–26AWG stranded wire | LCD flying leads (it moves — solid core would fatigue and snap) |
 | Heat-shrink, assorted | |
 | M3 screws, nuts, standoffs | LCD to face, board to case bosses |
+
+> ### The kit's perfboards are 3mm too narrow
+>
+> The kit **does** include three `PY-5CM*7CM` perfboards (real perfboard — copper ring
+> around every hole; not to be confused with the white solderless breadboard, which
+> also ships with the kit and cannot be soldered).
+>
+> They are just too small for this layout, and it isn't a packing problem:
+>
+> | Row | Outer-edge span | Widest kit board | |
+> |---|---|---|---|
+> | 4 select buttons | 73.0mm | 70mm | short by 3mm |
+> | AA / no / yes | 75.5mm | 70mm | short by 5.5mm |
+>
+> The button positions are fixed by the case face, so the row is simply wider than the
+> board. Three ways out:
+>
+> 1. **Buy one 9×15cm perfboard (~$3).** Single board, this layout unchanged. Recommended.
+> 2. **Narrow the pitch** to 7 holes (17.78mm) instead of 8, and re-render the case —
+>    free while nothing is printed, and the cluster then fits a kit board.
+> 3. **Split across 2–3 kit boards** joined by wire looms. Free, but every extra loom is
+>    more joints and more places for a cold joint to hide.
 
 ### Nice to have
 Isopropyl + brush (clean flux so you can see joints) · Kapton tape (holds parts while you
