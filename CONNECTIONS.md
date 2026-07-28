@@ -67,8 +67,14 @@ Ground has to reach ~15 different places. Running 15 separate wires would be mis
 instead you lay **one bare wire along a row of pads and solder it to each one**. That turns
 a row of islands into a single connected node. That node is called a **bus**.
 
-This board has **three GND buses**, joined to each other down column 28. Anything that needs
-ground just has to reach the nearest bus.
+This board has **three GND buses**, joined to each other down **column 1**. Anything that
+needs ground just has to reach the nearest bus.
+
+> **Why column 1 and not the right-hand end?** The link is *bare* wire. Every signal wire
+> on this board leaves its component at column 3 or higher and runs *right*, toward the
+> ESP32 — so the far-left column is the one line none of them cross. When the link lived at
+> column 28, all seven button and answer wires ran straight over it, each one a nicked
+> insulator away from a dead short. `verify-layout.py` now fails if that ever comes back.
 
 **How to lay one:**
 
@@ -129,7 +135,8 @@ An LED leg is ~20mm; you need 2.54mm. There's plenty.
 
 ## Move 4 — a signal wire across the board
 
-Twelve of these, plus four F-M jumpers for the LCD. All identical:
+Sixteen of these — 12 from the control surface to the ESP32 socket, and 4 more from the
+LCD port to the socket. All identical:
 
 1. Cut 22AWG solid wire, generously long — you can always shorten.
 2. **Strip ~4mm** off each end.
@@ -138,9 +145,15 @@ Twelve of these, plus four F-M jumpers for the LCD. All identical:
 4. Push one end down through its hole **from the top**, solder underneath, snip.
 5. Do the same at the far end, into the pad under the ESP32 socket pin it serves.
 
-> **Label both ends before you solder the second one.** Twelve identical wires become
+> **Label both ends before you solder the second one.** Sixteen identical wires become
 > indistinguishable the moment they're in a bundle. Masking-tape flags with the signal
 > name.
+
+**The LCD's own four wires are not soldered.** They're F-F jumpers from the LCD's header to
+the board's 4-pin **LCD port** — a male header at cols 30–33, row 2. The port exists because
+the ESP32's pins disappear inside the socket the moment the module is seated, so there is
+nothing left to clip a jumper onto. The port's four *wires* (port → socket pads) are soldered
+like any other; the LCD itself just plugs in.
 
 ---
 
@@ -149,7 +162,7 @@ Twelve of these, plus four F-M jumpers for the LCD. All identical:
 Each signal wire lands on a pad that already holds a socket pin. You don't need a free
 hole — **you solder the wire onto the pin's existing joint**:
 
-1. Do all 30 header joints first.
+1. Do all 30 socket joints first.
 2. Lay the tinned wire end against the target pin's solder blob.
 3. Touch the iron to both until the existing solder melts and takes the wire.
 4. Remove the iron, hold still 2 seconds.
@@ -168,7 +181,7 @@ Every part of the build is these moves in sequence. Here's LED 1 in full:
 | 2 | Move 1 | 220Ω into **col 4, row 4** and **col 4, row 8** |
 | 3 | Move 3 | Bend the LED's cathode leg from row 3 onto the row-4 pad and solder |
 | 4 | Move 2 | The resistor's bottom lead is in row 8 — **that row is a GND bus**, so it's grounded the moment the bus is on |
-| 5 | Move 4 | Wire from **col 4, row 2** to the **D13** pad at the ESP32 socket |
+| 5 | Move 4 | Wire from **col 4, row 2** to the **D13** pad at the ESP32 socket (col 30, row 10) — both ends are lap joints, Move 5 |
 
 Follow the current: **D13 → wire → LED anode → through the LED → cathode → bent leg →
 resistor → GND bus → back to the ESP32's GND.** Every step is a connection you made.

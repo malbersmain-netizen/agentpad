@@ -211,7 +211,8 @@ def board(stage=99, side="top"):
         if stage >= 1:
             for r in GND_ROWS: bus(r)
             o.append(f'<line x1="{X(GND_LINK_COL)}" y1="{Y(GND_ROWS[0])}" x2="{X(GND_LINK_COL)}" y2="{Y(GND_ROWS[-1])}" stroke="#8c9099" stroke-width="7"/>')
-            lab(X(GND_LINK_COL)+8, Y(GND_ROWS[0])-20, f"linked down col {GND_LINK_COL}", "#666", 10, "start")
+            lab(X(GND_LINK_COL)+9, Y((GND_ROWS[0]+GND_ROWS[-1])/2)-6, "all 3 buses linked", "#d6dae0", 9.5, "start", 700)
+            lab(X(GND_LINK_COL)+9, Y((GND_ROWS[0]+GND_ROWS[-1])/2)+6, f"down col {GND_LINK_COL} \u2014 no signal crosses it", "#d6dae0", 9.5, "start", 700)
             # ESP32 socket, same board
             ex0, ey0 = X(HDR_COLS[0]), Y(HDR_ROWS[0])
             ex1, ey1 = X(HDR_COLS[1]), Y(HDR_ROWS[1])
@@ -231,8 +232,25 @@ def board(stage=99, side="top"):
                     lab(X(c) + (13 if sd == "LEFT" else 14), Y(r)+3.5, nm,
                         "#fff" if hot else "#7d848d", 8.5,
                         "start", 700 if hot else 400)
-            o.append(f'<rect x="{(ex0+ex1)/2-92}" y="{ey1+38}" width="184" height="20" rx="4" fill="#0e3f22"/>')
-            lab((ex0+ex1)/2, ey1+52, "USB overhangs this edge", "#bfe4ff", 10.5, "middle", 700)
+            # the four drilled mounting holes
+            for c, r in mount_holes():
+                o.append(f'<circle cx="{X(c)}" cy="{Y(r)}" r="{MOUNT_DRILL/2/2.54*PITCH}" '
+                         f'fill="#0b2b16" stroke="#e8e8e8" stroke-width="2"/>')
+                o.append(f'<circle cx="{X(c)}" cy="{Y(r)}" r="{MOUNT_HEAD_R/2.54*PITCH}" '
+                         f'fill="none" stroke="#e8e8e8" stroke-width="1" stroke-dasharray="3 3" opacity="0.55"/>')
+            lab(X(mount_holes()[0][0])+14, Y(mount_holes()[0][1])-14,
+                f"M2 mount, {MOUNT_DRILL}mm", "#e8e8e8", 9.5, "start", 700)
+            # the LCD port -- 4 male pins
+            p0 = LCD_PORT_COL0; pr = LCD_PORT_ROW
+            o.append(f'<rect x="{X(p0)-11}" y="{Y(pr)-11}" width="{(len(LCD_PINS)-1)*PITCH+22}" '
+                     f'height="22" rx="4" fill="#15181c" stroke="#c60" stroke-width="1.5"/>')
+            for i, (nm, _) in enumerate(LCD_PINS):
+                o.append(f'<circle cx="{X(p0+i)}" cy="{Y(pr)}" r="{PITCH*0.26}" fill="#e8a33d"/>')
+                lab(X(p0+i), Y(pr)-16, nm, "#e8a33d", 8.5, "middle", 700)
+            lab(X(p0)-2, Y(pr)+30, "LCD port \u2014 4 male pins, F-F jumpers, never soldered", "#e8a33d", 10, "start", 700)
+            o.append(f'<rect x="{(ex0+ex1)/2-150}" y="{ey1+40}" width="300" height="34" rx="4" fill="#0e3f22"/>')
+            lab((ex0+ex1)/2, ey1+54, "USB faces this way, 13mm short of the edge", "#bfe4ff", 10.5, "middle", 700)
+            lab((ex0+ex1)/2, ey1+68, "keep rows 26-30 clear: the cable exits over them", "#8fbcd8", 9.5)
         if stage >= 2:
             for i, c in enumerate(LED_COLS):
                 resistor(c); led(c, COL[i], i+1)
@@ -277,6 +295,17 @@ def board(stage=99, side="top"):
                 o.append(f'<circle cx="{xs}" cy="{ys}" r="4.5" fill="{cc2}" stroke="#fff" stroke-width="1.2"/>')
                 o.append(f'<circle cx="{xs}" cy="{ys-15}" r="7.5" fill="#fff" stroke="{cc2}" stroke-width="1.6"/>')
                 lab(xs, ys-11.5, str(n), cc2, 9, "middle", 700)
+            # the four LCD-port wires. Short runs straight down; the two I2C lines carry
+            # on underneath the module (dashed) to reach the right-hand column.
+            for i, (nm, hole, esp, sock) in enumerate(lcd_port()):
+                hx, hy = X(hole[0]), Y(hole[1])
+                sx, sy = X(sock[0]), Y(sock[1])
+                o.append(f'<path d="M {hx} {hy} V {sy}" stroke="#e8a33d" stroke-width="2.2" fill="none"/>')
+                if hx != sx:
+                    o.append(f'<path d="M {hx} {sy} H {sx}" stroke="#e8a33d" stroke-width="2.2" '
+                             f'fill="none" stroke-dasharray="5 4"/>')
+                o.append(f'<circle cx="{sx}" cy="{sy}" r="4" fill="#e8a33d" stroke="#fff" stroke-width="1.1"/>')
+
             # the single ground wire: bus at col 28 -> the socket's GND pad
             gc, gr = socket_hole(*esp_position("GND"))
             o.append(f'<path d="M {X(BUS_COLS[1])} {Y(GND_ROWS[1])} H {X(SPINE)+14} V {Y(gr)} H {X(gc)}" '
@@ -285,9 +314,9 @@ def board(stage=99, side="top"):
             lab(OX-34, OY+ROWS*PITCH+36, "wire 12: GND bus (col 28) \u2192 the ESP32's GND pad \u2014 the only ground wire on the board", "#111", 11, "start", 700)
 
             lab(OX + COLS*PITCH/2, OY+ROWS*PITCH+56,
-                f"{len(wires)} signal wires + 1 ground, numbered as in BUILD.md \u00a7 wire list \u00b7 "
-                f"dashed = runs under the ESP32 on the copper face \u00b7 the LCD clips onto the module's "
-                f"own pins with F-M jumpers, nothing soldered", "#666", 11.5)
+                f"{len(wires)} signal wires + 1 ground (numbered as in BUILD.md) + {len(LCD_PINS)} orange LCD-port wires \u00b7 "
+                f"dashed = runs under the ESP32 on the copper face \u00b7 the LCD itself is never "
+                f"soldered \u2014 it plugs into the orange port with 4 F-F jumpers", "#666", 11.5)
     else:
         lab(OX + COLS*PITCH/2, OY-52, "UNDERSIDE — mirrored. ALL copper and ALL solder joints are on this face.", "#c33", 13, "middle", 700)
         for r in GND_ROWS: bus(r)

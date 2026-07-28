@@ -53,7 +53,7 @@ Screen reading survives only to notice the prompt has been **answered**, and mat
 | `SOLDERING.md` | From-zero soldering course with practice exercises |
 | `BREADBOARD.md` | Rebuilding the breadboard prototype |
 | `CONNECTIONS.md` | **How you physically join two points on perfboard** — read first |
-| `tools/layout.py` | **Single source of truth** for every row, column and GPIO |
+| `tools/layout.py` | **Single source of truth** for every row, column, GPIO, mount hole and connector |
 | `tools/verify-layout.py` | Checks bodies, overlaps, hole occupancy and connectivity |
 | `tools/gen-tables.py` | Regenerates BUILD.md's tables from `layout.py` |
 | `tools/schematic.py` | Generates `schematics.html` from `layout.py` |
@@ -153,4 +153,6 @@ An LED bar graph was designed and coded (74HC595, `G <0-100>` serial command, ba
 
 **Working end-to-end.** Hardware built and verified: LCD@0x27, 4 LEDs, **7 buttons** (4 select + approve/deny/always-allow). Firmware, daemon, and hooks all confirmed on real hardware: color button → tmux window spawn/focus → hooks → LED state → approve/deny/always button → keystroke lands in the correct pane. Survives unplug/replug of the ESP32.
 
-Next: soldered build on **one 30 × 42 double-sided PCB** (control surface in cols 1–28, ESP32 socketed at cols 30–40), screwed to a wooden plate — see `BUILD.md`, `SOLDERING.md`, `BREADBOARD.md`.
+Next: soldered build on **one 30 × 42 double-sided PCB** (control surface in cols 1–28, ESP32 socketed at cols 30–40, 4-pin LCD port at cols 30–33 row 2), screwed to a wooden plate — see `BUILD.md`, `SOLDERING.md`, `BREADBOARD.md`.
+
+**On the soldered board the LCD plugs into a board-mounted 4-pin male port, not the ESP32's pins** — those are inside the socket once the module is seated. On the *breadboard* prototype the jumpers do go straight onto the ESP32's pins; both are correct for their own build.
