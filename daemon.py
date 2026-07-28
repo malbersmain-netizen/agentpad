@@ -109,14 +109,41 @@ def launch_or_focus(i):
     focus = i
     refresh()
 
+def active_slot():
+    """Agent slot whose tmux window is currently active, or None if not an agent
+    window. Lets the pad follow tmux even when you switch windows by hand."""
+    name = tmux("display-message", "-p", "-t", SESSION, "#{window_name}").stdout.strip()
+    return NAMES.index(name) if name in NAMES else None
+
+def log(msg):
+    with open(os.path.expanduser("~/projects/agentpad/daemon.log"), "a") as f:
+        f.write(f"{time.strftime('%H:%M:%S')} {msg}\n")
+
 def respond(keystroke):
+    # Target the window actually on screen, not just the last button pressed --
+    # otherwise switching windows inside tmux silently aims approve at the wrong agent.
+    global focus
+    i = active_slot()
+    if i is not None:
+        focus = i
     p = slots[focus]
-    if not p or info.get(p, {}).get("state") != "blocked":
+    # The prompt renders on screen slightly BEFORE the Notification hook reaches us,
+    # so a quick press would be refused on a stale state. Wait briefly for `blocked`
+    # to land. Still never types unless the agent really is blocked.
+    if p and info.get(p, {}).get("state") != "blocked":
+        deadline = time.time() + 1.5
+        while time.time() < deadline and info.get(p, {}).get("state") != "blocked":
+            time.sleep(0.05)
+    st = info.get(p, {}).get("state") if p else None
+    log(f"respond({keystroke!r}) active_slot={i} focus={focus} pane={p} state={st} "
+        f"slots={slots} info={ {k: v['state'] for k, v in info.items()} }")
+    if not p or st != "blocked":
         send("D0 not blocked")          # interlock: never type unless blocked
         time.sleep(0.6)
         refresh()
         return
-    tmux("send-keys", "-t", p, keystroke, "Enter")
+    r = tmux("send-keys", "-t", p, keystroke, "Enter")
+    log(f"  sent {keystroke!r} to {p} rc={r.returncode} err={r.stderr.strip()!r}")
 
 def slot_of(pane):
     """Map a hook's pane to an agent slot (known if we launched it; else first free)."""
@@ -155,6 +182,7 @@ def tail_events():
             else:
                 prev["state"] = st                                # same state repeated: keep timer
             send(f"L {i} {st}")
+            log(f"event pane={pane} slot={i} state={st}")
             refresh()
 
 def read_serial():
@@ -171,9 +199,14 @@ def read_serial():
         elif n == 5:      respond(DENY)
 
 def tick():
-    """Re-render the LCD every second so the state timer counts live."""
+    """Re-render the LCD every second so the state timer counts live, and follow
+    whichever agent window tmux has active (you may switch windows by hand)."""
+    global focus
     while True:
         time.sleep(1)
+        i = active_slot()
+        if i is not None and i != focus:
+            focus = i
         refresh()
 
 def blank_leds():
