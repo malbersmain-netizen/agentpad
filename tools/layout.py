@@ -9,7 +9,8 @@ MEASURED on the actual kit parts (calipers, not datasheets):
   colored buttons  pins 3 holes ACROSS (2 pitches) x 6 holes LONG (5 pitches)
   small buttons    3x3 holes (2 pitches both ways)
   ESP32            11 holes across (pin rows 1.0in apart) x 15 long
-  perfboard        30 rows x 42 cols, ~79x109mm, DOUBLE-SIDED, 1.0mm holes.
+  perfboard        30 rows x 42 cols, 120x80mm (silkscreen: 12*8CM 2.54MM),
+                   DOUBLE-SIDED, 1.0mm holes, 4 FACTORY CORNER HOLES already drilled.
                    Everything fits ONE board now, with the ESP32 socketed beside the
                    controls. All joints stay on one face, so the design does not depend
                    on whether the holes are plated through.
@@ -18,7 +19,7 @@ MEASURED on the actual kit parts (calipers, not datasheets):
 # ---- board ----------------------------------------------------------------
 P            = 2.54
 ROWS, COLS   = 30, 42          # the double-sided board: 42 across, 30 down
-BOARD_W, BOARD_H = 109.0, 79.0
+BOARD_W, BOARD_H = 120.0, 80.0   # from the silkscreen: 12*8CM
 HOLE_D       = 1.0     # one lead per hole, never two
 BEND         = 1.5     # straight lead between body seal and bend, per end
 
@@ -93,11 +94,11 @@ def lcd_port():
 
 
 # ---- mounting -------------------------------------------------------------
-# The grid spans 104.14 x 73.66mm on a 109 x 79 board, so every margin is ~2.4-2.7mm.
-# There is no corner wide enough for the 3.5mm hole an earlier draft called for. Mount
-# holes therefore go ON otherwise-unused pads, drilled to M2 clearance -- 2.2mm eats
-# 1.1mm of radius, which stops short of the 1.27mm neighbouring pad centres.
-MOUNT_DRILL  = 2.2      # M2 clearance
+# THE BOARD ALREADY HAS FOUR CORNER HOLES, drilled at the factory, outside the pad grid.
+# Use them -- do not drill anything. The computed positions below are only a fallback for
+# a board without them, kept because verify-layout still proves they would be legal.
+FACTORY_CORNER_HOLES = True
+MOUNT_DRILL  = 2.2      # M2 clearance, fallback only
 MOUNT_HEAD_R = 2.2      # M2 pan head + nylon washer, radius
 EDGE_MIN     = 3.0      # material left between hole edge and board edge
 
@@ -259,6 +260,8 @@ def mount_holes():
 
 
 def lcd_harness():
-    """The LCD's four wires — F-M jumpers onto the ESP32's pins, never soldered."""
+    """DEPRECATED — the soldered build uses lcd_port(). This described the breadboard
+    arrangement, where the jumpers really do go onto the ESP32's own pins because the
+    module is not in a socket. Kept only so BREADBOARD.md's generator still works."""
     return [(f"LCD {a}", "F-M jumper onto the LCD's own header", b if b == "GND" else
              ("VIN" if b == "VIN" else f"D{b}")) for a, b in LCD_PINS]

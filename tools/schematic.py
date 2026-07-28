@@ -368,8 +368,8 @@ def fig_assembly():
         o.append(f'<circle cx="{x}" cy="{y}" r="5" fill="#777" stroke="#444"/>')
     o.append(f'<text x="700" y="140" font-size="12" font-weight="700" fill="#333">LCD1602</text>')
     o.append(f'<text x="700" y="158" font-size="11" fill="#555">its own 4 × M3 holes</text>')
-    o.append(f'<text x="700" y="176" font-size="11" fill="#a60">NEVER soldered — 4 F-M jumpers</text>')
-    o.append(f'<text x="700" y="192" font-size="11" fill="#555">straight onto the ESP32 pins</text>')
+    o.append(f'<text x="700" y="176" font-size="11" fill="#a60">NEVER soldered — 4 F-F jumpers</text>')
+    o.append(f'<text x="700" y="192" font-size="11" fill="#555">into the board\u2019s 4-pin LCD port</text>')
     # the one board
     bx, by, bw, bh = 150, 268, 690, 262
     o.append(f'<rect x="{bx}" y="{by}" width="{bw}" height="{bh}" rx="8" fill="#1d6b3d" stroke="#0e3f22" stroke-width="2"/>')
@@ -396,7 +396,7 @@ def fig_assembly():
     for i in range(4):
         o.append(f'<path d="M {600+i*16} 216 C {640+i*16} 250, {ex+40} 250, {ex+40+i*12} {by+50}" '
                  f'stroke="#c60" stroke-width="2.2" fill="none"/>')
-    o.append(f'<text x="700" y="212" font-size="11" font-weight="700" fill="#c60">4 F-M jumpers down to the ESP32</text>')
+    o.append(f'<text x="700" y="212" font-size="11" font-weight="700" fill="#c60">4 F-F jumpers down to the LCD port</text>')
     o.append(f'<text x="76" y="556" font-size="12" fill="#5a3a10">Only the board is permanent. The LCD and the ESP32 both unplug.</text>')
     return svg(W, H, "".join(o))
 
@@ -456,20 +456,24 @@ def fig_wires():
         rows.append(("", f"220R bottom col {c} row {RES_ROWS[1]}",
                      f"lands ON the GND bus", COL[i]))
     for i, c0 in enumerate(BTN_COL0):
-        rows.append((f"Button {i+1} {NAME[i]}", f"signal leg col {c0} row {BTN_ROWS[0]}",
+        L = dict((r, h) for h, r in switch_legs(c0, BIG_LEG_COLS, BTN_ROWS))
+        rows.append((f"Button {i+1} {NAME[i]}", f"signal leg col {L['signal'][0]} row {L['signal'][1]}",
                      f"wire to the D{BTN_GPIO[i]} socket pad", COL[i]))
-        rows.append(("", f"gnd leg col {c0+BIG_LEG_COLS} row {BTN_ROWS[1]}",
-                     "lands ON the GND bus", COL[i]))
+        rows.append(("", f"anchor leg col {L['anchor'][0]} row {L['anchor'][1]}", "solder, no connection", COL[i]))
+        rows.append(("", f"col {L['clip'][0]} row {L['clip'][1]}", "CLIP THIS LEG OFF", "#c00"))
+        rows.append(("", f"gnd leg col {L['ground'][0]} row {L['ground'][1]}", "lands ON the GND bus", COL[i]))
     for i, ((n, g, d), c0) in enumerate(zip(ANS_INFO, ANS_COL0)):
-        rows.append((f"{n} ({d})", f"signal leg col {c0} row {ANS_ROWS[0]}",
+        L = dict((r, h) for h, r in switch_legs(c0, SMALL_LEG, ANS_ROWS))
+        rows.append((f"{n} ({d})", f"signal leg col {L['signal'][0]} row {L['signal'][1]}",
                      f"wire to the D{g} socket pad", ANSC[i]))
-        rows.append(("", f"gnd leg col {c0+SMALL_LEG} row {ANS_ROWS[1]}",
-                     "lands ON the GND bus", ANSC[i]))
-    rows.append(("Ground", f"any GND bus (rows {', '.join(map(str, GND_ROWS))})",
+        rows.append(("", f"anchor leg col {L['anchor'][0]} row {L['anchor'][1]}", "solder, no connection", ANSC[i]))
+        rows.append(("", f"col {L['clip'][0]} row {L['clip'][1]}", "CLIP THIS LEG OFF", "#c00"))
+        rows.append(("", f"gnd leg col {L['ground'][0]} row {L['ground'][1]}", "lands ON the GND bus", ANSC[i]))
+    rows.append(("Ground", f"col {GND_WIRE_FROM[0]} row {GND_WIRE_FROM[1]} (GND bus)",
                  "one wire to the GND socket pad", "#111"))
-    for a_, b_ in LCD_PINS:
-        rows.append((f"LCD {a_}", "F-M jumper on the LCD's own header",
-                     f"F-M jumper onto the ESP32's own {b_} pin — never soldered", "#c60"))
+    for name, hole, esp, sock in lcd_port():
+        rows.append((f"LCD {name}", f"port pin col {hole[0]} row {hole[1]} (F-F jumper)",
+                     f"wire to the {esp} socket pad, col {sock[0]} row {sock[1]}", "#c60"))
     W, H = 940, 74 + len(rows)*22 + 30
     o = [f'<text x="24" y="30" font-size="15" font-weight="700" fill="#222">Every connection, in order</text>',
          f'<text x="24" y="50" font-size="11" fill="#888">generated from tools/layout.py — {len(harness())} soldered wires plus {len(LCD_PINS)} LCD jumpers</text>']
@@ -490,21 +494,22 @@ FIGS = [
   "with the ESP32's internal pull-up doing the rest. LCD: I²C on GPIO 21/22, powered from 5V."),
  ("2 · Pin map", fig_pinmap(),
   f"{len(harness())+len(LCD_PINS)} connections. Every GPIO is safe: none are input-only (34-39) or boot strapping "
-  "pins (0, 2, 12, 15). Each one is an F-M jumper — female on the ESP32, male soldered in."),
+  "pins (0, 2, 12, 15). The 12 signal wires and the ground wire are soldered to socket pads; the "
+  "LCD's 4 reach the board's LCD port on F-F jumpers."),
  ("3 · Board layout — top side, finished", board(99, "top"),
-  "One 18×24 kit board. Dashed lines leaving the top edge are the jumpers to the ESP32, which "
-  "sits on its own carrier board rather than on this one."),
+  f"One {ROWS}\u00d7{COLS} double-sided board. The ESP32 is socketed at columns {HDR_COLS[0]}-{HDR_COLS[1]} on this "
+  f"same board; every wire is drawn on its real route. Red \u2715 marks the switch leg you clip off."),
  ("3b · How it sits on the wood", fig_assembly(),
   "Two pieces screw to the plate: the board, and the LCD. The ESP32 is socketed on the board "
   "itself, USB facing an edge. Only the board is permanent."),
  ("4 · Underside — where every joint lives", board(99, "under"),
-  "The board is SINGLE-SIDED: all the copper, and therefore every solder joint, is on this face. "
-  "Components sit on the other side; only their legs and the jumper pins come through."),
+  "The board is double-sided, but every joint is made on THIS face, so the design works whether or "
+  "not the holes are plated through. Components sit on the other side; only their legs come through."),
  ("5 · Component detail — which holes exactly", fig_detail(),
-  "The button has four legs but only two pairs. Use diagonally opposite corners so you're across "
-  "the switch, not along a permanently-joined pair."),
+  "Each switch has four legs but only two internally-joined pairs \u2014 and on this kit they join "
+  "down the LONG axis. One leg is CLIPPED OFF before seating so the board works either way."),
  ("6 · Connection list", fig_wires(),
-  "Tick these off as you go. Label both ends of every jumper before soldering the male end."),
+  "Tick these off as you go. Label both ends of every wire before you solder the second end."),
  ("Step 1 — the buses and the ESP32 socket", board(1, "top"),
   f"Bare wire along rows {', '.join(map(str, GND_ROWS))} (all GND), spanning columns "
   f"{BUS_COLS[0]}-{BUS_COLS[1]} and linked down column {GND_LINK_COL}. Then the two 15-way "
@@ -517,18 +522,18 @@ FIGS = [
   f"Test: plug the ESP32 in, run firmware/ledtest — all four cycle."),
  ("Step 3 — the four colored buttons", board(3, "top"),
   f"Legs in rows {BTN_ROWS[0]} and {BTN_ROWS[1]}, left columns {', '.join(map(str, BTN_COL0))} "
-  f"(each button spans {BIG_LEG_COLS} columns). The row-{BTN_ROWS[0]} leg takes its signal wire; "
-  f"the diagonally opposite leg lands straight on the row-{BTN_ROWS[1]} bus. "
-  f"Test: firmware/btntest prints button 0-3."),
+  f"(each spans {BIG_LEG_COLS} columns). CLIP the leg at the signal column on row {BTN_ROWS[1]} before "
+  f"seating \u2014 three legs go in. The row-{BTN_ROWS[0]} signal leg takes the wire; the diagonally "
+  f"opposite leg lands on the row-{BTN_ROWS[1]} bus. Test: firmware/btntest prints button 0-3."),
  ("Step 4 — AA / no / yes", board(4, "top"),
   f"Small 3x3 buttons, legs in rows {ANS_ROWS[0]} and {ANS_ROWS[1]}, left columns "
-  f"{', '.join(map(str, ANS_COL0))}. Same diagonal rule; the row-{ANS_ROWS[1]} leg is on the bus. "
-  f"Test: btntest now prints button 0-6. Several dead at once means the GND bus, not the switches."),
+  f"{', '.join(map(str, ANS_COL0))}. Same clip-one-leg rule. These are square, so orientation does "
+  f"not matter. Test: btntest prints button 0-6. Several dead at once means the GND bus, not the switches."),
  ("Step 5 — the 12 wires, then the LCD", board(5, "top"),
   f"Every signal wire runs along its own row to the riser lane at column {HDR_COLS[0]-1}, then into "
-  f"its socket pad; the four that serve right-hand pins carry on underneath the module. Last, four "
-  f"F-M jumpers from the LCD clip straight onto the ESP32's own pins — nothing about the LCD is "
-  f"soldered. Test: firmware/lcdtest prints 'found device at 0x27'."),
+  f"its socket pad; the four that serve right-hand pins carry on underneath the module. Last, the "
+  f"4-pin LCD port at cols {LCD_PORT_COL0}-{LCD_PORT_COL0+3} row {LCD_PORT_ROW} and its four wires \u2014 "
+  f"the LCD plugs into it on F-F jumpers and is never soldered. Test: firmware/lcdtest prints 'found device at 0x27'."),
 
 ]
 

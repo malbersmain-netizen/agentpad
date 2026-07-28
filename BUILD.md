@@ -37,7 +37,9 @@ header** for the LCD port · **3× PY-5CM\*7CM perfboards** — *not* the build 
 more, but sacrifice one for the soldering practice in `SOLDERING.md`.
 
 ### Bought separately
-**One 30 × 42 hole double-sided PCB**, ~109 × 79mm. This is what everything is built on.
+**One 30 × 42 hole double-sided PCB, 120 × 80mm** — silkscreen reads `12*8CM 2.54MM`.
+This is what everything is built on. It arrives with **four factory corner mounting holes**,
+so no drilling is needed.
 
 ### Buy — tools
 | Item | Notes |
@@ -57,7 +59,7 @@ more, but sacrifice one for the soldering practice in `SOLDERING.md`.
 | Bare or tinned 24AWG | The three GND buses and the link — thinner is far easier to heat |
 | Heat-shrink, assorted | |
 | Wood backing plate | ~150 × 200mm, any offcut |
-| **M2 × 12mm screws** + nylon washers + 6mm standoffs | Mounting the board (§3) |
+| **M3 × 12mm screws** + nylon washers + 6mm standoffs | Mounting the board through its factory corner holes — measure one first |
 | M3 × 16mm screws + 12–15mm standoffs | Mounting the LCD by its own 4 holes |
 | 4 × F-F jumper wires | LCD to the board's LCD port — never soldered |
 
@@ -78,8 +80,10 @@ there are already measured — rather than building the board to fit a case.
 
 ## 3. The board
 
-One **30 × 42 hole double-sided board** (~79 × 109mm), oriented **42 columns across,
-30 rows down**. Grid reference: col 1, row 1 = top-left.
+One **30 × 42 hole double-sided board, 120 × 80mm**, oriented **42 columns across, 30 rows
+down**. Grid reference: col 1, row 1 = top-left. The silkscreen letters along the bottom
+edge run A–Z then A–P — that is your 42 columns — and there are four factory-drilled
+mounting holes at the corners.
 
 Everything lives on it — the control surface in **columns 1–28**, the ESP32's socket in
 **columns 30–40**. There is no second board and no inter-board loom.
@@ -216,16 +220,16 @@ That is **10 wires onto the left socket column and 6 onto the right** — 16 of 
 ### Mounting to wood
 
 <!-- GEN:mounts -->
-Four **2.2mm** holes (M2 clearance), drilled **on existing pads** in free positions — computed and clearance-checked by `verify-layout.py`:
+**Your board already has four mounting holes**, drilled at the factory in the corners, outside the pad grid. Use them. **Do not drill anything.**
 
-| # | Hole | From left edge | From top edge |
-|---:|---|---|---|
-| 1 | **col 2, row 5** | 5.0 mm | 12.8 mm |
-| 2 | **col 41, row 2** | 104.0 mm | 5.2 mm |
-| 3 | **col 2, row 29** | 5.0 mm | 73.8 mm |
-| 4 | **col 41, row 29** | 104.0 mm | 73.8 mm |
+| | |
+|---|---|
+| Board | 120 × 80 mm — silkscreen reads `12*8CM 2.54MM` |
+| Grid | 30 rows × 42 columns, 2.54mm pitch |
+| Margin outside the grid | 7.9 mm at the sides, 3.2 mm top and bottom |
+| Corner holes | factory-drilled, typically 3.0–3.2mm → **M3** |
 
-> **Why not the corners?** The hole grid spans 104.1 × 73.7 mm on a 109 × 79 mm board, leaving only **2.4 mm** at the sides and **2.7 mm** top and bottom. Nothing bigger than about 2mm fits in that margin, so the screws go on pads instead. A 2.2mm bit cuts 1.10mm of radius — less than the 1.27mm half-pitch — so it cannot reach past the midpoint toward the next pad, 2.54mm away. Only the pad you drill is lost, and all four of these are unused.
+> Measure one corner hole before buying screws. 3.0–3.2mm takes M3; if yours are smaller, M2.5 or M2 with a washer will still hold a board this light.
 <!-- /GEN:mounts -->
 
 Every solder joint is on the underside, so **nothing sits flat on the wood** — each piece
@@ -233,11 +237,11 @@ stands off on spacers.
 
 | Item | Fixing | Spacer |
 |---|---|---|
-| The board | M2 × 12mm + nylon washer, through the four holes above | **6mm** |
+| The board | M3 × 12mm + nylon washer, through the four factory corner holes | **6mm** |
 | LCD | its own 4 × M3 holes — no drilling | **12–15mm** (its I²C backpack sticks ~10mm off the back) |
 | ESP32 | none — it plugs into the socket | — |
 
-- **Pilot-drill the wood at 1.5mm** for M2, or it splits.
+- **Pilot-drill the wood at 2mm** for M3, or it splits.
 - **Nylon washer under every screw head** — perfboard cracks if you overtighten onto bare FR4.
 - Leave the bottom-right of the board clear of clips and cable ties: that is where the USB
   cable comes out, 8mm above the surface.
@@ -348,16 +352,19 @@ Brown-black-brown is 100Ω and will look fine but run the LEDs bright; red-red-r
 
 Long leg is the anode (+) and goes in row 2. Also look *into* the LED: the small flag inside is the cathode. Test each LED with a 220Ω resistor on a breadboard before it is soldered in — a dead LED found now costs nothing.
 
-#### P4 — drill the mounting holes
+#### P4 — check the board itself
 
-Drill **before any solder goes on**. Drilling a populated board cracks joints and rains conductive swarf across the copper. Positions are in §3.
+Before anything is soldered to it, confirm the board is what the layout thinks it is.
 
-1. Mark all four holes from the top, counting columns and rows twice.
-2. Back the board with scrap wood, clamp it, drill slowly at the marked pads.
-3. Deburr both faces with a craft knife twisted by hand.
-4. Vacuum, then wipe with isopropyl. Swarf between pads is a short.
+1. **Calipers across it.** Should be 120 × 80 mm.
+2. **Count the grid.** 42 columns (the silkscreen letters run A–Z then A–P) × 30 rows.
+3. **Beep adjacent pads.** Take any two neighbouring holes and check continuity. **They must NOT beep.** Do this in four or five places across the board, including along the edges.
+4. **Beep the elongated edge pads to each other.** If they beep, your board has power rails down the edges — tell me before soldering, because the layout puts a GND bus in column 1 and a rail there changes things.
+5. **Beep top pad to bottom pad of the same hole.** Beeping means the holes are plated through (sturdier pads, and a joint on one face reaches the other). Silent means they are not — which is fine, the design solders one face only either way.
 
-✅ **Test:** a screw passes without force, and no neighbouring pad has lifted.
+✅ **Test:** neighbours silent, dimensions match, grid counts match.
+
+❌ **If neighbouring pads beep:** stop. That is stripboard, not perfboard, and every row is pre-connected. The entire layout would have to change.
 
 #### P5 — cut the socket strips
 

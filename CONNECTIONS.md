@@ -57,7 +57,7 @@ The basic action. Everything else is a variation.
      leg      leg
 ```
 
-That is one **joint**. This build has about 116 of them.
+That is one **joint**. This build has about 150 of them.
 
 ---
 

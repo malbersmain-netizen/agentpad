@@ -80,7 +80,7 @@ tangent to the pads. Tack one end, check it's straight, solder every second pad.
 Now the part that matters: **push a component lead down through one of those holes from
 the top.** It must reach the copper face and sit alongside the wire. If your bus is lying
 *over* the hole, the lead stops at the board and connects to nothing — and the joint still
-looks perfect from underneath. That single mistake would hit **18 joints** on the real
+looks perfect from underneath. That single mistake would hit **11 joints** on the real
 board.
 
 > On the real board, rows that carry a bus get their **components inserted first**. Bend

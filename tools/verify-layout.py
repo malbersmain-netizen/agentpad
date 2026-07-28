@@ -10,8 +10,9 @@ Classes of error this catches that hole-counting does not:
   3. CONNECTORS with nowhere to land. The LCD was documented for months as "4 jumpers
      onto the ESP32's own pins" -- which are inside the socket the moment the module is
      seated, and therefore unreachable. Hence the on-board LCD port.
-  4. MOUNTING that does not fit. The grid leaves ~2.5mm of margin all round, so the
-     3.5mm corner holes an earlier draft called for could not be drilled at all.
+  4. MOUNTING that does not fit. An earlier draft called for 3.5mm holes drilled in the
+     corners; on the real board there is nowhere to put them. (Moot in the end -- the
+     board arrived with four factory corner holes.)
 
 MEASURED on the actual kit parts:
   colored buttons: pins 3 holes ACROSS (2 pitches) x 6 holes LONG (5 pitches)
@@ -91,10 +92,10 @@ for label, row in (("LED anode", LED_ROWS[0]),
 # part. The kit's switches join the LONG way (down the columns); the first draft of this
 # layout assumed the short way. Rather than depend on the measurement, the build clips one
 # leg -- and this check PROVES that choice is safe under BOTH pairings by simulating each.
-for label, cols, span, rows in (("colored button", BTN_COL0, BIG_LEG_COLS, BTN_ROWS),
-                                ("answer button",  ANS_COL0, SMALL_LEG,    ANS_ROWS)):
+for label, cols, legspan, rows in (("colored button", BTN_COL0, BIG_LEG_COLS, BTN_ROWS),
+                                  ("answer button",  ANS_COL0, SMALL_LEG,    ANS_ROWS)):
     for c0 in cols:
-        legs     = switch_legs(c0, span, rows)
+        legs     = switch_legs(c0, legspan, rows)
         soldered = {h for h, role in legs if role != "clip"}
         wire_at  = next(h for h, role in legs if role == "signal")
         for hyp, key in (("row-wise", lambda L: L[1]), ("column-wise", lambda L: L[0])):
@@ -215,8 +216,13 @@ print(f"\nrow plan: {LED_ROWS[0]} LED anode+GPIO | {LED_ROWS[1]} LED cathode (le
       f"{GND_ROWS[0]} GND bus | {BTN_ROWS[0]}+{BTN_ROWS[1]} button legs | "
       f"{ANS_ROWS[0]}+{ANS_ROWS[1]} answer legs | {GND_ROWS[1]} GND bus")
 print(f"spare rows on the control surface: {sorted(set(range(1, ROWS+1)) - used)}")
-print(f"mount holes (M{int(MOUNT_DRILL*10//10)} / {MOUNT_DRILL}mm drill): "
-      + ", ".join(f"col {c} row {r}" for c, r in mounts))
+if FACTORY_CORNER_HOLES:
+    print("mounting: use the board's FOUR FACTORY CORNER HOLES — no drilling. "
+          "(fallback if yours has none: " + ", ".join(f"col {c} row {r}" for c, r in mounts)
+          + f" drilled {MOUNT_DRILL}mm)")
+else:
+    print(f"mount holes ({MOUNT_DRILL}mm drill): "
+          + ", ".join(f"col {c} row {r}" for c, r in mounts))
 print(f"ONE board. ESP32 socketed at cols {HDR_COLS[0]}-{HDR_COLS[1]}, rows {HDR_ROWS[0]}-{HDR_ROWS[1]}. "
       f"No 5V on the control surface.")
 for n in notes: print(f"note: {n}")

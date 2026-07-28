@@ -84,19 +84,29 @@ def wiretable():
 
 def mounts():
     m = mount_holes()
-    out = [f"Four **{MOUNT_DRILL}mm** holes (M2 clearance), drilled **on existing pads** in free "
-           f"positions — computed and clearance-checked by `verify-layout.py`:", "",
-           "| # | Hole | From left edge | From top edge |", "|---:|---|---|---|"]
-    for i, (c, r) in enumerate(m, 1):
-        x, y = xy(c, r)
-        out.append(f"| {i} | **col {c}, row {r}** | {x:.1f} mm | {y:.1f} mm |")
-    out += ["", f"> **Why not the corners?** The hole grid spans {(COLS-1)*P:.1f} × {(ROWS-1)*P:.1f} mm "
-                f"on a {BOARD_W:.0f} × {BOARD_H:.0f} mm board, leaving only **{BX:.1f} mm** at the "
-                f"sides and **{BY:.1f} mm** top and bottom. Nothing bigger than about 2mm fits in "
-                f"that margin, so the screws go on pads instead. A {MOUNT_DRILL}mm bit cuts "
-                f"{MOUNT_DRILL/2:.2f}mm of radius — less than the {P/2:.2f}mm half-pitch — so it "
-                f"cannot reach past the midpoint toward the next pad, {P:.2f}mm away. Only the pad "
-                f"you drill is lost, and all four of these are unused."]
+    if FACTORY_CORNER_HOLES:
+        out = [f"**Your board already has four mounting holes**, drilled at the factory in the "
+               f"corners, outside the pad grid. Use them. **Do not drill anything.**", "",
+               "| | |", "|---|---|",
+               f"| Board | {BOARD_W:.0f} × {BOARD_H:.0f} mm — silkscreen reads `12*8CM 2.54MM` |",
+               f"| Grid | {ROWS} rows × {COLS} columns, {P}mm pitch |",
+               f"| Margin outside the grid | {BX:.1f} mm at the sides, {BY:.1f} mm top and bottom |",
+               f"| Corner holes | factory-drilled, typically 3.0–3.2mm → **M3** |",
+               "",
+               "> Measure one corner hole before buying screws. 3.0–3.2mm takes M3; if yours are "
+               "smaller, M2.5 or M2 with a washer will still hold a board this light."]
+    else:
+        out = [f"This board has no factory holes, so drill four **{MOUNT_DRILL}mm** holes (M2 "
+               f"clearance) **on existing pads** in free positions — computed and "
+               f"clearance-checked by `verify-layout.py`:", "",
+               "| # | Hole | From left edge | From top edge |", "|---:|---|---|---|"]
+        for i, (c, r) in enumerate(m, 1):
+            x, y = xy(c, r)
+            out.append(f"| {i} | **col {c}, row {r}** | {x:.1f} mm | {y:.1f} mm |")
+        out += ["", f"> Drill on a pad, not in the margin: the grid spans {(COLS-1)*P:.1f} × "
+                    f"{(ROWS-1)*P:.1f} mm and the margin is only {BX:.1f} / {BY:.1f} mm. A "
+                    f"{MOUNT_DRILL}mm bit cuts {MOUNT_DRILL/2:.2f}mm of radius, under the "
+                    f"{P/2:.2f}mm half-pitch, so only the pad you drill is lost."]
     return "\n".join(out)
 
 
@@ -157,17 +167,27 @@ def preflight():
         f"small flag inside is the cathode. Test each LED with a 220Ω resistor on a breadboard "
         f"before it is soldered in — a dead LED found now costs nothing.",
         "",
-        "#### P4 — drill the mounting holes",
+        "#### P4 — check the board itself",
         "",
-        "Drill **before any solder goes on**. Drilling a populated board cracks joints and rains "
-        "conductive swarf across the copper. Positions are in §3.",
+        f"Before anything is soldered to it, confirm the board is what the layout thinks it is.",
         "",
-        "1. Mark all four holes from the top, counting columns and rows twice.",
-        "2. Back the board with scrap wood, clamp it, drill slowly at the marked pads.",
-        "3. Deburr both faces with a craft knife twisted by hand.",
-        "4. Vacuum, then wipe with isopropyl. Swarf between pads is a short.",
+        f"1. **Calipers across it.** Should be {BOARD_W:.0f} × {BOARD_H:.0f} mm.",
+        f"2. **Count the grid.** {COLS} columns (the silkscreen letters run A–Z then A–P) × "
+        f"{ROWS} rows.",
+        "3. **Beep adjacent pads.** Take any two neighbouring holes and check continuity. "
+        "**They must NOT beep.** Do this in four or five places across the board, including "
+        "along the edges.",
+        "4. **Beep the elongated edge pads to each other.** If they beep, your board has "
+        "power rails down the edges — tell me before soldering, because the layout puts a GND "
+        "bus in column 1 and a rail there changes things.",
+        "5. **Beep top pad to bottom pad of the same hole.** Beeping means the holes are "
+        "plated through (sturdier pads, and a joint on one face reaches the other). Silent "
+        "means they are not — which is fine, the design solders one face only either way.",
         "",
-        "✅ **Test:** a screw passes without force, and no neighbouring pad has lifted.",
+        "✅ **Test:** neighbours silent, dimensions match, grid counts match.",
+        "",
+        "❌ **If neighbouring pads beep:** stop. That is stripboard, not perfboard, and every "
+        "row is pre-connected. The entire layout would have to change.",
         "",
         "#### P5 — cut the socket strips",
         "",
