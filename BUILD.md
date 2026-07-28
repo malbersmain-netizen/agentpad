@@ -15,8 +15,14 @@ command runs. One USB cable to the Mac.
 ## Two rules
 
 **1. You have ONE ESP32 — it must stay removable.** That's why it goes in a socket rather
-than being soldered down. If the build stalls, unplug it and rebuild the breadboard from
-`BREADBOARD.md` in twenty minutes; that is always your fallback demo.
+than being soldered down.
+
+**Be clear-eyed about the fallback, though.** Once board A is soldered you will have
+**zero colored buttons and zero LCDs left** (the kit has exactly 4 and 1; LEDs, resistors
+and small buttons do have spares). So `BREADBOARD.md` is only a true fallback if you either
+buy 4 spare 12mm tactile switches, or keep the LCD pluggable — which costs nothing:
+**connect the LCD with 4 F-M jumpers**, female onto its own header, male soldered into
+board B. Never solder directly to the LCD.
 
 **2. Solder nothing you haven't already proven on the breadboard.** Everything here is
 validated. Don't add features and solder them the same day.
@@ -78,7 +84,7 @@ Each kit board is **18 rows × 24 columns** (43.2 × 58.4mm of hole field). Orie
 
 | Board | Holds |
 |---|---|
-| **A — control surface** | 4 LEDs + resistors, 7 buttons, buses, LCD connector |
+| **A — control surface** | 4 LEDs + resistors, 7 buttons, three GND buses |
 | **B — ESP32 carrier** | Two 15-socket header strips, and nothing else |
 
 **Measured footprints** (confirmed on the real parts with calipers):
@@ -89,7 +95,7 @@ Each kit board is **18 rows × 24 columns** (43.2 × 58.4mm of hole field). Orie
 | Small button | **3 holes** | **3 holes** |
 | ESP32 | **11 holes** (pin rows 10 apart) | **15 holes** |
 
-A colored button's legs sit in columns `c−1` and `c+1`, rows **7 and 12**. Its 12mm body is
+A colored button's legs sit in columns `c−1` and `c+1`, rows **9 and 14**. Its 12mm body is
 wider than its legs and overhangs them.
 
 ### The board is SINGLE-SIDED — this shapes everything
@@ -97,9 +103,10 @@ wider than its legs and overhangs them.
 Copper is on **one face only**, so **every solder joint is on the underside** and every
 component sits on top. That is completely normal for LEDs, buttons, resistors and buses.
 
-What it *does* rule out is socketing the ESP32 here: its socket body would have to sit on
-the copper face, pressed flat against the very pads you need to solder. And it can't go on
-top either — it spans 11 of the 18 rows, leaving 7 where 14 are needed.
+The ESP32 could mount here the same way it does on board B — body on top, pins down,
+soldered underneath. **The reason it doesn't is space, not soldering:** board A's 18 rows
+are already spent on the LEDs, two button banks and three buses. Adding an 11-row ESP32
+footprint on top of that does not fit.
 
 > **So the ESP32 gets its own small board**, and both boards screw down to a wooden
 > backing plate along with the LCD — one solid object you can hand to someone.
@@ -116,22 +123,27 @@ The two boards are joined by **15 wires**. The ESP32 still unplugs from its sock
 
 | Row | What | Columns |
 |---|---|---|
-| **1** | **5V bus** — bare wire across | 1 → 24 |
-| 2 | 220Ω lying **flat**, one per LED | 4-6, 10-12, 16-18, 22-24 |
-| 3 | LED anodes (+) | 3, 9, 15, 21 |
-| 4 | LED cathodes (−), straight down to the bus | 3, 9, 15, 21 |
-| **5** | **GND bus** — bare wire across | 1 → 24 |
-| **7 and 12** | **Colored button legs** | 2-4, 8-10, 14-16, 20-22 |
-| **14 and 16** | **AA / no / yes legs** | 3-5, 11-13, 19-21 |
-| **17** | **GND bus** (linked to row 5 down column 24) | 1 → 24 |
-| 18 | LCD 4-pin connector | 1 → 4 |
+| 2 | LED anodes (+) — each also takes that LED's wire to the ESP32 | 3, 9, 15, 21 |
+| 3 | LED cathodes (−) **sharing the hole with the resistor's top lead** | 3, 9, 15, 21 |
+| 3 → 7 | 220Ω standing in the LED's **own column**, body pushed to the bottom | 3, 9, 15, 21 |
+| **7** | **GND bus** | 1 → 24 |
+| **9 and 14** | **Colored button legs** — bottom leg lands *on* the row-14 bus | 2-4, 8-10, 14-16, 20-22 |
+| **14** | **GND bus** | 1 → 24 |
+| **16 and 18** | **AA / no / yes legs** — bottom leg lands *on* the row-18 bus | 3-5, 11-13, 19-21 |
+| **18** | **GND bus** | 1 → 24 |
 
-Rows **6, 8-11, 13, 15 are spare** — room to shift things if a part doesn't sit where you
-expect.
+All three GND buses link together **down column 24**.
 
-Verified clearances: **3.2mm** between button bodies, **6.7mm** LED→button, **5.0mm**
-between the two banks. Re-check any time with
-`mise exec -- python tools/verify-layout.py`.
+**No 5V anywhere on board A.** Only the LCD needs 5V, and its four wires go straight to
+board B — so 5V never runs beside a 3.3V signal row.
+
+**Zero ground jumpers.** Every ground leg lands directly on a bus row. That was worth
+shifting the button banks by a row or two to achieve.
+
+Verified clearances: **3.2mm** between button bodies, 2.1mm LED→resistor, 5.4mm
+resistor→button, 5.0mm between banks. Spare rows: 1, 4, 5, 6, 8, 10, 11, 12, 13, 15, 17.
+Re-check with `mise exec -- python tools/verify-layout.py`.
+
 
 ### Board B — the ESP32 carrier
 
@@ -285,6 +297,14 @@ easy to debug, thirty is an all-nighter.
 
 Before every power-up: **beep the new joints, and check GND↔5V does NOT beep.**
 
+### Step 0 — drill the mounting holes FIRST
+
+Drill both boards' mounting holes **before any solder goes on**. Drilling a populated
+board cracks joints and rains conductive swarf onto the copper face.
+
+Put them in the **5.8mm left/right margins**, not the corners — the top and bottom margins
+are only 3.4mm, too narrow for a 3.5mm hole.
+
 ### Step 1 — board B, the ESP32 carrier
 
 Do this first: it's the one step that proves the ESP32 and cable still work before
@@ -297,10 +317,15 @@ underside, pins trimmed).
 ```bash
 ls /dev/cu.*                     # a new usbserial port appears
 cd ~/projects/agentpad
-arduino-cli upload -p /dev/cu.usbserial-0001 --fqbn esp32:esp32:esp32 firmware/blink
+arduino-cli compile -u -p /dev/cu.usbserial-0001 --fqbn esp32:esp32:esp32 firmware/blink
 ```
-✅ Onboard LED blinks. Nothing else is connected, so a failure here is the cable, the
-socket, or a cold joint.
+✅ Onboard LED blinks.
+
+> **Blink does not actually test board B.** The ESP32's own USB carries power and serial,
+> so every socket joint could be cold and this would still pass. Test the sockets properly:
+> with the ESP32 seated, **beep from each socket's underside pad to the matching ESP32 pin**,
+> and beep neighbouring pads against each other to catch bridges — *before* the first
+> insertion.
 
 ### Step 2 — board A, the buses
 
@@ -336,9 +361,15 @@ with the anode column, the other end taking that LED's wire to the ESP32.
 
 ### Step 4 — the four colored buttons
 
-Legs in **rows 7 and 12**, columns **2-4, 8-10, 14-16, 20-22**. Use **diagonally opposite**
+Legs in **rows 9 and 14**, columns **2-4, 8-10, 14-16, 20-22**. Use **diagonally opposite**
 legs: the top-left one takes its wire to the ESP32, the bottom-right one goes to the GND
-bus. **No resistors** — the firmware enables internal pull-ups. Clip the unused legs flush.
+bus. **No resistors** — the firmware enables internal pull-ups.
+
+> **Solder all four legs, don't clip the spare two.** The two legs on each side are
+> internally connected, so the "unused" pair is electrically identical to the pair you
+> wired — soldering them changes nothing electrically but doubles the mechanical anchor.
+> On single-sided board a pad lifts easily, and a button that tears free mid-demo is not
+> recoverable.
 
 | Button | Left leg column | ESP32 |
 |---|---|---|
@@ -352,7 +383,7 @@ bus. **No resistors** — the firmware enables internal pull-ups. Clip the unuse
 
 ### Step 5 — AA / no / yes
 
-Small 3×3 buttons, legs in **rows 14 and 16**, columns **3-5, 11-13, 19-21**. Same diagonal
+Small 3×3 buttons, legs in **rows 16 and 18**, columns **3-5, 11-13, 19-21**. Same diagonal
 rule.
 
 | Button | Left leg column | ESP32 |
@@ -395,7 +426,7 @@ contrast pot on its back.
 ### Step 7 — real firmware, then mount it
 
 ```bash
-arduino-cli upload -p /dev/cu.usbserial-0001 --fqbn esp32:esp32:esp32 firmware/agentpad
+arduino-cli compile -u -p /dev/cu.usbserial-0001 --fqbn esp32:esp32:esp32 firmware/agentpad
 ```
 
 **Test from a serial monitor at 115200, line ending = Newline:**

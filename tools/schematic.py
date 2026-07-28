@@ -18,14 +18,14 @@ ROWS, COLS = 18, 24
 BIG_LEG_COLS, BIG_LEG_ROWS, SMALL_LEG = 2, 5, 2
 LED_COLS = [3, 9, 15, 21]
 BTN_COL0 = [c-1 for c in LED_COLS]
-BTN_ROWS = (7, 12)
-RES_COLS = [6, 12, 18, 24]   # flat, row 2
+BTN_ROWS = (9, 14)
+RES_COLS = LED_COLS   # resistor stands in the LED's own column, rows 3-7
 ANS_COL0 = [3, 11, 19]
-ANS_ROWS = (14, 16)
+ANS_ROWS = (16, 18)
 ANS_ROWS_NOTE = 'off-board ESP32'
-GND_ROWS = (5, 17)
-V5_ROW   = 1
-LCD_ROW  = 18
+GND_ROWS = (7, 14, 18)
+LED_ROWS = (2, 3)
+RES_ROWS = (3, 7)
 LED_GPIO = [13, 14, 27, 26]
 BTN_GPIO = [32, 33, 25, 4]
 ANS_INFO = [("AA", 23, "always allow"), ("no", 18, "deny"), ("yes", 19, "approve")]
@@ -152,6 +152,7 @@ def fig_pinmap():
 
 # =========================================================== 3. BOARD FIGURES
 PITCH, OX, OY = 30, 74, 62
+RES_PX = 6.3/2.54*30
 def board(stage=99, side="top"):
     W = OX + COLS*PITCH + 210
     H = OY + ROWS*PITCH + 80
@@ -177,20 +178,18 @@ def board(stage=99, side="top"):
             for r in GND_ROWS:
                 o.append(f'<line x1="{X(1)}" y1="{Y(r)}" x2="{X(COLS)}" y2="{Y(r)}" stroke="#111" stroke-width="7"/>')
                 label(X(COLS)+40, Y(r)+4, "GND bus", "#111", 11, "start")
-            o.append(f'<line x1="{X(COLS)}" y1="{Y(GND_ROWS[0])}" x2="{X(COLS)}" y2="{Y(GND_ROWS[1])}" stroke="#111" stroke-width="6"/>')
-            o.append(f'<line x1="{X(1)}" y1="{Y(V5_ROW)}" x2="{X(COLS)}" y2="{Y(V5_ROW)}" stroke="#c0392b" stroke-width="7"/>')
-            label(X(COLS)+40, Y(V5_ROW)+4, "5V bus", "#c0392b", 11, "start")
+            o.append(f'<line x1="{X(COLS)}" y1="{Y(GND_ROWS[0])}" x2="{X(COLS)}" y2="{Y(GND_ROWS[-1])}" stroke="#111" stroke-width="6"/>')
+            label(X(COLS)+40, Y(GND_ROWS[0])-18, "all three linked down col 24", "#666", 10, "start")
         if stage >= 2:
             for i, c in enumerate(LED_COLS):
-                o.append(f'<circle cx="{X(c)}" cy="{Y(3.5)}" r="{5/2*PITCH/2.54}" fill="{COL[i]}" stroke="#111" stroke-width="1.5"/>')
-                label(X(c), Y(3.5)+4, str(i+1), "#fff", 12)
-                rc = RES_COLS[i]
-                o.append(f'<rect x="{X(rc)-2*PITCH-6}" y="{Y(2)-6}" width="{2*PITCH+12}" height="12" rx="4" fill="#c8862a" stroke="#8a5a12"/>')
-                o.append(f'<line x1="{X(c)}" y1="{Y(2)}" x2="{X(rc)}" y2="{Y(2)}" stroke="{COL[i]}" stroke-width="2.5"/>')
-                o.append(f'<line x1="{X(c)}" y1="{Y(3)}" x2="{X(c)}" y2="{Y(GND_ROWS[0])}" stroke="#444" stroke-width="2.5"/>')
-                o.append(f'<line x1="{X(rc)}" y1="{Y(2)}" x2="{X(rc)}" y2="{Y(1)-38}" stroke="{COL[i]}" stroke-width="2.5" stroke-dasharray="5 3"/>')
-                label(X(rc)+22, Y(4), f"GPIO {LED_GPIO[i]}", COL[i], 9)
-            label(X(2), Y(3.5)-26, "220Ω", "#c8862a", 9.5)
+                o.append(f'<circle cx="{X(c)}" cy="{Y(2.5)}" r="{5/2*PITCH/2.54}" fill="{COL[i]}" stroke="#111" stroke-width="1.5"/>')
+                label(X(c), Y(2.5)+4, str(i+1), "#fff", 12)
+                o.append(f'<rect x="{X(c)-7}" y="{Y(RES_ROWS[1])-RES_PX}" width="14" height="{RES_PX}" rx="4" fill="#c8862a" stroke="#8a5a12"/>')
+                o.append(f'<line x1="{X(c)}" y1="{Y(LED_ROWS[1])}" x2="{X(c)}" y2="{Y(RES_ROWS[1])}" stroke="#8a5a12" stroke-width="2"/>')
+                o.append(f'<line x1="{X(c)}" y1="{Y(LED_ROWS[0])}" x2="{X(c)}" y2="{Y(1)-38}" stroke="{COL[i]}" stroke-width="2.5" stroke-dasharray="5 3"/>')
+                label(X(c)+26, Y(5), f"GPIO {LED_GPIO[i]}", COL[i], 9)
+                label(X(c)+26, Y(6), "220R", "#c8862a", 9)
+            
         if stage >= 3:
             for i, c0 in enumerate(BTN_COL0):
                 x0, x1 = X(c0), X(c0+BIG_LEG_COLS)
@@ -214,8 +213,7 @@ def board(stage=99, side="top"):
                 label(cx, cy+s/2+16, ANS_INFO[i][0], "#111", 11)
                 label(cx, cy-s/2-8, f"GPIO {ANS_INFO[i][1]}", "#222", 9.5)
         if stage >= 5:
-            o.append(f'<rect x="{X(1)-10}" y="{Y(LCD_ROW)-10}" width="{3*PITCH+20}" height="20" rx="4" fill="#e07b00"/>')
-            label(X(6)+40, Y(LCD_ROW)+4, "LCD: GND · 5V · SDA(21) · SCL(22)", "#e07b00", 11, "start")
+            label(X(12), Y(ROWS)+52, "LCD does not touch board A — its 4 wires go straight to board B", "#e07b00", 12)
     else:  # underside
         o.append(f'<text x="{OX-30}" y="{OY-48}" font-size="12" fill="#c33">MIRRORED — this is the view with the board flipped left-to-right</text>')
         o.append(f'<rect x="{X(4)}" y="{Y(8)-30}" width="{16*PITCH}" height="{4*PITCH}" rx="8" fill="#20242b" stroke="#8ecbff" stroke-width="2" stroke-dasharray="7 5"/>')
@@ -287,7 +285,7 @@ def fig_wires():
     for i, (n, g, d) in enumerate(ANS_INFO):
         rows.append((f"{n} ({d})", f"leg col {ANS_COL0[i]} row {ANS_ROWS[0]}", f"GPIO {g}", ANSC[i]))
         rows.append(("", f"leg col {ANS_COL0[i]+SMALL_LEG} row {ANS_ROWS[1]}", f"GND bus (row {GND_ROWS[1]})", ANSC[i]))
-    for lab, dest, c in (("LCD GND", f"GND bus", "#111"), ("LCD VCC", f"5V bus (row {V5_ROW})", "#c0392b"),
+    for lab, dest, c in (("LCD GND", "board B GND pad", "#111"), ("LCD VCC", "board B VIN pad", "#c0392b"),
                          ("LCD SDA", "GPIO 21", "#ef6c00"), ("LCD SCL", "GPIO 22", "#6d4c41")):
         rows.append((lab, "flying lead", dest, c))
     rows.append(("ESP32 GND", "header pin", f"GND bus", "#111"))

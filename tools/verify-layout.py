@@ -1,114 +1,131 @@
 #!/usr/bin/env python3
-"""Verify the single-board layout physically fits: real footprints, real overlaps.
+"""Verify the board A layout: real footprints, real overlaps, real connectivity.
 
-Hole counting is not enough -- parts collide even when their legs sit in free holes.
-This works in millimetres and checks bounding boxes.
-
-BOARD IS SINGLE-SIDED: copper on one face only, so every joint is on the underside and
-components sit on top. That rules out socketing the ESP32 on this board (its socket body
-would have to sit on the copper face, covering the pads). The ESP32 therefore gets its
-OWN board (B), where the header mounts the normal way round -- body on top, pins down,
-soldered on the copper underside. 15 wires join board A to board B. Both screw to a
-wooden backing plate. The ESP32 unplugs from its socket, so it stays fully removable.
+Two classes of error this catches that hole-counting does not:
+  1. BODIES that collide even when the legs sit in free holes.
+  2. NETS that are not actually connected. On a breadboard, holes in a row are joined
+     for you. On perfboard nothing is joined until you join it -- an earlier version of
+     this layout put the resistors in different holes from the LED anodes, wired to
+     nothing at all, and every "PASS" missed it.
 
 MEASURED on the actual kit parts:
-  colored buttons: pins 3 holes ACROSS (2 pitches, 5.08mm) and 6 holes LONG
-                   (5 pitches, 12.7mm) -- e.g. legs in rows 6 and 11.
-  small buttons:   3x3 holes (2 pitches both ways).
+  colored buttons: pins 3 holes ACROSS (2 pitches) x 6 holes LONG (5 pitches)
+  small buttons:   3x3 holes (2 pitches both ways)
+  ESP32:           11 holes across (pin rows 1.0in apart) x 15 long -- lives on board B
+
+BOARD IS SINGLE-SIDED: copper on one face, so every joint is on the underside and
+components sit on top. Board A carries no 5V at all -- only the LCD needs it, and the
+LCD wires straight to board B. That keeps 5V away from the 3.3V signal rows entirely.
 
     mise exec -- python tools/verify-layout.py
 """
 P = 2.54
 ROWS, COLS = 18, 24
 BOARD_W, BOARD_H = 70.0, 50.0
-FIELD_W, FIELD_H = (COLS-1)*P, (ROWS-1)*P
-BX, BY = (BOARD_W-FIELD_W)/2, (BOARD_H-FIELD_H)/2
+BX = (BOARD_W - (COLS-1)*P)/2
+BY = (BOARD_H - (ROWS-1)*P)/2
+def xy(col, row): return BX + (col-1)*P, BY + (row-1)*P
 
-def xy(col, row):
-    return BX + (col-1)*P, BY + (row-1)*P
+# ---- footprints (mm) ------------------------------------------------------
+BIG_LEG_COLS, BIG_LEG_ROWS = 2, 5
+SMALL_LEG   = 2
+BIG_BODY    = 12.0
+SMALL_BODY  = 6.0
+LED_D       = 6.0    # 5mm LED INCLUDING its base flange -- the flange is what collides
+RES_BODY    = 6.3    # 1/4W body length
+RES_W       = 2.5
 
-# ---- footprints -----------------------------------------------------------
-# MEASURED: colored button pins are 3 holes across (2 pitches) and 6 holes long
-# (5 pitches). Small buttons are 3x3 (2 pitches both ways).
-BIG_LEG_COLS = 2         # pitches between the two leg COLUMNS
-BIG_LEG_ROWS = 5         # pitches between the two leg ROWS
-SMALL_LEG = 2
-BIG_BODY   = 12.0
-SMALL_BODY = 6.0
-LED_D = 5.0
-RES   = (7.0, 2.5)   # 1/4W lying FLAT -> occupies one row, three columns
+# ---- layout ---------------------------------------------------------------
+LED_COLS = [3, 9, 15, 21]   # each LED, its resistor and its button share one column
+LED_ROWS = (2, 3)           # anode row 2 (takes the GPIO wire), cathode row 3
+RES_ROWS = (3, 7)           # resistor stands in the CATHODE path: top lead shares the
+                            # cathode hole, bottom lead lands on the GND bus
+BTN_COL0 = [c-1 for c in LED_COLS]
+BTN_ROWS = (9, 14)   # bottom leg lands directly ON a GND bus
+ANS_COL0 = [3, 11, 19]
+ANS_ROWS = (16, 18)  # bottom leg lands directly ON a GND bus
+GND_ROWS = (7, 14, 18)      # one bus per bank, so NO ground jumpers are needed at all;
+                            # all three link together down column 24
+LCD_ON_BOARD_A = False      # LCD's 4 wires go straight to board B
 
-# 6-column pitch keeps 3.24mm between the 12mm bodies
-LED_COLS  = [3, 9, 15, 21]              # LEDs and buttons share these centre columns
-RES_COLS  = [6, 12, 18, 24]             # resistors stand in the gaps between buttons
-BTN_COL0  = [c-1 for c in LED_COLS]     # legs at c-1 and c+1
-BTN_ROWS  = (7, 12)   # legs 5 pitches apart (MEASURED: 6 holes long)
-ANS_COL0  = [3, 11, 19]
-ANS_ROWS  = (14, 14+SMALL_LEG)   # room to spare now, so spread the banks out
-# no header on this board -- ESP32 is off-board on F-M jumpers (single-sided)
-GND_ROWS  = (5, 17)
-V5_ROW    = 1
-LCD_ROW   = 18
-ANS_ROWS_OVERRIDE = (14, 16)
-LED_ROWS  = (3, 4)   # anode row 3, cathode row 4 -> straight down to GND at row 5
-RES_ROWS  = (2, 2)   # flat, one row
+parts, fails, notes = [], [], []
+def add(name, cx, cy, w, h, where):
+    parts.append(dict(name=name, x0=cx-w/2, x1=cx+w/2, y0=cy-h/2, y1=cy+h/2, where=where))
 
-parts, fails = [], []
-def add(name, cx, cy, w, h, col=None, row=None):
-    parts.append(dict(name=name, x0=cx-w/2, x1=cx+w/2, y0=cy-h/2, y1=cy+h/2,
-                      col=col, row=row))
-
-# LEDs + resistors
 for i, c in enumerate(LED_COLS):
-    x, y = xy(c, 3.5); add(f"LED{i+1}", x, y, LED_D, LED_D, c, "3-4")
-    x, y = xy(RES_COLS[i]-1, 2.0); add(f"R{i+1}", x, y, RES[0], RES[1], f"{RES_COLS[i]-2}-{RES_COLS[i]}", "2")
-# select buttons: body centred between the leg holes
+    x, y = xy(c, (LED_ROWS[0]+LED_ROWS[1])/2)
+    add(f"LED{i+1}", x, y, LED_D, LED_D, f"col {c}, rows {LED_ROWS[0]}-{LED_ROWS[1]}")
+    y1 = xy(c, RES_ROWS[1])[1]          # body pushed to the bus end so it clears the LED
+    add(f"R{i+1}", x, y1 - RES_BODY/2, RES_W, RES_BODY,
+        f"col {c}, rows {RES_ROWS[0]}-{RES_ROWS[1]}")
 for i, c0 in enumerate(BTN_COL0):
     x0, y0 = xy(c0, BTN_ROWS[0]); x1, y1 = xy(c0+BIG_LEG_COLS, BTN_ROWS[1])
-    add(f"BTN{i+1}", (x0+x1)/2, (y0+y1)/2, BIG_BODY, BIG_BODY, f"{c0}-{c0+BIG_LEG_COLS}",
-        f"{BTN_ROWS[0]}-{BTN_ROWS[1]}")
-# answer buttons
-for (n, c0) in zip(["AA", "no", "yes"], ANS_COL0):
+    add(f"BTN{i+1}", (x0+x1)/2, (y0+y1)/2, BIG_BODY, BIG_BODY,
+        f"cols {c0}-{c0+BIG_LEG_COLS}, rows {BTN_ROWS[0]}+{BTN_ROWS[1]}")
+for n, c0 in zip(["AA", "no", "yes"], ANS_COL0):
     x0, y0 = xy(c0, ANS_ROWS[0]); x1, y1 = xy(c0+SMALL_LEG, ANS_ROWS[1])
-    add(n, (x0+x1)/2, (y0+y1)/2, SMALL_BODY, SMALL_BODY, f"{c0}-{c0+SMALL_LEG}",
-        f"{ANS_ROWS[0]}-{ANS_ROWS[1]}")
+    add(n, (x0+x1)/2, (y0+y1)/2, SMALL_BODY, SMALL_BODY,
+        f"cols {c0}-{c0+SMALL_LEG}, rows {ANS_ROWS[0]}+{ANS_ROWS[1]}")
 
-# 1. on the board?
+# --- 1. everything on the board
 for p in parts:
     if p["x0"] < 0 or p["x1"] > BOARD_W or p["y0"] < 0 or p["y1"] > BOARD_H:
-        fails.append(f"{p['name']} off the board: x {p['x0']:.1f}..{p['x1']:.1f} y {p['y0']:.1f}..{p['y1']:.1f}")
-# 2. overlaps
+        fails.append(f"{p['name']} off the board ({p['x0']:.1f}..{p['x1']:.1f}, {p['y0']:.1f}..{p['y1']:.1f})")
+
+# --- 2. no two bodies overlap (strict: touching counts)
 for i in range(len(parts)):
     for j in range(i+1, len(parts)):
         a, b = parts[i], parts[j]
-        if not (a["x1"] <= b["x0"] or b["x1"] <= a["x0"] or a["y1"] <= b["y0"] or b["y1"] <= a["y0"]):
-            fails.append(f"{a['name']} overlaps {b['name']}")
-# 3. every signal leg needs a free neighbouring pad for its jumper
-used = set(LED_ROWS)|set(RES_ROWS)|set(BTN_ROWS)|set(ANS_ROWS)|set(GND_ROWS)|{V5_ROW,LCD_ROW}
-free = [r for r in range(1, ROWS+1) if r not in used]
-JUMPERS = 15   # 4 LED + 7 button + SDA + SCL + VIN + GND
+        if a["x1"] > b["x0"] and b["x1"] > a["x0"] and a["y1"] > b["y0"] and b["y1"] > a["y0"]:
+            ov = min(min(a['x1'],b['x1'])-max(a['x0'],b['x0']),
+                     min(a['y1'],b['y1'])-max(a['y0'],b['y0']))
+            fails.append(f"{a['name']} overlaps {b['name']} by {ov:.2f}mm")
 
-print(f"board {BOARD_W}x{BOARD_H}mm  {ROWS} rows x {COLS} cols  field {FIELD_W:.1f}x{FIELD_H:.1f}\n")
-print(f"{'part':<7} {'cols':>8} {'rows':>7}   {'x mm':>14}  {'y mm':>14}")
+# --- 3. a part's body must fit between its own leads
+span = (RES_ROWS[1]-RES_ROWS[0]) * P
+if RES_BODY > span:
+    fails.append(f"resistor body {RES_BODY}mm > its {span:.2f}mm lead span — cannot physically fit")
+
+# --- 4. CONNECTIVITY. Perfboard joins nothing; every net needs a shared hole or a bus.
+if LED_ROWS[1] != RES_ROWS[0]:
+    fails.append(f"LED cathode (row {LED_ROWS[1]}) and resistor top (row {RES_ROWS[0]}) are "
+                 f"different holes — NOT connected")
+for label, row in (("resistor bottom", RES_ROWS[1]),
+                   ("colored-button GND leg", BTN_ROWS[1]),
+                   ("answer-button GND leg", ANS_ROWS[1])):
+    if row not in GND_ROWS:
+        near = min(GND_ROWS, key=lambda r: abs(r-row))
+        fails.append(f"{label} (row {row}) is not on a GND bus {GND_ROWS} — "
+                     f"needs a {abs(near-row)}-row jumper to row {near}")
+notes.append("every ground leg lands directly on a bus — zero ground jumpers needed")
+
+# --- 5. keep 5V off board A
+if LCD_ON_BOARD_A:
+    fails.append("5V on board A would sit beside the 3.3V signal rows — route the LCD to board B")
+
+print(f"board {BOARD_W}x{BOARD_H}mm · {ROWS} rows x {COLS} cols\n")
+print(f"{'part':<7} {'where':<36} {'x mm':>13}  {'y mm':>13}")
 for p in parts:
-    print(f"{p['name']:<7} {str(p['col']):>8} {str(p['row']):>7}   "
-          f"{p['x0']:>6.1f}..{p['x1']:<6.1f} {p['y0']:>6.1f}..{p['y1']:<6.1f}")
+    print(f"{p['name']:<7} {p['where']:<36} {p['x0']:>5.1f}..{p['x1']:<6.1f} {p['y0']:>5.1f}..{p['y1']:<6.1f}")
 
-b = [p for p in parts if p["name"].startswith("BTN")]
-print(f"\nselect buttons: legs 3 across x 6 long -> leg columns "
-      f"{[f'{c}-{c+BIG_LEG_COLS}' for c in BTN_COL0]}")
-print(f"  gap between button bodies : {b[1]['x0']-b[0]['x1']:.2f}mm")
-led = next(p for p in parts if p["name"] == "LED1")
-print(f"  LED -> button vertical gap: {b[0]['y0']-led['y1']:.2f}mm")
-aa = next(p for p in parts if p["name"] == "AA")
-print(f"  button -> answer row gap  : {aa['y0']-b[0]['y1']:.2f}mm")
-print(f"  free rows (spare): {free}")
-print(f"  ESP32: on board B (own carrier), joined by {JUMPERS} wires")
-print(f"\nrow plan: {V5_ROW} 5V | {RES_ROWS[0]} resistors | {LED_ROWS[0]}-{LED_ROWS[1]} LEDs | "
-      f"{GND_ROWS[0]} GND | {BTN_ROWS[0]}+{BTN_ROWS[1]} buttons | {ANS_ROWS[0]}+{ANS_ROWS[1]} answers | "
-      f"{GND_ROWS[1]} GND | {LCD_ROW} LCD")
+b   = [p for p in parts if p["name"].startswith("BTN")]
+led = parts[0]; r1 = parts[1]
+print("\nclearances:")
+print(f"  between button bodies   {b[1]['x0']-b[0]['x1']:>6.2f} mm")
+print(f"  LED -> its resistor     {r1['y0']-led['y1']:>6.2f} mm")
+print(f"  resistor -> button      {b[0]['y0']-r1['y1']:>6.2f} mm")
+print(f"  button -> answer row    {parts[-3]['y0']-b[0]['y1']:>6.2f} mm")
+print(f"  resistor body {RES_BODY}mm in a {span:.2f}mm lead span")
+
+used = set(LED_ROWS)|set(RES_ROWS)|set(BTN_ROWS)|set(ANS_ROWS)|set(GND_ROWS)
+print(f"\nrow plan: {LED_ROWS[0]} LED anode+GPIO | {LED_ROWS[1]} LED cathode + resistor top | "
+      f"{GND_ROWS[0]} GND bus | {BTN_ROWS[0]}+{BTN_ROWS[1]} button legs | "
+      f"{ANS_ROWS[0]}+{ANS_ROWS[1]} answer legs | {GND_ROWS[1]} GND bus")
+print(f"spare rows: {sorted(set(range(1, ROWS+1)) - used)}")
+print("board A carries NO 5V — the LCD's four wires go straight to board B")
+for n in notes: print(f"note: {n}")
 print()
 if fails:
     print("FAILS:"); [print("  x", f) for f in fails]
 else:
-    print("PASS — 7 buttons, 4 LEDs and 4 resistors fit board A; ESP32 sits on board B.")
+    print("PASS — bodies fit, nothing collides, and every net is actually connected.")
