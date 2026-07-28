@@ -34,7 +34,7 @@ def rowplan():
     put(BTN_ROWS[1], f"**Colored button legs — ground node** · cols {', '.join(f'{c}+{c+BIG_LEG_COLS}' for c in BTN_COL0)}")
     put(ANS_ROWS[0], f"**AA / no / yes legs — signal node** · cols {', '.join(f'{c}+{c+SMALL_LEG}' for c in ANS_COL0)}")
     put(ANS_ROWS[1], f"**AA / no / yes legs — ground node** · cols {', '.join(f'{c}+{c+SMALL_LEG}' for c in ANS_COL0)}")
-    put(LCD_PORT_ROW, f"**LCD port** — 4 male pins · cols {LCD_PORT_COL0}–{LCD_PORT_COL0+len(LCD_PINS)-1}")
+    put(LCD_PORT_ROW, f"**LCD port** — 4-way female socket · cols {LCD_PORT_COL0}–{LCD_PORT_COL0+len(LCD_PINS)-1}")
     out = ["| Row | What |", "|---:|---|"]
     for r in sorted(rows):
         out.append(f"| **{r}** | " + " · ".join(rows[r]) + " |")
@@ -62,10 +62,10 @@ def wiretable():
     for i, (lbl, src, pin, side, pos, col, row) in enumerate(H, 1):
         st = next(v for k, v in when.items() if lbl.startswith(k))
         out.append(f"| {i} | {lbl} | {src} | **col {col}, row {row}** | {pin} ({side} {pos}) | {st} |")
-    out += ["", f"Plus the **LCD port** — 4 male header pins soldered into the board in step 6, each "
-                f"wired to a socket pad. The LCD itself reaches them with 4 F-F jumpers and is "
+    out += ["", f"Plus the **LCD port** — a 4-way female socket soldered into the board in step 6, each position "
+                f"wired to a socket pad. The LCD itself reaches them with 4 F-M jumpers and is "
                 f"**never soldered**:", "",
-            "| LCD pin | Board hole (male pin) | Wires to socket hole | ESP32 pin |", "|---|---|---|---|"]
+            "| LCD pin | Port socket at | Its wire runs to | ESP32 pin |", "|---|---|---|---|"]
     for name, hole, esp, sock in lcd_port():
         out.append(f"| {name} | col {hole[0]}, row {hole[1]} | col {sock[0]}, row {sock[1]} | **{esp}** |")
     near = sum(1 for r in H if r[3] == "3V3") + sum(1 for _, _, _, s in lcd_port()
@@ -118,7 +118,7 @@ def joints():
     legs      = len(LED_COLS)*2 + len(LED_COLS)*2 + (len(BTN_COL0) + len(ANS_COL0))*per_sw
     sockets   = 2 * (HDR_ROWS[1] - HDR_ROWS[0] + 1)         # 15 pins per strip, both strips
     sig_wires = len(H) * 2
-    port      = len(LCD_PINS) + len(LCD_PINS)*2             # 4 male pins + 4 wires, 2 ends each
+    port      = len(LCD_PINS) + len(LCD_PINS)*2             # 4 socket pins + 4 wires, 2 ends each
     total     = bus + legs + sockets + sig_wires + port
     return "\n".join([
         "| Group | Joints | What |", "|---|---:|---|",
@@ -127,7 +127,7 @@ def joints():
         f"the fourth is clipped) |",
         f"| ESP32 socket | {sockets} | two 15-way strips |",
         f"| Signal wires | {sig_wires} | {len(H)} wires, both ends |",
-        f"| LCD port | {port} | {len(LCD_PINS)} male pins + {len(LCD_PINS)} wires |",
+        f"| LCD port | {port} | a {len(LCD_PINS)}-way socket + {len(LCD_PINS)} wires |",
         f"| **total** | **~{total}** | at 1–2 min each including inspection, that is **4–6 hours** |",
     ])
 
@@ -385,22 +385,23 @@ def steps():
     head("Step 6 — the LCD port  ·  *Moves 1 and 4*")
     o.append(f"The LCD is never soldered, so it needs somewhere to plug into. Once the ESP32 is "
              f"seated its pins are **inside the socket** and nothing can clip onto them — so the "
-             f"board carries its own 4-pin male header at **cols {LCD_PORT_COL0}–"
+             f"board carries its own **4-way female port** at **cols {LCD_PORT_COL0}–"
              f"{LCD_PORT_COL0+len(LCD_PINS)-1}, row {LCD_PORT_ROW}**, wired to the socket pads.")
     o.append("")
-    o.append("| LCD pin | Male pin at | Wire to socket hole | ESP32 pin |")
+    o.append("| LCD pin | Port socket at | Its wire runs to | ESP32 pin |")
     o.append("|---|---|---|---|")
     for name, hole, esp, sock in lcd_port():
         o.append(f"| {name} | col {hole[0]}, row {hole[1]} | col {sock[0]}, row {sock[1]} | **{esp}** |")
     o.append("")
     o.extend([
-        f"1. Cut a **4-pin male** strip. Seat it at cols {LCD_PORT_COL0}–"
-        f"{LCD_PORT_COL0+len(LCD_PINS)-1}, row {LCD_PORT_ROW}, short side down through the board.",
+        f"1. Cut **4 positions of the stacking header** — the same strip the ESP32 sockets came "
+        f"from; 30 of its 40 went there, so there is plenty left. Seat it at cols "
+        f"{LCD_PORT_COL0}–{LCD_PORT_COL0+len(LCD_PINS)-1}, row {LCD_PORT_ROW}, socket side UP.",
         "2. Tack one pin, check it stands square, solder the rest.",
         "3. Run the four wires to the socket pads in the table. **Mark the VCC wire** — it is the "
         "only 5V on the board.",
-        "4. Connect the LCD with **4 F-F jumpers**, female onto the LCD's own male header, female "
-        "onto this port. Match the labels, not the colours.",
+        "4. Connect the LCD with **4 F-M jumpers** — the **male** end into this port, the "
+        "**female** end onto the LCD's own pins. Match them by label, not by jumper colour.",
     ])
     test("beep each port pin to its socket pad, and beep **VCC to GND** — that one must **not**. "
          "Then `firmware/lcdtest`: serial prints `found device at 0x27` and text appears.",

@@ -193,7 +193,7 @@ if pbody["y1"] > esp["y0"] and esp["y1"] > pbody["y0"] and \
 for name, hole, pin, sock in port:
     if len(holes.get(hole, [])) != 1:
         fails.append(f"LCD port pin {name} at {hole} is not a clean single-lead hole")
-notes.append(f"LCD port: 4 male pins at cols {LCD_PORT_COL0}-{LCD_PORT_COL0+3}, row "
+notes.append(f"LCD port: 4-way female socket at cols {LCD_PORT_COL0}-{LCD_PORT_COL0+3}, row "
              f"{LCD_PORT_ROW}, {esp['y0']-pbody['y1']:.1f}mm clear of the module")
 
 # --- 8. mounting has to be physically possible

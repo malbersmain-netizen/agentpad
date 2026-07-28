@@ -62,10 +62,10 @@ for i, (lbl, src, pin, sd, pos, c, r) in enumerate(H, 1):
       f"{sd} side, pos {pos} |")
 for n, hole, esp, sk in PORT:
     sd, pos = esp_position(esp, gnd_for="lcd")
-    w(f"| — | LCD {n} | LCD port male pin | col {hole[0]}, row {hole[1]} | "
+    w(f"| — | LCD {n} | LCD port socket | col {hole[0]}, row {hole[1]} | "
       f"**col {sk[0]}, row {sk[1]}** | `{esp}` | {sd} side, pos {pos} |")
 w("")
-w("> The LCD itself is **not** on this list — it reaches the port with 4 F-F jumpers and "
+w("> The LCD itself is **not** on this list — it reaches the port with 4 F-M jumpers and "
   "is never soldered.")
 w("")
 

@@ -177,8 +177,8 @@ LCD port to the socket. All identical:
 > indistinguishable the moment they're in a bundle. Masking-tape flags with the signal
 > name.
 
-**The LCD's own four wires are not soldered.** They're F-F jumpers from the LCD's header to
-the board's 4-pin **LCD port** — a male header at cols 30–33, row 2. The port exists because
+**The LCD's own four wires are not soldered.** They're F-M jumpers — **male** into the
+board's 4-way **LCD port** at cols 30–33, row 2, **female** onto the LCD's own pins. The port exists because
 the ESP32's pins disappear inside the socket the moment the module is seated, so there is
 nothing left to clip a jumper onto. The port's four *wires* (port → socket pads) are soldered
 like any other; the LCD itself just plugs in.
@@ -190,7 +190,7 @@ like any other; the LCD itself just plugs in.
 Each signal wire lands on a pad that already holds a socket pin. You don't need a free
 hole — **you solder the wire onto the pin's existing joint**.
 
-First, the thing people expect and shouldn't: **you do not add a male pin to the socket.**
+First, the thing people expect and shouldn't: **you do not add a male pin to the ESP32 socket.**
 The female strip is an ordinary component. It sits on top, its own pins come through the
 board, and you solder those to the pads underneath. That's the whole joint.
 

@@ -20,8 +20,8 @@ than being soldered down.
 **Be clear-eyed about the fallback.** Once the board is soldered you will have **zero
 colored buttons and zero LCDs left** (the kit has exactly 4 and 1; LEDs, resistors and
 small buttons do have spares). `BREADBOARD.md` is only a true fallback if you buy 4 spare
-12mm tactile switches. The LCD is already safe: it is **never soldered** — 4 F-F jumpers,
-female onto its own header and female onto the board's 4-pin LCD port, so it unplugs and moves.
+12mm tactile switches. The LCD is already safe: it is **never soldered** — 4 F-M jumpers,
+female onto its own pins and male into the board's 4-way LCD port, so it unplugs and moves.
 
 **2. Solder nothing you haven't already proven on the breadboard.** Everything here is
 validated. Don't add features and solder them the same day.
@@ -32,8 +32,7 @@ validated. Don't add features and solder them the same day.
 
 ### From the Freenove kit
 ESP32 · I²C LCD1602 · 4 LEDs (R/G/B/Y) · 4× 220Ω · 4 capped push buttons · 3 plain push
-buttons · **40-pin stacking header** (cut into two 15-socket strips) · a **4-pin male
-header** for the LCD port · **3× PY-5CM\*7CM perfboards** — *not* the build surface any
+buttons · **40-pin stacking header** (cut into two 15-socket strips) · **4 spare positions of that stacking header** for the LCD port · **3× PY-5CM\*7CM perfboards** — *not* the build surface any
 more, but sacrifice one for the soldering practice in `SOLDERING.md`.
 
 ### Bought separately
@@ -60,7 +59,7 @@ so no drilling is needed.
 
 > **You can cannibalise the kit's breadboard jumpers** for the 16 signal wires: cut the
 > connector off, strip 4mm, tin it. Two exceptions —
-> **keep 4 F-F jumpers intact** (that is how the LCD reaches its port), and **do not use
+> **keep 4 F-M jumpers intact** (that is how the LCD reaches its port), and **do not use
 > stranded jumpers for the buses.** A bare stranded wire lying along a row frays, and one
 > stray strand touching a signal pad is a short you will never find.
 >
@@ -72,7 +71,7 @@ so no drilling is needed.
 | Wood backing plate | ~150 × 200mm, any offcut |
 | **M3 × 12mm screws** + nylon washers + 6mm standoffs | Mounting the board through its factory corner holes — measure one first |
 | M3 × 16mm screws + 12–15mm standoffs | Mounting the LCD by its own 4 holes |
-| 4 × F-F jumper wires | LCD to the board's LCD port — never soldered |
+| 4 × F-M jumper wires | LCD to the board's LCD port — never soldered. The kit's own are fine |
 
 ### Nice to have
 Isopropyl + brush (clean flux so you can see joints) · Kapton tape (holds parts while you
@@ -130,14 +129,14 @@ changes.
 
 > **The LCD is still never soldered** — but it cannot clip onto the ESP32's pins either,
 > because those are *inside the socket* the moment the module is seated. So the board
-> carries a **4-pin male LCD port** of its own (cols 30–33, row 2), wired to the socket
-> pads, and the LCD reaches it with 4 F-F jumpers. The LCD stays a reusable part, and the
+> carries a **4-way female LCD port** of its own (cols 30–33, row 2), wired to the socket
+> pads, and the LCD reaches it with 4 F-M jumpers. The LCD stays a reusable part, and the
 > only 5V on the board is that one port — nowhere near the control surface.
 
 <!-- GEN:rowplan -->
 | Row | What |
 |---:|---|
-| **2** | **LED anodes (+)** — each also takes that LED's wire to the socket · cols 4, 11, 18, 25 · **LCD port** — 4 male pins · cols 30–33 |
+| **2** | **LED anodes (+)** — each also takes that LED's wire to the socket · cols 4, 11, 18, 25 · **LCD port** — 4-way female socket · cols 30–33 |
 | **3** | **LED cathodes (−)** — lead bends over on the underside to the row-4 pad |
 | **4** | 220Ω top lead (the only lead *in* this hole; the cathode lands on its pad) |
 | **8** | 220Ω bottom lead — lands straight on the bus · **GND bus** — bare wire, cols 1 → 28 |
@@ -197,9 +196,9 @@ socket pins, so the plug and cable pass clear over the board. What it does mean 
 | 11 | yes (approve) | col 22, row 19 | **col 30, row 13** | D19 (3V3 10) | step 5 |
 | 12 | ground | col 28, row 8 | **col 30, row 21** | GND (3V3 2) | step 2 |
 
-Plus the **LCD port** — 4 male header pins soldered into the board in step 6, each wired to a socket pad. The LCD itself reaches them with 4 F-F jumpers and is **never soldered**:
+Plus the **LCD port** — a 4-way female socket soldered into the board in step 6, each position wired to a socket pad. The LCD itself reaches them with 4 F-M jumpers and is **never soldered**:
 
-| LCD pin | Board hole (male pin) | Wires to socket hole | ESP32 pin |
+| LCD pin | Port socket at | Its wire runs to | ESP32 pin |
 |---|---|---|---|
 | GND | col 30, row 2 | col 40, row 21 | **GND** |
 | VCC | col 31, row 2 | col 40, row 22 | **VIN** |
@@ -224,7 +223,7 @@ That is **7 wires onto the 3V3 column (col 30, the near one) and 9 onto the VIN 
 | Component legs | 37 | 4 LEDs + 4 resistors (2 each), 7 switches (**3 legs each** — the fourth is clipped) |
 | ESP32 socket | 30 | two 15-way strips |
 | Signal wires | 24 | 12 wires, both ends |
-| LCD port | 12 | 4 male pins + 4 wires |
+| LCD port | 12 | a 4-way socket + 4 wires |
 | **total** | **~149** | at 1–2 min each including inspection, that is **4–6 hours** |
 <!-- /GEN:joints -->
 
@@ -482,19 +481,19 @@ Identical sequence to step 4 — **including clipping one leg off each switch fi
 
 #### Step 6 — the LCD port  ·  *Moves 1 and 4*
 
-The LCD is never soldered, so it needs somewhere to plug into. Once the ESP32 is seated its pins are **inside the socket** and nothing can clip onto them — so the board carries its own 4-pin male header at **cols 30–33, row 2**, wired to the socket pads.
+The LCD is never soldered, so it needs somewhere to plug into. Once the ESP32 is seated its pins are **inside the socket** and nothing can clip onto them — so the board carries its own **4-way female port** at **cols 30–33, row 2**, wired to the socket pads.
 
-| LCD pin | Male pin at | Wire to socket hole | ESP32 pin |
+| LCD pin | Port socket at | Its wire runs to | ESP32 pin |
 |---|---|---|---|
 | GND | col 30, row 2 | col 40, row 21 | **GND** |
 | VCC | col 31, row 2 | col 40, row 22 | **VIN** |
 | SDA | col 32, row 2 | col 30, row 12 | **D21** |
 | SCL | col 33, row 2 | col 30, row 9 | **D22** |
 
-1. Cut a **4-pin male** strip. Seat it at cols 30–33, row 2, short side down through the board.
+1. Cut **4 positions of the stacking header** — the same strip the ESP32 sockets came from; 30 of its 40 went there, so there is plenty left. Seat it at cols 30–33, row 2, socket side UP.
 2. Tack one pin, check it stands square, solder the rest.
 3. Run the four wires to the socket pads in the table. **Mark the VCC wire** — it is the only 5V on the board.
-4. Connect the LCD with **4 F-F jumpers**, female onto the LCD's own male header, female onto this port. Match the labels, not the colours.
+4. Connect the LCD with **4 F-M jumpers** — the **male** end into this port, the **female** end onto the LCD's own pins. Match them by label, not by jumper colour.
 
 ✅ **Test:** beep each port pin to its socket pad, and beep **VCC to GND** — that one must **not**. Then `firmware/lcdtest`: serial prints `found device at 0x27` and text appears.
 

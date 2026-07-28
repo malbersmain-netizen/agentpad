@@ -26,12 +26,12 @@ ESP32 seated with **USB pointing at the bottom edge**. Pin positions are counted
 | 10 | no (deny) | 'no' switch signal leg | col 13, row 19 | **col 30, row 14** | `D18` | 3V3 side, pos 9 |
 | 11 | yes (approve) | 'yes' switch signal leg | col 22, row 19 | **col 30, row 13** | `D19` | 3V3 side, pos 10 |
 | 12 | ground | GND bus (row 8) | col 28, row 8 | **col 30, row 21** | `GND` | 3V3 side, pos 2 |
-| — | LCD GND | LCD port male pin | col 30, row 2 | **col 40, row 21** | `GND` | VIN side, pos 2 |
-| — | LCD VCC | LCD port male pin | col 31, row 2 | **col 40, row 22** | `VIN` | VIN side, pos 1 |
-| — | LCD SDA | LCD port male pin | col 32, row 2 | **col 30, row 12** | `D21` | 3V3 side, pos 11 |
-| — | LCD SCL | LCD port male pin | col 33, row 2 | **col 30, row 9** | `D22` | 3V3 side, pos 14 |
+| — | LCD GND | LCD port socket | col 30, row 2 | **col 40, row 21** | `GND` | VIN side, pos 2 |
+| — | LCD VCC | LCD port socket | col 31, row 2 | **col 40, row 22** | `VIN` | VIN side, pos 1 |
+| — | LCD SDA | LCD port socket | col 32, row 2 | **col 30, row 12** | `D21` | 3V3 side, pos 11 |
+| — | LCD SCL | LCD port socket | col 33, row 2 | **col 30, row 9** | `D22` | 3V3 side, pos 14 |
 
-> The LCD itself is **not** on this list — it reaches the port with 4 F-F jumpers and is never soldered.
+> The LCD itself is **not** on this list — it reaches the port with 4 F-M jumpers and is never soldered.
 
 ---
 

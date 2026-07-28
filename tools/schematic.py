@@ -263,14 +263,14 @@ def board(stage=99, side="top"):
                              f'fill="#0b2b16" stroke="#e8e8e8" stroke-width="2"/>')
                 lab(X(mount_holes()[0][0])+14, Y(mount_holes()[0][1])-14,
                     f"drill {MOUNT_DRILL}mm here", "#e8e8e8", 9.5, "start", 700)
-            # the LCD port -- 4 male pins
+            # the LCD port -- a 4-way female socket
             p0 = LCD_PORT_COL0; pr = LCD_PORT_ROW
             o.append(f'<rect x="{X(p0)-11}" y="{Y(pr)-11}" width="{(len(LCD_PINS)-1)*PITCH+22}" '
                      f'height="22" rx="4" fill="#15181c" stroke="#c60" stroke-width="1.5"/>')
             for i, (nm, _) in enumerate(LCD_PINS):
                 o.append(f'<circle cx="{X(p0+i)}" cy="{Y(pr)}" r="{PITCH*0.26}" fill="#e8a33d"/>')
                 lab(X(p0+i), Y(pr)-16, nm, "#e8a33d", 8.5, "middle", 700)
-            lab(X(p0)-2, Y(pr)+30, "LCD port \u2014 4 male pins, F-F jumpers, never soldered", "#e8a33d", 10, "start", 700)
+            lab(X(p0)-2, Y(pr)+30, "LCD port \u2014 4-way socket, F-M jumpers, never soldered", "#e8a33d", 10, "start", 700)
             o.append(f'<rect x="{(ex0+ex1)/2-150}" y="{ey1+40}" width="300" height="34" rx="4" fill="#0e3f22"/>')
             lab((ex0+ex1)/2, ey1+54, "USB faces this way, 13mm short of the edge", "#bfe4ff", 10.5, "middle", 700)
             lab((ex0+ex1)/2, ey1+68, "keep rows 26-30 clear: the cable exits over them", "#8fbcd8", 9.5)
@@ -342,7 +342,7 @@ def board(stage=99, side="top"):
             lab(OX + COLS*PITCH/2, OY+TOP+ROWS*PITCH+76,
                 f"{len(wires)} signal wires + 1 ground (numbered as in BUILD.md) + {len(LCD_PINS)} orange LCD-port wires \u00b7 "
                 f"dashed = runs under the ESP32 on the underside \u00b7 the LCD itself is never "
-                f"soldered \u2014 it plugs into the orange port with 4 F-F jumpers", "#666", 11.5)
+                f"soldered \u2014 it plugs into the orange port with 4 F-M jumpers", "#666", 11.5)
     else:
         lab(OX + COLS*PITCH/2, OY+TOP-70,
             "UNDERSIDE \u2014 the board flipped over. COLUMN NUMBERS RUN RIGHT TO LEFT.",
@@ -416,7 +416,7 @@ def fig_assembly():
         o.append(f'<circle cx="{x}" cy="{y}" r="5" fill="#777" stroke="#444"/>')
     o.append(f'<text x="700" y="140" font-size="12" font-weight="700" fill="#333">LCD1602</text>')
     o.append(f'<text x="700" y="158" font-size="11" fill="#555">its own 4 × M3 holes</text>')
-    o.append(f'<text x="700" y="176" font-size="11" fill="#a60">NEVER soldered — 4 F-F jumpers</text>')
+    o.append(f'<text x="700" y="176" font-size="11" fill="#a60">NEVER soldered — 4 F-M jumpers</text>')
     o.append(f'<text x="700" y="192" font-size="11" fill="#555">into the board\u2019s 4-pin LCD port</text>')
     # the one board
     bx, by, bw, bh = 150, 268, 690, 262
@@ -444,7 +444,7 @@ def fig_assembly():
     for i in range(4):
         o.append(f'<path d="M {600+i*16} 216 C {640+i*16} 250, {ex+40} 250, {ex+40+i*12} {by+50}" '
                  f'stroke="#c60" stroke-width="2.2" fill="none"/>')
-    o.append(f'<text x="700" y="212" font-size="11" font-weight="700" fill="#c60">4 F-F jumpers down to the LCD port</text>')
+    o.append(f'<text x="700" y="212" font-size="11" font-weight="700" fill="#c60">4 F-M jumpers down to the LCD port</text>')
     o.append(f'<text x="76" y="556" font-size="12" fill="#5a3a10">Only the board is permanent. The LCD and the ESP32 both unplug.</text>')
     return svg(W, H, "".join(o))
 
@@ -520,7 +520,7 @@ def fig_wires():
     rows.append(("Ground", f"col {GND_WIRE_FROM[0]} row {GND_WIRE_FROM[1]} (GND bus)",
                  "one wire to the GND socket pad", "#111"))
     for name, hole, esp, sock in lcd_port():
-        rows.append((f"LCD {name}", f"port pin col {hole[0]} row {hole[1]} (F-F jumper)",
+        rows.append((f"LCD {name}", f"port socket col {hole[0]} row {hole[1]} (F-M jumper)",
                      f"wire to the {esp} socket pad, col {sock[0]} row {sock[1]}", "#c60"))
     W, H = 940, 74 + len(rows)*22 + 30
     o = [f'<text x="24" y="30" font-size="15" font-weight="700" fill="#222">Every connection, in order</text>',
@@ -543,7 +543,7 @@ FIGS = [
  ("2 · Pin map", fig_pinmap(),
   f"{len(harness())+len(LCD_PINS)} connections. Every GPIO is safe: none are input-only (34-39) or boot strapping "
   "pins (0, 2, 12, 15). The 12 signal wires and the ground wire are soldered to socket pads; the "
-  "LCD's 4 reach the board's LCD port on F-F jumpers."),
+  "LCD's 4 reach the board's LCD port on F-M jumpers."),
  ("3 · Board layout — top side, finished", board(99, "top"),
   f"One {ROWS}\u00d7{COLS} double-sided board. The ESP32 is socketed at columns {HDR_COLS[0]}-{HDR_COLS[1]} on this "
   f"same board; every wire is drawn on its real route. Red \u2715 marks the switch leg you clip off."),
@@ -582,7 +582,7 @@ FIGS = [
   f"Every signal wire runs along its own row to the riser lane at column {HDR_COLS[0]-1}, then into "
   f"its socket pad; the four that serve right-hand pins carry on underneath the module. Last, the "
   f"4-pin LCD port at cols {LCD_PORT_COL0}-{LCD_PORT_COL0+3} row {LCD_PORT_ROW} and its four wires \u2014 "
-  f"the LCD plugs into it on F-F jumpers and is never soldered. Test: firmware/lcdtest prints 'found device at 0x27'."),
+  f"the LCD plugs into it on F-M jumpers and is never soldered. Test: firmware/lcdtest prints 'found device at 0x27'."),
 
 ]
 

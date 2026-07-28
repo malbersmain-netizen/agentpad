@@ -91,12 +91,22 @@ def socket_hole(side, pos):
 
 # ---- the LCD port ---------------------------------------------------------
 # The LCD is never soldered -- but once the ESP32 is seated, its pins are INSIDE the
-# socket and nothing can clip onto them. So the board carries a 4-pin MALE header of
-# its own, wired to the socket pads, and the LCD reaches it with 4 F-F jumpers.
+# socket and nothing can clip onto them. So the board carries a 4-way port of its own,
+# wired to the socket pads.
+#
+# The port is FEMALE, cut from the same 40-pin stacking header as the ESP32 sockets (30
+# of its 40 positions are used there, so there is plenty left). The LCD then reaches it
+# with ordinary F-M jumpers: MALE into this port, FEMALE onto the LCD's own pins.
+#
+# It was briefly specified as a male header + F-F jumpers. That needed two parts the kit
+# does not reliably have -- a plain male strip, and F-F jumpers -- and a male header
+# fitted the usual way up leaves only ~3mm of pin, too short for a dupont shell to grip.
+# Female port + F-M jumper uses what is already in the box.
 # Order matches the LCD backpack's own header so the jumpers run straight, no crossing.
 # Row 2 is the only band at these columns that clears the module: the ESP32's 55mm body
 # overhangs its pin rows by ~3.8 rows at each end, so it shadows rows 4..26 here. Below
 # the module is worse than it looks -- that is where the USB cable comes out.
+LCD_PORT_FEMALE = True             # 4-way socket strip, not exposed male pins
 LCD_PORT_ROW  = 2                  # clear band ABOVE the ESP32 body
 LCD_PORT_COL0 = HDR_COLS[0]        # 4 holes: cols 30, 31, 32, 33
 

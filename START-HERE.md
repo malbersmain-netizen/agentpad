@@ -141,11 +141,11 @@ Two things must survive the build, and both unplug:
 | | why | how |
 |---|---|---|
 | **The ESP32** | you have exactly one | it sits in a **socket**, never soldered |
-| **The LCD** | you have exactly one | 4 F-F jumpers to a **port** on the board, never soldered |
+| **The LCD** | you have exactly one | 4 F-M jumpers to a **port** on the board, never soldered |
 
 The LCD port exists because of a detail that's easy to miss: once the ESP32 is seated, its
 own pins are *inside* the socket, so nothing can clip onto them. The board therefore carries
-its own 4-pin male header, wired to the socket pads.
+its own 4-way female port, wired to the socket pads.
 
 ---
 
@@ -157,7 +157,7 @@ The single most important distinction in the build. Two parts are irreplaceable 
 | Never soldered | Why | How it connects instead |
 |---|---|---|
 | **The ESP32** | you have exactly one | plugs into two **socket strips**. The *strips* are soldered; the module is not |
-| **The LCD** | you have exactly one | 4 F-F jumpers to the **LCD port**, a male header soldered to the board |
+| **The LCD** | you have exactly one | 4 F-M jumpers to the **LCD port**, a 4-way socket soldered to the board |
 
 Everything soldered falls into four groups, ~149 joints total:
 
@@ -166,7 +166,7 @@ Everything soldered falls into four groups, ~149 joints total:
 | **Socket strips** | 30 | two 15-way female strips. The ESP32 plugs in on top afterwards |
 | **Component legs** | 37 | 4 LEDs, 4 resistors, 7 switches (**3 legs each** — one is clipped off) |
 | **Buses** | 46 | bare wire along rows 8, 16, 21, linked down column 1 |
-| **Wires** | 36 | 16 wires × 2 ends, plus the LCD port's 4 male pins |
+| **Wires** | 36 | 16 wires × 2 ends, plus the LCD port's 4 socket pins |
 
 ```
    the ESP32          ┌───────────────┐   ← plugs in LAST, never soldered
