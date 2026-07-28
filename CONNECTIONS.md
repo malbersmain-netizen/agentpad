@@ -177,14 +177,30 @@ like any other; the LCD itself just plugs in.
 ## Move 5 — soldering a wire onto a pad that already has a pin in it
 
 Each signal wire lands on a pad that already holds a socket pin. You don't need a free
-hole — **you solder the wire onto the pin's existing joint**:
+hole — **you solder the wire onto the pin's existing joint**.
+
+First, the thing people expect and shouldn't: **you do not add a male pin to the socket.**
+The female strip is an ordinary component. It sits on top, its own pins come through the
+board, and you solder those to the pads underneath. That's the whole joint.
+
+```
+   TOP        ┌──────────┐  ← female socket strip. The ESP32 plugs in HERE, later.
+              │ ⌷ ⌷ ⌷ ⌷ │
+   ═══════════╪═╪═╪═╪═══╪═══  ← the board
+              │ │ │ │
+   UNDERSIDE  ▼ ▼ ▼ ▼   ← the strip's own pins poke through. THIS is what you solder,
+             ╱▔╲            and later what each signal wire laps onto.
+```
+
+Then, for each wire:
 
 1. Do all 30 socket joints first.
-2. Lay the tinned wire end against the target pin's solder blob.
+2. Lay the tinned wire end against the target pin's solder blob — or hook it around the
+   2mm stub, if you left one there (`BUILD.md` step 1 says which 16 pads to leave stubs on).
 3. Touch the iron to both until the existing solder melts and takes the wire.
 4. Remove the iron, hold still 2 seconds.
 
-That's called a *lap joint* and it's completely normal.
+That's called a *lap joint* and it's completely normal. One joint, holding two things.
 
 ---
 

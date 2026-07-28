@@ -57,6 +57,17 @@ so no drilling is needed.
 |---|---|
 | 22AWG solid-core hookup wire | The 12 signal wires and the 4 LCD-port wires |
 | Bare or tinned 24AWG | The three GND buses and the link — thinner is far easier to heat |
+
+> **You can cannibalise the kit's breadboard jumpers** for the 16 signal wires: cut the
+> connector off, strip 4mm, tin it. Two exceptions —
+> **keep 4 F-F jumpers intact** (that is how the LCD reaches its port), and **do not use
+> stranded jumpers for the buses.** A bare stranded wire lying along a row frays, and one
+> stray strand touching a signal pad is a short you will never find.
+>
+> **Free bus wire:** the leads you clip off the resistors and LEDs are solid, pre-tinned
+> and ideal. You will have sixteen of them at 15–25mm each; a bus row is 71mm, so it is
+> three or four pieces laid end to end — which is fine, since you solder to every second
+> or third pad anyway.
 | Heat-shrink, assorted | |
 | Wood backing plate | ~150 × 200mm, any offcut |
 | **M3 × 12mm screws** + nylon washers + 6mm standoffs | Mounting the board through its factory corner holes — measure one first |
@@ -384,7 +395,13 @@ Two 15-way strips at **columns 30 and 40, rows 8 → 22**. This goes first becau
 2. Lower the whole assembly onto the board from the top, pins through the holes.
 3. Check the strips landed in columns 30 and 40 — 10 apart — and that the module's USB end points at the **bottom** edge.
 4. Solder **one pin on each strip**. Turn it over, check it sits flat and square. Only then do the other 28.
-5. Trim the pins flush and pull the ESP32 out.
+5. **Trim the pins — but not all flush.** The 16 pads that take a wire later are much easier to solder if you leave a **~2mm stub** to hook the wire around; trim the other 14 flush. Never more than 2mm — at 2.54mm pitch a long stub finds its neighbour.
+6. Pull the ESP32 back out.
+
+| Column | Leave a 2mm stub on these rows |
+|---|---|
+| **col 30** | 8, 9, 12, 13, 14, 18, 21 |
+| **col 40** | 13, 14, 15, 16, 17, 18, 20, 21, 22 |
 
 ✅ **Test:** beep from each socket pad on the underside to the matching ESP32 pin (module seated), then beep each pad to its neighbour — no neighbour may beep. Then plug in USB: `ls /dev/cu.*` shows a new port, and `firmware/blink` uploads and blinks.
 

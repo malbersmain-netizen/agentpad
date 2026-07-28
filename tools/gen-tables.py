@@ -215,6 +215,9 @@ def steps():
 
     # ---------------------------------------------------------------- 1
     head("Step 1 — the ESP32 socket  ·  *Move 1*")
+    stub = {c: set() for c in HDR_COLS}
+    for _l, _s, _p, _sd, _pos, _c, _r in H:                stub[_c].add(_r)
+    for _n, _h, _e, (_c, _r) in lcd_port():                stub[_c].add(_r)
     o.append(f"Two {HDR_ROWS[1]-HDR_ROWS[0]+1}-way strips at **columns {HDR_COLS[0]} and "
              f"{HDR_COLS[1]}, rows {HDR_ROWS[0]} → {HDR_ROWS[1]}**. This goes first because it "
              f"proves the ESP32 and the cable still work before anything else can be blamed.")
@@ -228,8 +231,14 @@ def steps():
         f"apart — and that the module's USB end points at the **bottom** edge.",
         "4. Solder **one pin on each strip**. Turn it over, check it sits flat and square. Only then "
         "do the other 28.",
-        "5. Trim the pins flush and pull the ESP32 out.",
-    ])
+        "5. **Trim the pins — but not all flush.** The 16 pads that take a wire later are much "
+        "easier to solder if you leave a **~2mm stub** to hook the wire around; trim the other "
+        "14 flush. Never more than 2mm — at 2.54mm pitch a long stub finds its neighbour.",
+        "6. Pull the ESP32 back out.",
+        "",
+        "| Column | Leave a 2mm stub on these rows |",
+        "|---|---|",
+    ] + [f"| **col {c}** | " + ", ".join(map(str, sorted(stub[c]))) + " |" for c in HDR_COLS])
     test(f"beep from each socket pad on the underside to the matching ESP32 pin (module seated), "
          f"then beep each pad to its neighbour — no neighbour may beep. Then plug in USB: "
          f"`ls /dev/cu.*` shows a new port, and `firmware/blink` uploads and blinks.",
