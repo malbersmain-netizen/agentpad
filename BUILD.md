@@ -168,18 +168,24 @@ Orient the board **24 columns across, 18 rows down**. Grid reference: col 1, row
 top-left. All four LEDs and the four select buttons share columns **3, 9, 15, 21**
 (6-hole pitch).
 
+**Measured footprints** (confirmed on the real parts): the colored buttons have legs
+**5 holes apart in both directions** (a 5×5 span); the small buttons are **3×3**.
+
 | Row | What | Columns |
 |---|---|---|
-| **1** | **GND bus** — bare wire straight across | 1 → 24 |
-| **2** | **ESP32 header, row A** (soldered so the ESP32 plugs in from BELOW) | 5 → 19 |
-| 4 | LED cathodes (−) | 3, 9, 15, 21 |
-| 5 | LED anodes (+) | 3, 9, 15, 21 |
-| 4 → 1 | 220Ω per LED, cathode up to the GND bus | same columns |
-| **6 → 10** | **Select buttons 1–4**, centred on row 8 | centred on 3, 9, 15, 21 |
-| **11** | **ESP32 header, row B** (9 holes from row A) | 5 → 19 |
-| **12 → 16** | **AA / no / yes**, centred on row 14 | centred on 4, 12, 20 |
-| **17** | **5V bus** — bare wire straight across | 1 → 24 |
-| 18 | LCD 4-pin connector | 1 → 4 |
+| 1 | 220Ω top ends → GPIO wires | 5, 11, 17, 23 |
+| **2** | **ESP32 header, row A** (ESP32 plugs in from BELOW) | 5 → 19 |
+| 3 | LED anodes (+) | 3, 9, 15, 21 |
+| 4 | LED cathodes (−), straight down to the GND bus | 3, 9, 15, 21 |
+| **5** | **GND bus** — bare wire straight across | 1 → 24 |
+| **6 and 11** | **Colored button legs** (5 holes apart) | 1-6, 7-12, 13-18, 19-24 |
+| **12** | **ESP32 header, row B** (10 holes from row A) | 5 → 19 |
+| **14 and 16** | **AA / no / yes legs** (3×3 buttons) | 3-5, 11-13, 19-21 |
+| **17** | **GND bus** (second run, linked to row 5 down column 24) | 1 → 24 |
+| 18 | **5V bus** + LCD 4-pin connector | 1 → 24 |
+
+The four colored buttons occupy columns **1-6, 7-12, 13-18, 19-24 — all 24 columns,
+exactly**. There is no spare width, so keep them on those columns.
 
 ### Why this works
 
