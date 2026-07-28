@@ -5,16 +5,25 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);   // change to 0x3F if blank
 
 const int LED[4] = {13, 14, 27, 26};
 // Buttons: 0-3 = agent select (red, green, blue, yellow).
-//          4   = APPROVE (GPIO 19), 5 = DENY (GPIO 18).
-const int BTN[6] = {32, 33, 25, 4, 19, 18};
-const int NBTN   = 6;
+//          4   = APPROVE (GPIO 19)   -> "1. Yes"
+//          5   = DENY    (GPIO 18)   -> "3. No"
+//          6   = ALWAYS  (GPIO 23)   -> "2. Yes, and don't ask again"
+const int BTN[7] = {32, 33, 25, 4, 19, 18, 23};
+const int NBTN   = 7;
+
+// 74HC595 shift register driving the LED bar graph (context-window usage).
+// 8 segments, so each one is 12.5%.
+const int SR_DATA  = 16;   // pin 14 DS
+const int SR_CLOCK = 17;   // pin 11 SH_CP
+const int SR_LATCH = 5;    // pin 12 ST_CP
+const int SR_SEGS  = 8;
 
 // 0=none 1=idle 2=working 3=blocked 4=done
 int state[4]                = {0, 0, 0, 0};
 unsigned long doneUntil[4]   = {0, 0, 0, 0};
 
-int lastBtn[6]              = {HIGH, HIGH, HIGH, HIGH, HIGH, HIGH};
-unsigned long lastChange[6]  = {0, 0, 0, 0, 0, 0};
+int lastBtn[7]              = {HIGH, HIGH, HIGH, HIGH, HIGH, HIGH, HIGH};
+unsigned long lastChange[7]  = {0, 0, 0, 0, 0, 0, 0};
 
 String buf = "";
 
@@ -30,6 +39,24 @@ void setup() {
     digitalWrite(LED[i], LOW);
   }
   for (int i = 0; i < NBTN; i++) pinMode(BTN[i], INPUT_PULLUP);
+  pinMode(SR_DATA, OUTPUT);
+  pinMode(SR_CLOCK, OUTPUT);
+  pinMode(SR_LATCH, OUTPUT);
+  writeGauge(0);           // bar dark until the Mac reports a percentage
+}
+
+// Light the bottom N segments of the bar graph, N proportional to pct (0-100).
+// With MSBFIRST the bit at position k lands on output Qk, so a run of low bits
+// lights the segments nearest Q0.
+void writeGauge(int pct) {
+  if (pct < 0)   pct = 0;
+  if (pct > 100) pct = 100;
+  int lit = (pct * SR_SEGS + 50) / 100;
+  byte bits = 0;
+  for (int i = 0; i < lit; i++) bits |= (1 << i);
+  digitalWrite(SR_LATCH, LOW);
+  shiftOut(SR_DATA, SR_CLOCK, MSBFIRST, bits);
+  digitalWrite(SR_LATCH, HIGH);
 }
 
 void loop() {
@@ -57,6 +84,11 @@ void handle(String s) {
     else if (st == "working") state[i] = 2;
     else if (st == "blocked") state[i] = 3;
     else if (st == "done")  { state[i] = 4; doneUntil[i] = millis() + 2000; }
+  }
+  else if (s.startsWith("G ")) {
+    String v = s.substring(2);
+    v.trim();
+    writeGauge(v.toInt());          // context-window usage, 0-100
   }
   else if (s.startsWith("D0 ") || s.startsWith("D1 ")) {
     int row = s.charAt(1) - '0';
@@ -93,7 +125,7 @@ void readButtons() {
       lastBtn[i] = v;
       if (v == LOW) {
         Serial.print("B ");
-        Serial.println(i);    // 0-3 select, 4 approve, 5 deny
+        Serial.println(i);    // 0-3 select, 4 approve, 5 deny, 6 always-allow
       }
     }
   }

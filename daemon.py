@@ -22,10 +22,12 @@ import serial
 # ===== CONFIG =====
 PORT     = "/dev/cu.usbserial-0001"     # confirmed on this build
 SESSION  = "agentpad"                    # tmux session name
-APPROVE  = "1"                           # keystroke sent to approve a prompt
-DENY     = "3"                           # keystroke sent to deny a prompt
+APPROVE  = "1"                           # keystroke: "Yes"
+DENY     = "3"                           # keystroke: "No"
+ALWAYS   = "2"                           # keystroke: "Yes, and don't ask again"
 CLAUDE   = "claude"                      # command launched in each agent window
 EVENTS   = os.path.expanduser("~/projects/agentpad/events.jsonl")
+CONTEXT  = os.path.expanduser("~/projects/agentpad/context.jsonl")
 LOGFILE  = os.path.expanduser("~/projects/agentpad/daemon.log")
 # per-agent identity (index 0-3 = red, green, blue, yellow)
 NAMES  = ["A1-red", "A2-grn", "A3-blu", "A4-ylw"]
@@ -33,14 +35,31 @@ COLORS = ["colour52", "colour22", "colour17", "colour58"]  # dark tint per windo
 STATES = {"none", "idle", "working", "blocked", "done"}
 # ==================
 
-ser = serial.Serial(PORT, 115200, timeout=0.1)
-time.sleep(2)
 ser_lock = threading.Lock()   # serial is shared by several threads
+ser = None
+
+def open_serial(quiet=False):
+    """Open the board, waiting for it to appear. The ESP32 re-enumerates whenever the
+    cable is nudged; a demo should survive that instead of dying at startup."""
+    global ser
+    while True:
+        try:
+            ser = serial.Serial(PORT, 115200, timeout=0.1)
+            time.sleep(2)                      # board reboots when the port opens
+            log(f"serial open on {PORT}")
+            return
+        except Exception as exc:
+            if not quiet:
+                print(f"waiting for {PORT} ... ({exc.__class__.__name__})")
+                quiet = True
+            time.sleep(1)
 
 slots     = [None] * 4     # agent index -> tmux pane id (once launched)
 pane_slot = {}             # pane id -> agent index
 info      = {}             # pane id -> {"state":..., "since":..., "prev":...}
+ctx_pct   = {}             # pane id -> context-window usage %
 focus     = 0
+gauge_shown = None         # last value sent to the bar graph
 
 def log(msg):
     try:
@@ -51,7 +70,10 @@ def log(msg):
 
 def send(line):
     with ser_lock:
-        ser.write((line + "\n").encode())
+        try:
+            ser.write((line + "\n").encode())
+        except Exception:
+            pass          # board unplugged; read_serial owns reconnecting
 
 def tmux(*args):
     return subprocess.run(["tmux", *args], capture_output=True, text=True)
@@ -148,19 +170,26 @@ def active_slot():
     name = tmux("display-message", "-p", "-t", SESSION, "#{window_name}").stdout.strip()
     return NAMES.index(name) if name in NAMES else None
 
-# A selection prompt renders as numbered option rows at the bottom of the screen.
-# Matching that STRUCTURE (rather than specific wording) covers every prompt shape --
-# "Do you want to proceed?", "Would you like to proceed?", trust dialogs, plan mode --
-# without depending on prose that Claude might merely be talking about.
-OPTION_RE = re.compile(r"^\s*[❯>]?\s*[1-9]\.\s+\S")
+# A selection prompt renders as numbered option rows with a ">" cursor on the current
+# one. Matching that STRUCTURE (rather than wording) covers every prompt shape --
+# tool permission, plan approval, compaction, trust dialogs, AskUserQuestion -- without
+# depending on prose that Claude might merely be talking about.
+OPTION_RE   = re.compile(r"^\s*❯?\s*[1-9]\.\s+\S")   # "  2. No"
+SELECTED_RE = re.compile(r"^\s*❯\s*[1-9]\.\s+\S")    # "❯ 1. Yes"  <- only a live menu
 
 def prompt_visible(pane):
-    """True if a live selection/permission prompt is on that pane's screen RIGHT NOW."""
+    """True if a live selection prompt is on that pane's screen RIGHT NOW.
+
+    Requires a selected option row AND at least two options. The input box also
+    starts with "❯", so the cursor alone is not enough -- it must sit on a numbered
+    option, which normal output never does.
+    """
     r = tmux("capture-pane", "-p", "-t", pane)
     if r.returncode != 0:
         return False
     tail = r.stdout.splitlines()[-20:]
-    return sum(1 for l in tail if OPTION_RE.match(l)) >= 2
+    return (any(SELECTED_RE.match(l) for l in tail)
+            and sum(1 for l in tail if OPTION_RE.match(l)) >= 2)
 
 def respond(keystroke):
     """Answer the prompt on the agent that is actually on screen."""
@@ -234,7 +263,21 @@ def tail_events():
 
 def read_serial():
     while True:
-        line = ser.readline().decode(errors="ignore").strip()
+        try:
+            line = ser.readline().decode(errors="ignore").strip()
+        except Exception:
+            log("serial lost -- reopening")
+            try:
+                ser.close()
+            except Exception:
+                pass
+            open_serial(quiet=True)
+            blank_leds()
+            resync_leds()
+            global gauge_shown
+            gauge_shown = None
+            push_gauge()
+            continue
         if not line.startswith("B "):
             continue
         try:
@@ -244,22 +287,65 @@ def read_serial():
         if   0 <= n <= 3: launch_or_focus(n)
         elif n == 4:      respond(APPROVE)
         elif n == 5:      respond(DENY)
+        elif n == 6:      respond(ALWAYS)
 
 def watch_prompts():
-    """Clear `blocked` once the prompt leaves the screen (answered here or from the
-    pad). Setting `blocked` is the PermissionRequest hook's job, not ours."""
+    """Keep `blocked` in sync with what is actually on screen.
+
+    PermissionRequest covers tool permissions instantly, but it is NOT the only thing
+    that stops an agent: compaction dialogs, plan approval, trust prompts and
+    AskUserQuestion all wait on you without being a tool permission. Matching the
+    on-screen menu catches those too (within one 200ms poll), and also notices when
+    any prompt has been answered.
+    """
     while True:
         time.sleep(0.2)
         for i, p in enumerate(list(slots)):
-            if not p or info.get(p, {}).get("state") != "blocked":
+            if not p:
                 continue
-            if not prompt_visible(p):
+            cur = info.get(p, {}).get("state")
+            vis = prompt_visible(p)
+            if vis and cur != "blocked":
+                set_state(p, i, "blocked")
+                log(f"screen-detect BLOCKED pane={p} slot={i} (was {cur})")
+                refresh()
+            elif not vis and cur == "blocked":
                 back = info.get(p, {}).get("prev") or "working"
                 if back == "blocked":
                     back = "working"
                 set_state(p, i, back)
                 log(f"prompt cleared pane={p} slot={i} -> {back}")
                 refresh()
+
+def push_gauge():
+    """Show the focused agent's context-window usage on the bar graph."""
+    global gauge_shown
+    p = slots[focus]
+    pct = ctx_pct.get(p, 0) if p else 0
+    if pct != gauge_shown:
+        gauge_shown = pct
+        send(f"G {pct}")
+
+def tail_context():
+    """Follow context.jsonl, written by the statusLine command in each agent."""
+    open(CONTEXT, "a").close()
+    with open(CONTEXT, "r") as f:
+        f.seek(0, 2)
+        while True:
+            line = f.readline()
+            if not line or not line.endswith("\n"):
+                if line:
+                    f.seek(-len(line), os.SEEK_CUR)
+                time.sleep(0.1)
+                continue
+            try:
+                e = json.loads(line)
+                pane, pct = e["pane"], int(e["pct"])
+            except Exception:
+                continue
+            if pane in pane_slot:
+                ctx_pct[pane] = max(0, min(100, pct))
+                push_gauge()
 
 def tick():
     """Re-render the LCD every second so the state timer counts live, and follow
@@ -271,6 +357,15 @@ def tick():
         if i is not None and i != focus:
             focus = i
         refresh()
+        push_gauge()   # bar follows whichever agent you're looking at
+
+def resync_leds():
+    """Push current states to the board. Used after a reconnect, since the ESP32
+    reboots with every LED off and no memory of what we last told it."""
+    for i, p in enumerate(slots):
+        if p and p in info:
+            send(f"L {i} {info[p]['state']}")
+    refresh()
 
 def blank_leds():
     """Turn all four LEDs off. The ESP32 holds its last-known LED state across
@@ -310,11 +405,12 @@ def supervise(fn):
                 time.sleep(1)
     return wrapper
 
+open_serial()     # waits for the board rather than dying if it's unplugged
 ensure_session()
 blank_leds()      # clear stale LED state the board held from a previous run
 sync_slots()      # bind existing agent windows to their color slots on startup
 recover_state()   # restore last-known LED states (never `blocked`) after a restart
-for worker in (tail_events, read_serial, tick, watch_prompts):
+for worker in (tail_events, tail_context, read_serial, tick, watch_prompts):
     threading.Thread(target=supervise(worker), daemon=True).start()
 
 refresh()
