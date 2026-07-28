@@ -207,7 +207,16 @@ work. That is the entire loom.
 
 ## 4. Soldering, if you've never done it
 
-Read this once. It's the difference between an evening and a weekend.
+**→ Full beginner course with practice exercises: [`SOLDERING.md`](SOLDERING.md).** Do the
+six exercises there on a spare kit board *before* touching the real one — about an hour,
+and it's the highest-return hour in the project.
+
+The condensed version follows.
+
+> **The thing that surprises everyone:** perfboard has **no wires in it**. Every hole is
+> isolated. Nothing is connected until you connect it — with a bent lead, a solder bridge,
+> or a jumper. That's why the layout has *buses*: a bare wire soldered across a row, which
+> turns 20 isolated holes into one shared node.
 
 **Setup.** Damp sponge or brass wool. Iron at ~340°C. Ventilate — flux fumes are the
 irritant, not the metal. Wash hands after handling leaded solder.
