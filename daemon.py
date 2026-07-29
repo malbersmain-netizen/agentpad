@@ -195,7 +195,14 @@ def prompt_visible(pane):
     r = tmux("capture-pane", "-p", "-t", pane)
     if r.returncode != 0:
         return False
-    tail = r.stdout.splitlines()[-20:]
+    lines = r.stdout.splitlines()
+    # Claude Code pads the screen with blank lines BELOW the prompt -- 17 of them on a
+    # 42-row pane, measured. Taking a fixed tail of the raw capture then slices the
+    # prompt in half: you see "3. No" but not the "> 1. Yes" selected row above it, and
+    # conclude nothing is waiting. Trim the padding first, then look at real content.
+    while lines and not lines[-1].strip():
+        lines.pop()
+    tail = lines[-20:]
     return (any(SELECTED_RE.match(l) for l in tail)
             and sum(1 for l in tail if OPTION_RE.match(l)) >= 2)
 
