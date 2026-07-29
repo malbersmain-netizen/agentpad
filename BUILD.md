@@ -514,7 +514,7 @@ Once all of that passes the hardware is finished. Re-run it after any handling â
 Only needed if this is a fresh Mac; your current one is already set up.
 
 ```bash
-cd ~/projects/agentpad
+cd ~/github/agentpad
 cp hooks/agentpad.sh        ~/.claude/agentpad.sh        && chmod +x ~/.claude/agentpad.sh
 cp hooks/agentpad-status.sh ~/.claude/agentpad-status.sh && chmod +x ~/.claude/agentpad-status.sh
 mise install                      # Python 3.13 + venv
@@ -539,7 +539,7 @@ plus `statusLine` â†’ `~/.claude/agentpad-status.sh` for the context percentage.
 
 **Run it:**
 ```bash
-cd ~/projects/agentpad && mise exec -- python daemon.py
+cd ~/github/agentpad && mise exec -- python daemon.py
 tmux attach -t agentpad        # in another terminal
 ```
 

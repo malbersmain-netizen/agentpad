@@ -14,7 +14,7 @@ pct=$(printf '%s' "$payload" | jq -r '.context_window.used_percentage // empty' 
 
 if [ -n "$TMUX_PANE" ] && [ -n "$pct" ]; then
   printf '{"pane":"%s","pct":%s}\n' "$TMUX_PANE" "$pct" \
-    >> "$HOME/projects/agentpad/context.jsonl"
+    >> "${AGENTPAD_DIR:-$HOME/github/agentpad}/context.jsonl"
 fi
 
 # Keep the visible status line short.

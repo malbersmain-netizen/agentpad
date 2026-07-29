@@ -98,7 +98,12 @@ Then `~/.claude/settings.json` needs five hooks, each running `~/.claude/agentpa
 Start everything with `./run.sh` (checks the board, refuses a second daemon, runs in the
 foreground). Equivalent to `mise exec -- python daemon.py` from this directory.
 
-**Path note:** the code repo lives at `~/projects/agentpad`, not `~/agentpad`. The events file and all Python live here too; the hook script writes to `~/projects/agentpad/events.jsonl`. If you copy commands from an older draft that used `~/agentpad`, fix the path.
+**Path note:** the repo lives at `~/github/agentpad` (it moved from `~/projects/agentpad`).
+`daemon.py` derives `events.jsonl`, `context.jsonl` and `daemon.log` from its own
+`__file__`, so moving the repo again needs no edits. The two hook scripts are copied to
+`~/.claude/` and cannot use `__file__`, so they read
+`${AGENTPAD_DIR:-$HOME/github/agentpad}` — set `AGENTPAD_DIR` to relocate without editing
+them. The events file and all Python live here too; the hook script writes to `~/github/agentpad/events.jsonl`. If you copy commands from an older draft that used `~/agentpad`, fix the path.
 
 ## Serial protocol
 

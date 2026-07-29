@@ -215,7 +215,7 @@ changed since the last one that passed.
 ## Running it
 
 ```bash
-~/projects/agentpad/run.sh
+~/github/agentpad/run.sh
 ```
 
 That is the whole thing. It checks the board is plugged in, refuses to start a second

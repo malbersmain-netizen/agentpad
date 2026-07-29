@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Start Agent Pad. Run from anywhere:  ~/projects/agentpad/run.sh
+# Start Agent Pad. Run from anywhere:  ~/github/agentpad/run.sh
 #
 # Checks the board is actually there before starting, and refuses to run a second
 # daemon -- two processes fighting over one serial port is the confusing failure

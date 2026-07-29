@@ -29,9 +29,13 @@ ALWAYS   = "2"                           # keystroke: "Yes, and don't ask again"
 # bypassPermissions -- otherwise nothing ever prompts, `blocked` never fires, and the
 # LEDs and approve/deny buttons have nothing to do. This flag is the whole demo.
 CLAUDE   = "claude --permission-mode manual"
-EVENTS   = os.path.expanduser("~/projects/agentpad/events.jsonl")
-CONTEXT  = os.path.expanduser("~/projects/agentpad/context.jsonl")
-LOGFILE  = os.path.expanduser("~/projects/agentpad/daemon.log")
+# Derived from this file's own location, not hardcoded. The repo moved once
+# (~/projects -> ~/github) and every absolute path in it had to be chased down; deriving
+# means the next move is free.
+HERE     = os.path.dirname(os.path.abspath(__file__))
+EVENTS   = os.path.join(HERE, "events.jsonl")
+CONTEXT  = os.path.join(HERE, "context.jsonl")
+LOGFILE  = os.path.join(HERE, "daemon.log")
 # per-agent identity (index 0-3 = red, green, blue, yellow)
 NAMES  = ["A1-red", "A2-grn", "A3-blu", "A4-ylw"]
 COLORS = ["colour52", "colour22", "colour17", "colour58"]  # dark tint per window
