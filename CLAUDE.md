@@ -38,7 +38,15 @@ Measured on this hardware, three ways to learn an agent is waiting:
 
 `PermissionRequest` fires only when a prompt is genuinely shown (verified: `df -h` auto-allowed → no hook; `curl -sI` prompts → hook), and it covers every prompt shape — tool permission, plan approval, trust dialogs — with no text matching, so Claude's own prose can never trigger it.
 
-Screen reading survives only to notice the prompt has been **answered**, and matches prompt *structure* (numbered option rows), not wording — so it also handles "Would you like to proceed?", not just "Do you want to proceed?".
+Screen reading survives for two jobs: noticing the prompt has been **answered**, and
+catching the prompt shapes the hook misses. It matches prompt *structure* (numbered option
+rows with a `❯` cursor), not wording, so it also handles "Would you like to proceed?", not
+just "Do you want to proceed?".
+
+**Measured on the soldered board, 2026-07-29:** of five permission prompts, four fired
+`PermissionRequest` and one did not — the **directory-scope prompt** ("2. Yes, allow reading
+from Pictures/ from this project"). Only `screen-detect BLOCKED` caught that one. So the
+fallback is not redundant; do not remove it on the grounds that the hook covers everything.
 
 ## Files
 
@@ -129,6 +137,10 @@ GPIO 34-39 are input-only with no internal pull-up. GPIO 0, 2, 12, 15 are boot s
 
 - **Serial only.** Do not convert the ESP32 to WiFi/HTTP. The venue network is not trusted and serial is debuggable from the Serial Monitor.
 - **`/dev/cu.*` never `/dev/tty.*`** — pyserial hangs forever on tty.
+- **The pad answers the agent whose tmux window is ON SCREEN, not the one that is blinking.**
+  This surprises people: if red is blocked but you are looking at green, pressing `yes` is
+  correctly refused. Press the colour button first to focus that agent, then answer. The log
+  line to look for is `respond(...) on_screen=False`, which means the interlock declined.
 - **Keep the approve/deny interlock.** The daemon must refuse to send keystrokes unless the agent is genuinely blocked. Two independent conditions must agree — the `PermissionRequest` state *and* a prompt visible on screen — and the state is cleared immediately after sending so a double press can't type into the normal input box. This is what stops junk being injected into a prompt.
 - **Only panes the daemon launched may receive keystrokes.** The hooks are global, so every Claude session on the machine writes to `events.jsonl`; unknown panes must never be assigned a slot.
 - **`APPROVE` and `DENY` stay top-level config constants.** Permission menu numbering varies; these get tuned live.
