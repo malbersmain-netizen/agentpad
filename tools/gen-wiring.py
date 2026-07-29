@@ -103,7 +103,7 @@ w("")
 w("| Part | Leg | Hole | What it connects to |")
 w("|---|---|---|---|")
 for i, c in enumerate(LED_COLS):
-    n = WIRE = next(j for j, (l, *_) in enumerate(H, 1) if l == f"LED {i+1} {LED_NAME[i]}")
+    n = next(j for j, (l, *_) in enumerate(H, 1) if l == f"LED {i+1} {LED_NAME[i]}")
     w(f"| **LED {i+1} ({LED_NAME[i]})** | anode, long leg (+) | col {c}, row {LED_ROWS[0]} | "
       f"wire {n} → `D{LED_GPIO[i]}` |")
     w(f"| | cathode, short leg (−) | col {c}, row {LED_ROWS[1]} | bent flat on the underside "

@@ -389,10 +389,7 @@ def board(stage=99, side="top"):
     o.append(f'<text x="{OX-34}" y="{OY+TOP+ROWS*PITCH+(170 if side=='under' else 100)}" font-size="11.5" fill="#888">ONE board · {ROWS} rows x {COLS} cols · double-sided · ESP32 socketed at cols {HDR_COLS[0]}-{HDR_COLS[1]}</text>')
     return svg(W, H, "".join(o))
 
-# ============================================== 3b. BOARD B + WHOLE ASSEMBLY
-USED = {"VIN":"5V -> LCD","GND":"ground","D13":"LED 1 red","D14":"LED 2 green","D27":"LED 3 blue",
-        "D26":"LED 4 yellow","D32":"button 1","D33":"button 2","D25":"button 3","D4":"button 4",
-        "D23":"AA","D18":"no","D19":"yes","D21":"LCD SDA","D22":"LCD SCL"}
+# ================================================ 3b. WHOLE ASSEMBLY
 
 def fig_assembly():
     """One board + the LCD, screwed to the wooden plate."""

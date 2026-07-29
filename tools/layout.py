@@ -295,11 +295,3 @@ def mount_holes():
         if quad:
             out.append(min(quad, key=lambda h: (h[0]-qc)**2 + (h[1]-qr)**2))
     return out
-
-
-def lcd_harness():
-    """DEPRECATED — the soldered build uses lcd_port(). This described the breadboard
-    arrangement, where the jumpers really do go onto the ESP32's own pins because the
-    module is not in a socket. Kept only so BREADBOARD.md's generator still works."""
-    return [(f"LCD {a}", "F-M jumper onto the LCD's own header", b if b == "GND" else
-             ("VIN" if b == "VIN" else f"D{b}")) for a, b in LCD_PINS]

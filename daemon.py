@@ -39,6 +39,7 @@ STATES = {"none", "idle", "working", "blocked", "done"}
 # ==================
 
 ser_lock = threading.Lock()   # serial is shared by several threads
+lcd_lock = threading.Lock()   # refresh() writes two rows; keep them as one update
 ser = None
 
 def open_serial(quiet=False):
@@ -122,6 +123,8 @@ def sync_slots():
         if old and old != pane:
             pane_slot.pop(old, None)   # window respawned: drop the orphan mapping
             info.pop(old, None)
+            ctx_pct.pop(old, None)
+            answered_at.pop(old, None)
         slots[i] = pane
         pane_slot[pane] = i
     # Close an agent window and its slot used to keep the dead pane forever: the LED
@@ -133,6 +136,7 @@ def sync_slots():
             pane_slot.pop(dead, None)
             info.pop(dead, None)
             ctx_pct.pop(dead, None)
+            answered_at.pop(dead, None)
             slots[i] = None
             send(f"L {i} none")
             log(f"agent {i} window closed -- slot released (was {dead})")
@@ -155,8 +159,11 @@ def refresh():
     used = ctx_pct.get(p) if p else None
     if used is not None:
         row1 = f"{row1} {used}%"
-    send(f"D0 {row0[:16]}")
-    send(f"D1 {row1[:16]}")
+    # Both rows as one unit. refresh() is called from four threads, and interleaving
+    # two calls leaves row 1 describing a state row 0 has already moved past.
+    with lcd_lock:
+        send(f"D0 {row0[:16]}")
+        send(f"D1 {row1[:16]}")
 
 def _spawn(i):
     """Create the tmux window for agent i running claude; record its pane id."""
