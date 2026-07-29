@@ -171,8 +171,28 @@ An LED bar graph was designed and coded (74HC595, `G <0-100>` serial command, ba
 
 ## Status
 
-**Working end-to-end.** Hardware built and verified: LCD@0x27, 4 LEDs, **7 buttons** (4 select + approve/deny/always-allow). Firmware, daemon, and hooks all confirmed on real hardware: color button → tmux window spawn/focus → hooks → LED state → approve/deny/always button → keystroke lands in the correct pane. Survives unplug/replug of the ESP32.
+**Soldered build complete and working end to end** (2026-07-29). One 30 × 42 double-sided
+PCB, 120 × 80mm: 4 LEDs, 7 buttons, LCD on a 4-way port, ESP32 socketed at cols 30–40.
+~149 joints. Verified on the real board:
 
-Next: soldered build on **one 30 × 42 double-sided PCB** (control surface in cols 1–28, ESP32 socketed at cols 30–40, 4-pin LCD port at cols 30–33 row 2), screwed to a wooden plate — see `BUILD.md`, `SOLDERING.md`, `BREADBOARD.md`.
+- LCD both rows, all 16 columns, `0x27`
+- 4 LEDs cycling on the production firmware
+- **All 7 buttons** reporting `B 0`–`B 6`
+- 4 agents spawning into colour-tinted tmux windows from the colour buttons
+- Permission prompts answered from the board: `prompt cleared pane=%2 slot=1 -> working`
 
-**On the soldered board the LCD plugs into a board-mounted 4-pin male port, not the ESP32's pins** — those are inside the socket once the module is seated. On the *breadboard* prototype the jumpers do go straight onto the ESP32's pins; both are correct for their own build.
+The breadboard prototype in `BREADBOARD.md` remains the documented fallback, but the kit's
+four 12mm switches are now soldered down — rebuilding it needs spares.
+
+**Two bugs found during bring-up, both fixed:**
+
+1. `lcdtest` wrote two short strings and never called `clear()`, so power-up junk sat
+   under row 1 and a failed write looked identical to a faint one. It now fills both rows
+   full width before writing text.
+2. `prompt_visible()` took a fixed 20-line tail of the raw pane capture. Claude Code pads
+   ~17 blank lines below the prompt, so the window landed on padding and saw only the last
+   option row — no selected row, so no prompt detected. Taller prompts (the directory-scope
+   one especially) were reliably missed. Fixed by trimming trailing blanks first.
+
+Still to do: mount to the wooden plate and re-run the acceptance test, since assembly is
+when wires get pinched.

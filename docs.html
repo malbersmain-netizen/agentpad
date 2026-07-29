@@ -3232,7 +3232,14 @@ Use curl when demoing.</p>
 </tbody>
 </table>
 <p><code>PermissionRequest</code> fires only when a prompt is genuinely shown (verified: <code>df -h</code> auto-allowed → no hook; <code>curl -sI</code> prompts → hook), and it covers every prompt shape — tool permission, plan approval, trust dialogs — with no text matching, so Claude's own prose can never trigger it.</p>
-<p>Screen reading survives only to notice the prompt has been <strong>answered</strong>, and matches prompt <em>structure</em> (numbered option rows), not wording — so it also handles "Would you like to proceed?", not just "Do you want to proceed?".</p>
+<p>Screen reading survives for two jobs: noticing the prompt has been <strong>answered</strong>, and
+catching the prompt shapes the hook misses. It matches prompt <em>structure</em> (numbered option
+rows with a <code>❯</code> cursor), not wording, so it also handles "Would you like to proceed?", not
+just "Do you want to proceed?".</p>
+<p><strong>Measured on the soldered board, 2026-07-29:</strong> of five permission prompts, four fired
+<code>PermissionRequest</code> and one did not — the <strong>directory-scope prompt</strong> ("2. Yes, allow reading
+from Pictures/ from this project"). Only <code>screen-detect BLOCKED</code> caught that one. So the
+fallback is not redundant; do not remove it on the grounds that the hook covers everything.</p>
 <h2 id="claude-md--files">Files</h2>
 <table>
 <thead>
@@ -3437,6 +3444,10 @@ G &lt;0-100&gt;            # bar graph. Firmware accepts it; the hardware is NOT
 <ul>
 <li><strong>Serial only.</strong> Do not convert the ESP32 to WiFi/HTTP. The venue network is not trusted and serial is debuggable from the Serial Monitor.</li>
 <li><strong><code>/dev/cu.*</code> never <code>/dev/tty.*</code></strong> — pyserial hangs forever on tty.</li>
+<li><strong>The pad answers the agent whose tmux window is ON SCREEN, not the one that is blinking.</strong>
+  This surprises people: if red is blocked but you are looking at green, pressing <code>yes</code> is
+  correctly refused. Press the colour button first to focus that agent, then answer. The log
+  line to look for is <code>respond(...) on_screen=False</code>, which means the interlock declined.</li>
 <li><strong>Keep the approve/deny interlock.</strong> The daemon must refuse to send keystrokes unless the agent is genuinely blocked. Two independent conditions must agree — the <code>PermissionRequest</code> state <em>and</em> a prompt visible on screen — and the state is cleared immediately after sending so a double press can't type into the normal input box. This is what stops junk being injected into a prompt.</li>
 <li><strong>Only panes the daemon launched may receive keystrokes.</strong> The hooks are global, so every Claude session on the machine writes to <code>events.jsonl</code>; unknown panes must never be assigned a slot.</li>
 <li><strong><code>APPROVE</code> and <code>DENY</code> stay top-level config constants.</strong> Permission menu numbering varies; these get tuned live.</li>
@@ -3455,9 +3466,30 @@ G &lt;0-100&gt;            # bar graph. Firmware accepts it; the hardware is NOT
 <p>The focused agent's context-window usage shows on the LCD bottom row (<code>1w 2B 3i 4d 34%</code>). It comes from Claude Code's <strong>statusLine</strong> payload (<code>context_window.used_percentage</code>) — the only place that value is exposed — and is attributed per agent because the statusLine command inherits <code>$TMUX_PANE</code> inside a tmux window. See <code>hooks/agentpad-status.sh</code>.</p>
 <p>An LED bar graph was designed and coded (74HC595, <code>G &lt;0-100&gt;</code> serial command, battery semantics: full = fresh) but <strong>deliberately not wired</strong> — see <code>BUILD.md</code>. The firmware and daemon support is still present and harmless, so it can be added later without other changes.</p>
 <h2 id="claude-md--status">Status</h2>
-<p><strong>Working end-to-end.</strong> Hardware built and verified: LCD@0x27, 4 LEDs, <strong>7 buttons</strong> (4 select + approve/deny/always-allow). Firmware, daemon, and hooks all confirmed on real hardware: color button → tmux window spawn/focus → hooks → LED state → approve/deny/always button → keystroke lands in the correct pane. Survives unplug/replug of the ESP32.</p>
-<p>Next: soldered build on <strong>one 30 × 42 double-sided PCB</strong> (control surface in cols 1–28, ESP32 socketed at cols 30–40, 4-pin LCD port at cols 30–33 row 2), screwed to a wooden plate — see <code>BUILD.md</code>, <code>SOLDERING.md</code>, <code>BREADBOARD.md</code>.</p>
-<p><strong>On the soldered board the LCD plugs into a board-mounted 4-pin male port, not the ESP32's pins</strong> — those are inside the socket once the module is seated. On the <em>breadboard</em> prototype the jumpers do go straight onto the ESP32's pins; both are correct for their own build.</p></section>
+<p><strong>Soldered build complete and working end to end</strong> (2026-07-29). One 30 × 42 double-sided
+PCB, 120 × 80mm: 4 LEDs, 7 buttons, LCD on a 4-way port, ESP32 socketed at cols 30–40.
+~149 joints. Verified on the real board:</p>
+<ul>
+<li>LCD both rows, all 16 columns, <code>0x27</code></li>
+<li>4 LEDs cycling on the production firmware</li>
+<li><strong>All 7 buttons</strong> reporting <code>B 0</code>–<code>B 6</code></li>
+<li>4 agents spawning into colour-tinted tmux windows from the colour buttons</li>
+<li>Permission prompts answered from the board: <code>prompt cleared pane=%2 slot=1 -&gt; working</code></li>
+</ul>
+<p>The breadboard prototype in <code>BREADBOARD.md</code> remains the documented fallback, but the kit's
+four 12mm switches are now soldered down — rebuilding it needs spares.</p>
+<p><strong>Two bugs found during bring-up, both fixed:</strong></p>
+<ol>
+<li><code>lcdtest</code> wrote two short strings and never called <code>clear()</code>, so power-up junk sat
+   under row 1 and a failed write looked identical to a faint one. It now fills both rows
+   full width before writing text.</li>
+<li><code>prompt_visible()</code> took a fixed 20-line tail of the raw pane capture. Claude Code pads
+   ~17 blank lines below the prompt, so the window landed on padding and saw only the last
+   option row — no selected row, so no prompt detected. Taller prompts (the directory-scope
+   one especially) were reliably missed. Fixed by trimming trailing blanks first.</li>
+</ol>
+<p>Still to do: mount to the wooden plate and re-run the acceptance test, since assembly is
+when wires get pinched.</p></section>
 </main>
 <a class="top" href="#">↑ top</a>
 </body></html>
