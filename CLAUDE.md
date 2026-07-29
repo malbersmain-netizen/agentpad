@@ -71,6 +71,7 @@ fallback is not redundant; do not remove it on the grounds that the hook covers 
 | `tools/gen-wiring.py` | Regenerates `WIRING.md` from `layout.py` |
 | `tools/view-docs.py` | Renders every doc into one browsable `docs.html` |
 | `tools/schematic.py` | Generates `schematics.html` from `layout.py` |
+| `docs.html`, `schematics.html` | **GENERATED but COMMITTED** so a clone has the diagrams and the full doc set without a Python env. Regenerate and commit both after any `layout.py` change |
 | `mise.toml` | Python 3.13 venv definition |
 | `events.jsonl`, `daemon.log` | Runtime state; both gitignored |
 | `~/.claude/agentpad.sh` | Installed copy of the hook script (appends one JSON line per event) |
