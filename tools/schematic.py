@@ -251,18 +251,12 @@ def board(stage=99, side="top"):
                         "start", 700 if hot else 400)
             # mounting. The real board has factory holes in the margin at each corner;
             # the computed on-pad positions are only the fallback.
-            if FACTORY_CORNER_HOLES:
-                mx0, my0 = OX-34+13, OY-30+13
-                mx1, my1 = OX-34+COLS*PITCH+22-13, OY-30+ROWS*PITCH+22-13
-                for mx, my in ((mx0,my0),(mx1,my0),(mx0,my1),(mx1,my1)):
-                    o.append(f'<circle cx="{mx}" cy="{my}" r="7" fill="#0b2b16" stroke="#e8e8e8" stroke-width="2"/>')
-                lab(mx0+16, my0-6, "factory corner holes \u2014 M3, no drilling", "#e8e8e8", 9.5, "start", 700)
-            else:
-                for c, r in mount_holes():
-                    o.append(f'<circle cx="{X(c)}" cy="{Y(r)}" r="{MOUNT_DRILL/2/2.54*PITCH}" '
-                             f'fill="#0b2b16" stroke="#e8e8e8" stroke-width="2"/>')
-                lab(X(mount_holes()[0][0])+14, Y(mount_holes()[0][1])-14,
-                    f"drill {MOUNT_DRILL}mm here", "#e8e8e8", 9.5, "start", 700)
+            # the board's four factory corner holes, in the margin
+            mx0, my0 = OX-34+13, OY+TOP-30+13
+            mx1, my1 = OX-34+COLS*PITCH+22-13, OY+TOP-30+ROWS*PITCH+22-13
+            for mx, my in ((mx0,my0),(mx1,my0),(mx0,my1),(mx1,my1)):
+                o.append(f'<circle cx="{mx}" cy="{my}" r="7" fill="#0b2b16" stroke="#e8e8e8" stroke-width="2"/>')
+            lab(mx0+16, my0-6, "factory corner holes \u2014 no drilling", "#e8e8e8", 9.5, "start", 700)
             # the LCD port -- a 4-way female socket
             p0 = LCD_PORT_COL0; pr = LCD_PORT_ROW
             o.append(f'<rect x="{X(p0)-11}" y="{Y(pr)-11}" width="{(len(LCD_PINS)-1)*PITCH+22}" '

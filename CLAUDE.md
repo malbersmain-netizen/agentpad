@@ -3,7 +3,6 @@
 Physical control surface for Claude Code — a self-contained "code micro" clone. Four LEDs + an LCD show what four agents are doing. Seven buttons on the board do everything: the four color buttons each **launch a color-tinted tmux `claude` session (if not running) and focus it**; three more **approve / deny / always-allow** the on-screen agent's permission prompt. **Single device — there is no game controller.** Don't reintroduce one.
 
 **Soldered build: `BUILD.md` + `SOLDERING.md`. Breadboard prototype: `BREADBOARD.md`.**
-`docs-archive-breadboard-era.md` is the superseded milestone guide — do not build from it.
 
 ## Platform
 
@@ -71,8 +70,6 @@ fallback is not redundant; do not remove it on the grounds that the hook covers 
 | `tools/gen-wiring.py` | Regenerates `WIRING.md` from `layout.py` |
 | `tools/view-docs.py` | Renders every doc into one browsable `docs.html` |
 | `tools/schematic.py` | Generates `schematics.html` from `layout.py` |
-| `tools/view-plan.py` | Renders BUILD.md into a tickable bench checklist |
-| `docs-archive-breadboard-era.md` | Superseded milestone guide — do not build from it |
 | `mise.toml` | Python 3.13 venv definition |
 | `events.jsonl`, `daemon.log` | Runtime state; both gitignored |
 | `~/.claude/agentpad.sh` | Installed copy of the hook script (appends one JSON line per event) |
@@ -194,5 +191,4 @@ four 12mm switches are now soldered down — rebuilding it needs spares.
    option row — no selected row, so no prompt detected. Taller prompts (the directory-scope
    one especially) were reliably missed. Fixed by trimming trailing blanks first.
 
-Still to do: mount to the wooden plate and re-run the acceptance test, since assembly is
-when wires get pinched.
+The board is not being mounted to a backing plate — it stays a bare board.

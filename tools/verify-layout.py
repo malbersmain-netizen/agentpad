@@ -245,8 +245,6 @@ _docs = sorted(_glob.glob(os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "*.md")))
 _bad = []
 for _f in _docs:
-    if os.path.basename(_f).startswith("docs-archive"):
-        continue                          # superseded by design, banner says do not build
     for _m in _re.finditer(r"col (\d+),? row (\d+)", open(_f).read()):
         _h = (int(_m.group(1)), int(_m.group(2)))
         if not (1 <= _h[0] <= COLS and 1 <= _h[1] <= ROWS):
@@ -318,13 +316,7 @@ print(f"\nrow plan: {LED_ROWS[0]} LED anode+GPIO | {LED_ROWS[1]} LED cathode (le
       f"{GND_ROWS[0]} GND bus | {BTN_ROWS[0]}+{BTN_ROWS[1]} button legs | "
       f"{ANS_ROWS[0]}+{ANS_ROWS[1]} answer legs | {GND_ROWS[1]} GND bus")
 print(f"spare rows on the control surface: {sorted(set(range(1, ROWS+1)) - used)}")
-if FACTORY_CORNER_HOLES:
-    print("mounting: use the board's FOUR FACTORY CORNER HOLES — no drilling. "
-          "(fallback if yours has none: " + ", ".join(f"col {c} row {r}" for c, r in mounts)
-          + f" drilled {MOUNT_DRILL}mm)")
-else:
-    print(f"mount holes ({MOUNT_DRILL}mm drill): "
-          + ", ".join(f"col {c} row {r}" for c, r in mounts))
+print("mounting: the board has four factory corner holes; it is not being mounted.")
 print(f"ONE board. ESP32 socketed at cols {HDR_COLS[0]}-{HDR_COLS[1]}, rows {HDR_ROWS[0]}-{HDR_ROWS[1]}. "
       f"No 5V on the control surface.")
 for n in notes: print(f"note: {n}")

@@ -1,10 +1,10 @@
 # Agent Pad — complete build manual
 
-Takes you from loose parts to a working, mounted device. Read section 4 before you touch
-the iron; everything else follows in order.
+Takes you from loose parts to a working device. Read section 4 before you touch the iron;
+everything else follows in order.
 
-**Scope:** 1 LCD + 4 LEDs + 7 buttons on **one 30 × 42 double-sided PCB**, screwed to a wooden
-backing. ~149 solder joints, 4–6 hours.
+**Scope:** 1 LCD + 4 LEDs + 7 buttons on **one 30 × 42 double-sided PCB**. ~149 solder
+joints, 4–6 hours. It stays a bare board — no case, no backing plate.
 
 **Done means:** press a color button → a tinted `claude` window opens and focuses; its LED
 heartbeats; ask it something needing permission → LED blinks fast → press `yes` → the
@@ -37,8 +37,8 @@ more, but sacrifice one for the soldering practice in `SOLDERING.md`.
 
 ### Bought separately
 **One 30 × 42 hole double-sided PCB, 120 × 80mm** — silkscreen reads `12*8CM 2.54MM`.
-This is what everything is built on. It arrives with **four factory corner mounting holes**,
-so no drilling is needed.
+This is what everything is built on. It arrives with four factory corner holes, so no drilling
+is needed if it ever does get mounted.
 
 ### Buy — tools
 | Item | Notes |
@@ -68,9 +68,6 @@ so no drilling is needed.
 > three or four pieces laid end to end — which is fine, since you solder to every second
 > or third pad anyway.
 | Heat-shrink, assorted | |
-| Wood backing plate | ~150 × 200mm, any offcut |
-| **M3 × 12mm screws** + nylon washers + 6mm standoffs | Mounting the board through its factory corner holes — measure one first |
-| M3 × 16mm screws + 12–15mm standoffs | Mounting the LCD by its own 4 holes |
 | 4 × F-M jumper wires | LCD to the board's LCD port — never soldered. The kit's own are fine |
 
 ### Nice to have
@@ -79,12 +76,11 @@ tack the first pin) · a second ESP32 if you ever see one in stock.
 
 ---
 
-## 2. The case — deferred
+## 2. No case, no backing plate
 
-**The demo does not depend on a case.** The deliverable is the soldered board plus the LCD,
-screwed to a wooden plate. That is a solid object you can hand to someone, and it needs no
-printer. If a case ever happens, generate it *from* `tools/layout.py` — the part positions
-there are already measured — rather than building the board to fit a case.
+The deliverable is the bare board plus the LCD on its jumpers. That is a solid object you
+can hand to someone. If a case ever happens, generate it *from* `tools/layout.py` — the
+part positions there are measured — rather than building the board to fit a case.
 
 ---
 
@@ -93,7 +89,7 @@ there are already measured — rather than building the board to fit a case.
 One **30 × 42 hole double-sided board, 120 × 80mm**, oriented **42 columns across, 30 rows
 down**. Grid reference: col 1, row 1 = top-left. The silkscreen letters along the bottom
 edge run A–Z then A–P — that is your 42 columns — and there are four factory-drilled
-mounting holes at the corners.
+factory-drilled holes at the corners.
 
 Everything lives on it — the control surface in **columns 1–28**, the ESP32's socket in
 **columns 30–40**. There is no second board and no inter-board loom.
@@ -226,38 +222,6 @@ That is **7 wires onto the 3V3 column (col 30, the near one) and 9 onto the VIN 
 | LCD port | 12 | a 4-way socket + 4 wires |
 | **total** | **~149** | at 1–2 min each including inspection, that is **4–6 hours** |
 <!-- /GEN:joints -->
-
-### Mounting to wood
-
-<!-- GEN:mounts -->
-**Your board already has four mounting holes**, drilled at the factory in the corners, outside the pad grid. Use them. **Do not drill anything.**
-
-| | |
-|---|---|
-| Board | 120 × 80 mm — silkscreen reads `12*8CM 2.54MM` |
-| Grid | 30 rows × 42 columns, 2.54mm pitch |
-| Margin outside the grid | 7.9 mm at the sides, 3.2 mm top and bottom |
-| Corner holes | factory-drilled, typically 3.0–3.2mm → **M3** |
-
-> Measure one corner hole before buying screws. 3.0–3.2mm takes M3; if yours are smaller, M2.5 or M2 with a washer will still hold a board this light.
-<!-- /GEN:mounts -->
-
-Every solder joint is on the underside, so **nothing sits flat on the wood** — each piece
-stands off on spacers.
-
-| Item | Fixing | Spacer |
-|---|---|---|
-| The board | M3 × 12mm + nylon washer, through the four factory corner holes | **6mm** |
-| LCD | its own 4 × M3 holes — no drilling | **12–15mm** (its I²C backpack sticks ~10mm off the back) |
-| ESP32 | none — it plugs into the socket | — |
-
-- **Pilot-drill the wood at 2mm** for M3, or it splits.
-- **Nylon washer under every screw head** — perfboard cracks if you overtighten onto bare FR4.
-- Leave the bottom-right of the board clear of clips and cable ties: that is where the USB
-  cable comes out, 8mm above the surface.
-
-Lay it out the way it reads: **LCD at the top, the board below it**, with the ESP32's USB
-end facing you so the cable exits toward the front and can be strain-relieved to the wood.
 
 ---
 
@@ -523,7 +487,7 @@ From a serial monitor at 115200, line ending **Newline**:
 | `D0 hello` | top LCD row changes |
 | press each button | `B 0` … `B 6` |
 
-Only once all of that passes, screw the board and the LCD to the wood — then **run the whole test again**. Assembly is when wires get pinched and joints get stressed.
+Once all of that passes the hardware is finished. Re-run it after any handling — moving the board is when wires get pinched and joints get stressed.
 
 ✅ **Test:** every line above, before and after mounting.
 <!-- /GEN:steps -->

@@ -96,13 +96,11 @@ page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <nav><h2>Read in this order</h2>{''.join(navdoc)}
 <h2>Figures</h2>
 <a href="schematics.html">Schematics &amp; board layout</a>
-<a href="build-plan.html">Tickable checklist</a>
 </nav>
 <main>
 <h1>Agent Pad — build documentation</h1>
 <p style="color:var(--mut);margin-top:-.2em">Everything in reading order. Figures open separately:</p>
-<p><a class="figlink" href="schematics.html">Schematics &amp; board layout</a>
-<a class="figlink" href="build-plan.html">Tickable build checklist</a></p>
+<p><a class="figlink" href="schematics.html">Schematics &amp; board layout</a></p>
 {''.join(sections)}
 </main>
 <a class="top" href="#">↑ top</a>

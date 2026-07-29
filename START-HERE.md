@@ -204,7 +204,7 @@ components *and* their wires, so the step ends in a test that actually runs.
 | **Step 4** | colour buttons, second bus, the link, 4 wires | `firmware/btntest` prints 0–3 |
 | **Step 5** | AA / no / yes, third bus, 3 wires | `btntest` prints 0–6 |
 | **Step 6** | the LCD port | `firmware/lcdtest` finds `0x27` |
-| **Step 7** | real firmware, then screw it to the wood | the whole thing works |
+| **Step 7** | real firmware | the whole thing works |
 
 **Every step ends in a test that exercises what you just built.** Not a beep — a program
 that lights the LEDs or prints the button numbers. If a step fails, exactly one thing has

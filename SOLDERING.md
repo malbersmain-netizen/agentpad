@@ -186,5 +186,4 @@ Open the figures alongside it:
 
 ```bash
 mise exec -- python tools/schematic.py        # schematic + a figure per solder step
-mise exec -- python tools/view-plan.py        # tickable checklist
 ```

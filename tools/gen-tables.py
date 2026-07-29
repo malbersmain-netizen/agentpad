@@ -82,34 +82,6 @@ def wiretable():
     return "\n".join(out)
 
 
-def mounts():
-    m = mount_holes()
-    if FACTORY_CORNER_HOLES:
-        out = [f"**Your board already has four mounting holes**, drilled at the factory in the "
-               f"corners, outside the pad grid. Use them. **Do not drill anything.**", "",
-               "| | |", "|---|---|",
-               f"| Board | {BOARD_W:.0f} × {BOARD_H:.0f} mm — silkscreen reads `12*8CM 2.54MM` |",
-               f"| Grid | {ROWS} rows × {COLS} columns, {P}mm pitch |",
-               f"| Margin outside the grid | {BX:.1f} mm at the sides, {BY:.1f} mm top and bottom |",
-               f"| Corner holes | factory-drilled, typically 3.0–3.2mm → **M3** |",
-               "",
-               "> Measure one corner hole before buying screws. 3.0–3.2mm takes M3; if yours are "
-               "smaller, M2.5 or M2 with a washer will still hold a board this light."]
-    else:
-        out = [f"This board has no factory holes, so drill four **{MOUNT_DRILL}mm** holes (M2 "
-               f"clearance) **on existing pads** in free positions — computed and "
-               f"clearance-checked by `verify-layout.py`:", "",
-               "| # | Hole | From left edge | From top edge |", "|---:|---|---|---|"]
-        for i, (c, r) in enumerate(m, 1):
-            x, y = xy(c, r)
-            out.append(f"| {i} | **col {c}, row {r}** | {x:.1f} mm | {y:.1f} mm |")
-        out += ["", f"> Drill on a pad, not in the margin: the grid spans {(COLS-1)*P:.1f} × "
-                    f"{(ROWS-1)*P:.1f} mm and the margin is only {BX:.1f} / {BY:.1f} mm. A "
-                    f"{MOUNT_DRILL}mm bit cuts {MOUNT_DRILL/2:.2f}mm of radius, under the "
-                    f"{P/2:.2f}mm half-pitch, so only the pad you drill is lost."]
-    return "\n".join(out)
-
-
 def joints():
     bus_len   = BUS_COLS[1] - BUS_COLS[0] + 1
     bus       = len(GND_ROWS) * (bus_len // 2) + 4          # every 2nd pad, + the link
@@ -425,13 +397,13 @@ def steps():
     o.append("| `D0 hello` | top LCD row changes |")
     o.append(f"| press each button | `B 0` … `B {len(LED_NAME)+len(ANS_INFO)-1}` |")
     o.append("")
-    o.append("Only once all of that passes, screw the board and the LCD to the wood — then "
-             "**run the whole test again**. Assembly is when wires get pinched and joints get stressed.")
+    o.append("Once all of that passes the hardware is finished. Re-run it after any handling — "
+             "moving the board is when wires get pinched and joints get stressed.")
     test("every line above, before and after mounting.")
     return "\n".join(o).rstrip()
 
 
-SECTIONS = {"rowplan": rowplan, "wiretable": wiretable, "mounts": mounts,
+SECTIONS = {"rowplan": rowplan, "wiretable": wiretable,
             "joints": joints, "preflight": preflight, "steps": steps}
 
 doc = open(DOC).read()
