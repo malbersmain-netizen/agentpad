@@ -71,7 +71,12 @@ void readSerial() {
   while (Serial.available()) {
     char c = Serial.read();
     if (c == '\n')      { handle(buf); buf = ""; }
-    else if (c != '\r') { buf += c; }
+    else if (c != '\r') {
+      // Cap the line. Without this, serial noise with no newline in it grows `buf`
+      // until the heap runs out. The longest legal command is "D0 " + 16 chars.
+      if (buf.length() < 64) buf += c;
+      else                   buf = "";      // overlong: drop it and resynchronise
+    }
   }
 }
 
@@ -111,7 +116,9 @@ void updateLeds() {
       case 2: on = true;                   break;   // working
       case 3: on = (t % 400) < 200;        break;   // BLOCKED - blinking
       case 4: on = true;
-              if (t > doneUntil[i]) state[i] = 1;
+              // (long)(t - doneUntil) is wrap-safe; `t > doneUntil` is not -- millis()
+              // rolls over every ~49 days and would end the done flash instantly.
+              if ((long)(t - doneUntil[i]) >= 0) state[i] = 1;
               break;                                // done
     }
     digitalWrite(LED[i], on ? HIGH : LOW);

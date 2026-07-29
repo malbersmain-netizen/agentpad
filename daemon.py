@@ -63,6 +63,7 @@ info      = {}             # pane id -> {"state":..., "since":..., "prev":...}
 ctx_pct   = {}             # pane id -> context-window usage %
 focus     = 0
 gauge_shown = None         # last value sent to the bar graph
+answered_at = {}           # pane -> time we last sent a keystroke (double-fire guard)
 
 def log(msg):
     try:
@@ -105,9 +106,11 @@ def sync_slots():
     windows already exist and we never re-spawn them)."""
     if tmux("has-session", "-t", SESSION).returncode != 0:
         return
-    out = tmux("list-windows", "-t", SESSION, "-F", "#{window_name}\t#{pane_id}").stdout
+    r = tmux("list-windows", "-t", SESSION, "-F", "#{window_name}\t#{pane_id}")
+    if r.returncode != 0:
+        return                         # tmux hiccup: keep what we have, never clear
     live = {}
-    for line in out.splitlines():
+    for line in r.stdout.splitlines():
         parts = line.split("\t")
         if len(parts) != 2:
             continue
@@ -121,6 +124,18 @@ def sync_slots():
             info.pop(old, None)
         slots[i] = pane
         pane_slot[pane] = i
+    # Close an agent window and its slot used to keep the dead pane forever: the LED
+    # stayed lit on a stale state, watch_prompts kept capture-pane'ing a pane that no
+    # longer exists, and respond() could aim a keystroke at it. Drop it and dark the LED.
+    for i in range(4):
+        if i not in live and slots[i]:
+            dead = slots[i]
+            pane_slot.pop(dead, None)
+            info.pop(dead, None)
+            ctx_pct.pop(dead, None)
+            slots[i] = None
+            send(f"L {i} none")
+            log(f"agent {i} window closed -- slot released (was {dead})")
 
 def state_of(i):
     p = slots[i]
@@ -238,6 +253,11 @@ def respond(keystroke):
         return
     r = tmux("send-keys", "-t", p, keystroke, "Enter")
     # Clear immediately so a second press can't re-fire into the now-normal input box.
+    # The screen does not clear instantly though, so also suppress screen-detection on
+    # this pane briefly -- otherwise the next 200ms poll still sees the old menu, marks
+    # it blocked again, and a double press types a second keystroke into whatever has
+    # replaced the prompt.
+    answered_at[p] = time.time()
     set_state(p, i, "working")
     refresh()
     log(f"  sent {keystroke!r} to {p} rc={r.returncode} err={r.stderr.strip()!r}")
@@ -253,10 +273,15 @@ def tail_events():
     with open(EVENTS, "r") as f:
         f.seek(0, 2)
         while True:
+            # Remember where we were BEFORE reading. A text-mode file cannot do
+            # cur-relative seeks -- f.seek(-len(line), SEEK_CUR) raises
+            # UnsupportedOperation -- and len() counts characters, not bytes, so even
+            # a binary handle would misalign on non-ASCII. tell()/seek() is the only
+            # correct way to rewind past a partial write.
+            pos  = f.tell()
             line = f.readline()
             if not line or not line.endswith("\n"):
-                if line:                     # partial write: rewind and re-read whole
-                    f.seek(-len(line), os.SEEK_CUR)
+                f.seek(pos)                  # partial write: re-read it whole next time
                 time.sleep(0.02)
                 continue
             try:
@@ -318,6 +343,8 @@ def watch_prompts():
         for i, p in enumerate(list(slots)):
             if not p:
                 continue
+            if time.time() - answered_at.get(p, 0) < 1.0:
+                continue                  # just answered; let the screen catch up
             cur = info.get(p, {}).get("state")
             vis = prompt_visible(p)
             if vis and cur != "blocked":
@@ -353,10 +380,10 @@ def tail_context():
     with open(CONTEXT, "r") as f:
         f.seek(0, 2)
         while True:
+            pos  = f.tell()                  # see tail_events: no cur-relative seeks
             line = f.readline()
             if not line or not line.endswith("\n"):
-                if line:
-                    f.seek(-len(line), os.SEEK_CUR)
+                f.seek(pos)
                 time.sleep(0.1)
                 continue
             try:
@@ -374,6 +401,7 @@ def tick():
     global focus
     while True:
         time.sleep(1)
+        sync_slots()          # notice windows the user closed by hand
         i = active_slot()
         if i is not None and i != focus:
             focus = i
@@ -399,7 +427,9 @@ def recover_state():
     seamless. `blocked` is deliberately NOT restored: a prompt from a previous run is
     long gone, and reviving it would open the interlock with nothing on screen."""
     try:
-        lines = open(EVENTS).read().splitlines()
+        # Only the tail matters -- this file is append-only across every session on the
+        # machine and grows without bound, and the last state per pane is all we want.
+        lines = open(EVENTS).read().splitlines()[-500:]
     except FileNotFoundError:
         return
     for line in lines:
