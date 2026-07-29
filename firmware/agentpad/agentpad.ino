@@ -135,6 +135,13 @@ void readButtons() {
       if (v == LOW) {
         Serial.print("B ");
         Serial.println(i);    // 0-3 select, 4 approve, 5 deny, 6 always-allow
+      } else {
+        // Release. The firmware always DETECTED this edge -- it updated lastBtn above --
+        // it just never reported it, which is why sustained notes looked impossible.
+        // A separate prefix keeps the Agent Pad daemon unaffected: it skips any line
+        // that does not start with "B ", so this is additive, not a protocol change.
+        Serial.print("R ");
+        Serial.println(i);
       }
     }
   }
