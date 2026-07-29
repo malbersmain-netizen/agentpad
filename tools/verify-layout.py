@@ -161,9 +161,10 @@ if ESP_USB_END == "bottom":
 else:
     fails.append(f"ESP_USB_END={ESP_USB_END!r}: only 'bottom' is designed for — pointing the "
                  f"USB at the top puts the cable over the LCD port at row {LCD_PORT_ROW}")
-if HDR_SIDE_COL["3V3"] != HDR_COLS[0]:
-    fails.append("with USB at the bottom a DevKit V1 has 3V3 on the left, so the 3V3 column "
-                 f"must be board col {HDR_COLS[0]}")
+if HDR_SIDE_COL["VIN"] != HDR_COLS[0]:
+    fails.append(f"MEASURED on the real module: with USB at the bottom the VIN column is the "
+                 f"one nearer the controls, board col {HDR_COLS[0]}. Do not swap these from a "
+                 f"datasheet -- this was wrong once and put every wire on the wrong column.")
 # pins that must never be used
 _BANNED = {"RX0": "USB serial — breaks uploads and the daemon",
            "TX0": "USB serial — breaks uploads and the daemon",

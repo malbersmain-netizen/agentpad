@@ -183,27 +183,27 @@ socket pins, so the plug and cable pass clear over the board. What it does mean 
 
 | # | Signal | From — component hole | To — socket hole | ESP32 pin | Fitted in |
 |---:|---|---|---|---|---|
-| 1 | LED 1 red | col 4, row 2 | **col 40, row 20** | D13 (VIN 3) | step 3 |
-| 2 | LED 2 green | col 11, row 2 | **col 40, row 18** | D14 (VIN 5) | step 3 |
-| 3 | LED 3 blue | col 18, row 2 | **col 40, row 17** | D27 (VIN 6) | step 3 |
-| 4 | LED 4 yellow | col 25, row 2 | **col 40, row 16** | D26 (VIN 7) | step 3 |
-| 5 | button 1 red | col 3, row 11 | **col 40, row 13** | D32 (VIN 10) | step 4 |
-| 6 | button 2 green | col 10, row 11 | **col 40, row 14** | D33 (VIN 9) | step 4 |
-| 7 | button 3 blue | col 17, row 11 | **col 40, row 15** | D25 (VIN 8) | step 4 |
-| 8 | button 4 yellow | col 24, row 11 | **col 30, row 18** | D4 (3V3 5) | step 4 |
-| 9 | AA (always allow) | col 4, row 19 | **col 30, row 8** | D23 (3V3 15) | step 5 |
-| 10 | no (deny) | col 13, row 19 | **col 30, row 14** | D18 (3V3 9) | step 5 |
-| 11 | yes (approve) | col 22, row 19 | **col 30, row 13** | D19 (3V3 10) | step 5 |
-| 12 | ground | col 28, row 8 | **col 30, row 21** | GND (3V3 2) | step 2 |
+| 1 | LED 1 red | col 4, row 2 | **col 30, row 20** | D13 (VIN 3) | step 3 |
+| 2 | LED 2 green | col 11, row 2 | **col 30, row 18** | D14 (VIN 5) | step 3 |
+| 3 | LED 3 blue | col 18, row 2 | **col 30, row 17** | D27 (VIN 6) | step 3 |
+| 4 | LED 4 yellow | col 25, row 2 | **col 30, row 16** | D26 (VIN 7) | step 3 |
+| 5 | button 1 red | col 3, row 11 | **col 30, row 13** | D32 (VIN 10) | step 4 |
+| 6 | button 2 green | col 10, row 11 | **col 30, row 14** | D33 (VIN 9) | step 4 |
+| 7 | button 3 blue | col 17, row 11 | **col 30, row 15** | D25 (VIN 8) | step 4 |
+| 8 | button 4 yellow | col 24, row 11 | **col 40, row 18** | D4 (3V3 5) | step 4 |
+| 9 | AA (always allow) | col 4, row 19 | **col 40, row 8** | D23 (3V3 15) | step 5 |
+| 10 | no (deny) | col 13, row 19 | **col 40, row 14** | D18 (3V3 9) | step 5 |
+| 11 | yes (approve) | col 22, row 19 | **col 40, row 13** | D19 (3V3 10) | step 5 |
+| 12 | ground | col 28, row 8 | **col 40, row 21** | GND (3V3 2) | step 2 |
 
 Plus the **LCD port** — a 4-way female socket soldered into the board in step 6, each position wired to a socket pad. The LCD itself reaches them with 4 F-M jumpers and is **never soldered**:
 
 | LCD pin | Port socket at | Its wire runs to | ESP32 pin |
 |---|---|---|---|
-| GND | col 30, row 2 | col 40, row 21 | **GND** |
-| VCC | col 31, row 2 | col 40, row 22 | **VIN** |
-| SDA | col 32, row 2 | col 30, row 12 | **D21** |
-| SCL | col 33, row 2 | col 30, row 9 | **D22** |
+| GND | col 30, row 2 | col 30, row 21 | **GND** |
+| VCC | col 31, row 2 | col 30, row 22 | **VIN** |
+| SDA | col 32, row 2 | col 40, row 12 | **D21** |
+| SCL | col 33, row 2 | col 40, row 9 | **D22** |
 
 That is **7 wires onto the 3V3 column (col 30, the near one) and 9 onto the VIN column (col 40)** — 16 of the socket's 30 pads take a wire.
 
@@ -406,8 +406,8 @@ Two 15-way strips at **columns 30 and 40, rows 8 → 22**. This goes first becau
 
 | Column | Leave a 2mm stub on these rows |
 |---|---|
-| **col 30** | 8, 9, 12, 13, 14, 18, 21 |
-| **col 40** | 13, 14, 15, 16, 17, 18, 20, 21, 22 |
+| **col 30** | 13, 14, 15, 16, 17, 18, 20, 21, 22 |
+| **col 40** | 8, 9, 12, 13, 14, 18, 21 |
 
 ✅ **Test:** beep from each socket pad on the underside to the matching ESP32 pin (module seated), then beep each pad to its neighbour — no neighbour may beep. Then plug in USB: `ls /dev/cu.*` shows a new port, and `firmware/blink` uploads and blinks.
 
@@ -421,7 +421,7 @@ Row **8** is the only bus row with nothing else in it, so it can go on now. Rows
 2. Lay it on the underside along row **8**, columns 1 → 28, **beside the pad centres, never across them**. A wire lying over a hole blocks the lead you push in later, and the joint still looks perfect from underneath.
 3. Tack one end. Check it is straight and clear of every hole. Then solder every 2nd–3rd pad.
 4. Leave ~10mm of tail at column 1 — the other two buses join it there.
-5. Run wire **12**: from **col 28, row 8** to the socket's **GND** pad at **col 30, row 21**. This is the board's only ground wire.
+5. Run wire **12**: from **col 28, row 8** to the socket's **GND** pad at **col 40, row 21**. This is the board's only ground wire.
 
 ✅ **Test:** every pad in row 8 beeps to every other, and to the socket's GND pad. No other row beeps to it. Push a spare lead down through a row-8 hole from the top — it must reach the copper, not stop on the bus wire.
 
@@ -431,10 +431,10 @@ Do **LED 1 completely, including its wire and the test**, before starting LED 2.
 
 | LED | long leg (+) | short leg (−) | 220Ω top | 220Ω bottom | wire # → socket |
 |---|---|---|---|---|---|
-| 1 red | col 4, row 2 | col 4, row 3 | col 4, row 4 | col 4, row 8 | **1** → col 40, row 20 (D13) |
-| 2 green | col 11, row 2 | col 11, row 3 | col 11, row 4 | col 11, row 8 | **2** → col 40, row 18 (D14) |
-| 3 blue | col 18, row 2 | col 18, row 3 | col 18, row 4 | col 18, row 8 | **3** → col 40, row 17 (D27) |
-| 4 yellow | col 25, row 2 | col 25, row 3 | col 25, row 4 | col 25, row 8 | **4** → col 40, row 16 (D26) |
+| 1 red | col 4, row 2 | col 4, row 3 | col 4, row 4 | col 4, row 8 | **1** → col 30, row 20 (D13) |
+| 2 green | col 11, row 2 | col 11, row 3 | col 11, row 4 | col 11, row 8 | **2** → col 30, row 18 (D14) |
+| 3 blue | col 18, row 2 | col 18, row 3 | col 18, row 4 | col 18, row 8 | **3** → col 30, row 17 (D27) |
+| 4 yellow | col 25, row 2 | col 25, row 3 | col 25, row 4 | col 25, row 8 | **4** → col 30, row 16 (D26) |
 
 1. **Resistor first** — it is the lower part. Legs into rows 4 and 8 of the same column; bend them so the 6.3mm body sits centred in the 10.2mm span. Solder both, trim. **Resistors are not polarised** — either way round works — but fit all four the same way, gold band at the bottom. Four identical-reading resistors can be checked at a glance; four in random orientations is how a stray 2.2kΩ survives inspection.
 2. **LED next** — long leg into row 2, short leg into row 3. Solder the **anode only**. Leave the cathode leg full length.
@@ -450,10 +450,10 @@ Do **LED 1 completely, including its wire and the test**, before starting LED 2.
 
 | Button | signal leg (takes the wire) | anchor leg | **CLIP this one** | ground leg (on the bus) | wire # |
 |---|---|---|---|---|---|
-| 1 red | col 3, row 11 | col 5, row 11 | ~~col 3, row 16~~ | col 5, row 16 | **5** → col 40, row 13 (D32) |
-| 2 green | col 10, row 11 | col 12, row 11 | ~~col 10, row 16~~ | col 12, row 16 | **6** → col 40, row 14 (D33) |
-| 3 blue | col 17, row 11 | col 19, row 11 | ~~col 17, row 16~~ | col 19, row 16 | **7** → col 40, row 15 (D25) |
-| 4 yellow | col 24, row 11 | col 26, row 11 | ~~col 24, row 16~~ | col 26, row 16 | **8** → col 30, row 18 (D4) |
+| 1 red | col 3, row 11 | col 5, row 11 | ~~col 3, row 16~~ | col 5, row 16 | **5** → col 30, row 13 (D32) |
+| 2 green | col 10, row 11 | col 12, row 11 | ~~col 10, row 16~~ | col 12, row 16 | **6** → col 30, row 14 (D33) |
+| 3 blue | col 17, row 11 | col 19, row 11 | ~~col 17, row 16~~ | col 19, row 16 | **7** → col 30, row 15 (D25) |
+| 4 yellow | col 24, row 11 | col 26, row 11 | ~~col 24, row 16~~ | col 26, row 16 | **8** → col 40, row 18 (D4) |
 
 > **Clip one leg off every switch before you seat it** — the one at **column c, row 16**, directly below the signal leg. Snip it flush with the body so it cannot reach the board. Solder the other three.
 
@@ -476,9 +476,9 @@ Do **LED 1 completely, including its wire and the test**, before starting LED 2.
 
 | Button | signal leg | anchor leg | **CLIP this one** | ground leg | wire # |
 |---|---|---|---|---|---|
-| AA (always allow) | col 4, row 19 | col 6, row 19 | ~~col 4, row 21~~ | col 6, row 21 | **9** → col 30, row 8 (D23) |
-| no (deny) | col 13, row 19 | col 15, row 19 | ~~col 13, row 21~~ | col 15, row 21 | **10** → col 30, row 14 (D18) |
-| yes (approve) | col 22, row 19 | col 24, row 19 | ~~col 22, row 21~~ | col 24, row 21 | **11** → col 30, row 13 (D19) |
+| AA (always allow) | col 4, row 19 | col 6, row 19 | ~~col 4, row 21~~ | col 6, row 21 | **9** → col 40, row 8 (D23) |
+| no (deny) | col 13, row 19 | col 15, row 19 | ~~col 13, row 21~~ | col 15, row 21 | **10** → col 40, row 14 (D18) |
+| yes (approve) | col 22, row 19 | col 24, row 19 | ~~col 22, row 21~~ | col 24, row 21 | **11** → col 40, row 13 (D19) |
 
 Identical sequence to step 4 — **including clipping one leg off each switch first**. These are square, and because one leg is clipped **it does not matter which way round they go** — the wire and the clip are defined by position, not by the switch's internals. Solder the row-19 legs, leave the row-21 leg long and bent, bus over it, extend the column-1 link from row 16 to row 21, and run the three wires.
 
@@ -492,10 +492,10 @@ The LCD is never soldered, so it needs somewhere to plug into. Once the ESP32 is
 
 | LCD pin | Port socket at | Its wire runs to | ESP32 pin |
 |---|---|---|---|
-| GND | col 30, row 2 | col 40, row 21 | **GND** |
-| VCC | col 31, row 2 | col 40, row 22 | **VIN** |
-| SDA | col 32, row 2 | col 30, row 12 | **D21** |
-| SCL | col 33, row 2 | col 30, row 9 | **D22** |
+| GND | col 30, row 2 | col 30, row 21 | **GND** |
+| VCC | col 31, row 2 | col 30, row 22 | **VIN** |
+| SDA | col 32, row 2 | col 40, row 12 | **D21** |
+| SCL | col 33, row 2 | col 40, row 9 | **D22** |
 
 1. Cut **4 positions of the stacking header** — the same strip the ESP32 sockets came from; 30 of its 40 went there, so there is plenty left. Seat it at cols 30–33, row 2, socket side UP.
 2. Tack one pin, check it stands square, solder the rest.

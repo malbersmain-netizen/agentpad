@@ -77,11 +77,14 @@ HDR_ROWS = (8, 22)          # 15 sockets running down
 #     which mounts above the board. That fixes everything else:
 #       - pin position 1 (VIN, 3V3) is at the BOTTOM of the socket, board row 22
 #       - position 15 (EN, D23)    is at the TOP,    board row 8
-#       - viewed from the top with USB down, a DevKit V1 has 3V3 on the LEFT and VIN on
-#         the RIGHT, so the 3V3 column is board col 30 and the VIN column is col 40
+#       - CONFIRMED ON THE REAL MODULE, seated and working: the VIN column is the one
+#         NEARER the controls (board col 30) and the 3V3 column is the far one (col 40).
+#         An earlier draft had these swapped -- it came from a generic "DevKit V1" pinout
+#         I looked up rather than from this board, and the figures showed every wire on
+#         the wrong column until the LCD was wired and tested.
 #
 ESP_USB_END   = "bottom"
-HDR_SIDE_COL  = {"3V3": HDR_COLS[0], "VIN": HDR_COLS[1]}
+HDR_SIDE_COL  = {"VIN": HDR_COLS[0], "3V3": HDR_COLS[1]}
 
 
 def socket_hole(side, pos):

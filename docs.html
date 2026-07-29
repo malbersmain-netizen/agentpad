@@ -391,7 +391,7 @@ those three.</p>
 <p>Next: <a href="#connections-md"><code>CONNECTIONS.md</code></a>.</p></section><section class="docwrap" id="wiring-md"><h1>Wiring reference</h1>
 <p><strong>Generated from <code>tools/layout.py</code> — do not edit.</strong> Re-run <code>mise exec -- python tools/gen-wiring.py</code> after any layout change.</p>
 <p>Board: 30 rows × 42 columns, 120 × 80 mm. Grid reference col 1, row 1 = top-left, viewed from the <strong>component side</strong>.</p>
-<p>ESP32 seated with <strong>USB pointing at the bottom edge</strong>. Pin positions are counted <strong>from the USB end</strong>, so position 1 is the bottom socket (row 22) and position 15 is the top (row 8). The <strong>3V3 column is board col 30</strong> (nearest the controls); the <strong>VIN column is col 40</strong>.</p>
+<p>ESP32 seated with <strong>USB pointing at the bottom edge</strong>. Pin positions are counted <strong>from the USB end</strong>, so position 1 is the bottom socket (row 22) and position 15 is the top (row 8). The <strong>3V3 column is board col 40</strong> (nearest the controls); the <strong>VIN column is col 30</strong>.</p>
 <hr />
 <h2 id="wiring-md--a-every-wire">A. Every wire</h2>
 <p><strong>12 soldered signal/ground wires + 4 LCD-port wires = 16 total.</strong></p>
@@ -413,7 +413,7 @@ those three.</p>
 <td>LED 1 red</td>
 <td>LED 1 (red) anode, long leg</td>
 <td>col 4, row 2</td>
-<td><strong>col 40, row 20</strong></td>
+<td><strong>col 30, row 20</strong></td>
 <td><code>D13</code></td>
 <td>VIN side, pos 3</td>
 </tr>
@@ -422,7 +422,7 @@ those three.</p>
 <td>LED 2 green</td>
 <td>LED 2 (green) anode, long leg</td>
 <td>col 11, row 2</td>
-<td><strong>col 40, row 18</strong></td>
+<td><strong>col 30, row 18</strong></td>
 <td><code>D14</code></td>
 <td>VIN side, pos 5</td>
 </tr>
@@ -431,7 +431,7 @@ those three.</p>
 <td>LED 3 blue</td>
 <td>LED 3 (blue) anode, long leg</td>
 <td>col 18, row 2</td>
-<td><strong>col 40, row 17</strong></td>
+<td><strong>col 30, row 17</strong></td>
 <td><code>D27</code></td>
 <td>VIN side, pos 6</td>
 </tr>
@@ -440,7 +440,7 @@ those three.</p>
 <td>LED 4 yellow</td>
 <td>LED 4 (yellow) anode, long leg</td>
 <td>col 25, row 2</td>
-<td><strong>col 40, row 16</strong></td>
+<td><strong>col 30, row 16</strong></td>
 <td><code>D26</code></td>
 <td>VIN side, pos 7</td>
 </tr>
@@ -449,7 +449,7 @@ those three.</p>
 <td>button 1 red</td>
 <td>Button 1 (red) signal leg</td>
 <td>col 3, row 11</td>
-<td><strong>col 40, row 13</strong></td>
+<td><strong>col 30, row 13</strong></td>
 <td><code>D32</code></td>
 <td>VIN side, pos 10</td>
 </tr>
@@ -458,7 +458,7 @@ those three.</p>
 <td>button 2 green</td>
 <td>Button 2 (green) signal leg</td>
 <td>col 10, row 11</td>
-<td><strong>col 40, row 14</strong></td>
+<td><strong>col 30, row 14</strong></td>
 <td><code>D33</code></td>
 <td>VIN side, pos 9</td>
 </tr>
@@ -467,7 +467,7 @@ those three.</p>
 <td>button 3 blue</td>
 <td>Button 3 (blue) signal leg</td>
 <td>col 17, row 11</td>
-<td><strong>col 40, row 15</strong></td>
+<td><strong>col 30, row 15</strong></td>
 <td><code>D25</code></td>
 <td>VIN side, pos 8</td>
 </tr>
@@ -476,7 +476,7 @@ those three.</p>
 <td>button 4 yellow</td>
 <td>Button 4 (yellow) signal leg</td>
 <td>col 24, row 11</td>
-<td><strong>col 30, row 18</strong></td>
+<td><strong>col 40, row 18</strong></td>
 <td><code>D4</code></td>
 <td>3V3 side, pos 5</td>
 </tr>
@@ -485,7 +485,7 @@ those three.</p>
 <td>AA (always allow)</td>
 <td>'AA' switch signal leg</td>
 <td>col 4, row 19</td>
-<td><strong>col 30, row 8</strong></td>
+<td><strong>col 40, row 8</strong></td>
 <td><code>D23</code></td>
 <td>3V3 side, pos 15</td>
 </tr>
@@ -494,7 +494,7 @@ those three.</p>
 <td>no (deny)</td>
 <td>'no' switch signal leg</td>
 <td>col 13, row 19</td>
-<td><strong>col 30, row 14</strong></td>
+<td><strong>col 40, row 14</strong></td>
 <td><code>D18</code></td>
 <td>3V3 side, pos 9</td>
 </tr>
@@ -503,7 +503,7 @@ those three.</p>
 <td>yes (approve)</td>
 <td>'yes' switch signal leg</td>
 <td>col 22, row 19</td>
-<td><strong>col 30, row 13</strong></td>
+<td><strong>col 40, row 13</strong></td>
 <td><code>D19</code></td>
 <td>3V3 side, pos 10</td>
 </tr>
@@ -512,7 +512,7 @@ those three.</p>
 <td>ground</td>
 <td>GND bus (row 8)</td>
 <td>col 28, row 8</td>
-<td><strong>col 30, row 21</strong></td>
+<td><strong>col 40, row 21</strong></td>
 <td><code>GND</code></td>
 <td>3V3 side, pos 2</td>
 </tr>
@@ -521,7 +521,7 @@ those three.</p>
 <td>LCD GND</td>
 <td>LCD port socket</td>
 <td>col 30, row 2</td>
-<td><strong>col 40, row 21</strong></td>
+<td><strong>col 30, row 21</strong></td>
 <td><code>GND</code></td>
 <td>VIN side, pos 2</td>
 </tr>
@@ -530,7 +530,7 @@ those three.</p>
 <td>LCD VCC</td>
 <td>LCD port socket</td>
 <td>col 31, row 2</td>
-<td><strong>col 40, row 22</strong></td>
+<td><strong>col 30, row 22</strong></td>
 <td><code>VIN</code></td>
 <td>VIN side, pos 1</td>
 </tr>
@@ -539,7 +539,7 @@ those three.</p>
 <td>LCD SDA</td>
 <td>LCD port socket</td>
 <td>col 32, row 2</td>
-<td><strong>col 30, row 12</strong></td>
+<td><strong>col 40, row 12</strong></td>
 <td><code>D21</code></td>
 <td>3V3 side, pos 11</td>
 </tr>
@@ -548,7 +548,7 @@ those three.</p>
 <td>LCD SCL</td>
 <td>LCD port socket</td>
 <td>col 33, row 2</td>
-<td><strong>col 30, row 9</strong></td>
+<td><strong>col 40, row 9</strong></td>
 <td><code>D22</code></td>
 <td>3V3 side, pos 14</td>
 </tr>
@@ -560,7 +560,7 @@ those three.</p>
 <hr />
 <h2 id="wiring-md--b-the-esp32-socket-slot-by-slot">B. The ESP32 socket, slot by slot</h2>
 <p>All 30 sockets. <strong>16 carry a wire</strong>, the rest are soldered but unused. Leave a 2mm stub on the ones marked ●; trim the others flush.</p>
-<h3 id="wiring-md--3v3-side-board-column-30">3V3 side — board column 30</h3>
+<h3 id="wiring-md--3v3-side-board-column-40">3V3 side — board column 40</h3>
 <table>
 <thead>
 <tr>
@@ -575,111 +575,111 @@ those three.</p>
 <tr>
 <td style="text-align: right;">1</td>
 <td>3V3</td>
-<td>col 30, row 22</td>
+<td>col 40, row 22</td>
 <td style="text-align: center;"></td>
 <td><em>unused — trim flush</em></td>
 </tr>
 <tr>
 <td style="text-align: right;">2</td>
 <td><strong>GND</strong></td>
-<td>col 30, row 21</td>
+<td>col 40, row 21</td>
 <td style="text-align: center;">●</td>
 <td>wire 12 — ground, from col 28, row 8</td>
 </tr>
 <tr>
 <td style="text-align: right;">3</td>
 <td>D15</td>
-<td>col 30, row 20</td>
+<td>col 40, row 20</td>
 <td style="text-align: center;"></td>
 <td><em>unused — trim flush</em></td>
 </tr>
 <tr>
 <td style="text-align: right;">4</td>
 <td>D2</td>
-<td>col 30, row 19</td>
+<td>col 40, row 19</td>
 <td style="text-align: center;"></td>
 <td><em>unused — trim flush</em></td>
 </tr>
 <tr>
 <td style="text-align: right;">5</td>
 <td><strong>D4</strong></td>
-<td>col 30, row 18</td>
+<td>col 40, row 18</td>
 <td style="text-align: center;">●</td>
 <td>wire 8 — button 4 yellow, from col 24, row 11</td>
 </tr>
 <tr>
 <td style="text-align: right;">6</td>
 <td>RX2</td>
-<td>col 30, row 17</td>
+<td>col 40, row 17</td>
 <td style="text-align: center;"></td>
 <td><em>unused — trim flush</em></td>
 </tr>
 <tr>
 <td style="text-align: right;">7</td>
 <td>TX2</td>
-<td>col 30, row 16</td>
+<td>col 40, row 16</td>
 <td style="text-align: center;"></td>
 <td><em>unused — trim flush</em></td>
 </tr>
 <tr>
 <td style="text-align: right;">8</td>
 <td>D5</td>
-<td>col 30, row 15</td>
+<td>col 40, row 15</td>
 <td style="text-align: center;"></td>
 <td><em>unused — trim flush</em></td>
 </tr>
 <tr>
 <td style="text-align: right;">9</td>
 <td><strong>D18</strong></td>
-<td>col 30, row 14</td>
+<td>col 40, row 14</td>
 <td style="text-align: center;">●</td>
 <td>wire 10 — no (deny), from col 13, row 19</td>
 </tr>
 <tr>
 <td style="text-align: right;">10</td>
 <td><strong>D19</strong></td>
-<td>col 30, row 13</td>
+<td>col 40, row 13</td>
 <td style="text-align: center;">●</td>
 <td>wire 11 — yes (approve), from col 22, row 19</td>
 </tr>
 <tr>
 <td style="text-align: right;">11</td>
 <td><strong>D21</strong></td>
-<td>col 30, row 12</td>
+<td>col 40, row 12</td>
 <td style="text-align: center;">●</td>
 <td>LCD SDA, from LCD port, col 32 row 2</td>
 </tr>
 <tr>
 <td style="text-align: right;">12</td>
 <td>RX0</td>
-<td>col 30, row 11</td>
+<td>col 40, row 11</td>
 <td style="text-align: center;"></td>
 <td><em>unused — trim flush</em></td>
 </tr>
 <tr>
 <td style="text-align: right;">13</td>
 <td>TX0</td>
-<td>col 30, row 10</td>
+<td>col 40, row 10</td>
 <td style="text-align: center;"></td>
 <td><em>unused — trim flush</em></td>
 </tr>
 <tr>
 <td style="text-align: right;">14</td>
 <td><strong>D22</strong></td>
-<td>col 30, row 9</td>
+<td>col 40, row 9</td>
 <td style="text-align: center;">●</td>
 <td>LCD SCL, from LCD port, col 33 row 2</td>
 </tr>
 <tr>
 <td style="text-align: right;">15</td>
 <td><strong>D23</strong></td>
-<td>col 30, row 8</td>
+<td>col 40, row 8</td>
 <td style="text-align: center;">●</td>
 <td>wire 9 — AA (always allow), from col 4, row 19</td>
 </tr>
 </tbody>
 </table>
-<h3 id="wiring-md--vin-side-board-column-40">VIN side — board column 40</h3>
+<h3 id="wiring-md--vin-side-board-column-30">VIN side — board column 30</h3>
 <table>
 <thead>
 <tr>
@@ -694,105 +694,105 @@ those three.</p>
 <tr>
 <td style="text-align: right;">1</td>
 <td><strong>VIN</strong></td>
-<td>col 40, row 22</td>
+<td>col 30, row 22</td>
 <td style="text-align: center;">●</td>
 <td>LCD VCC, from LCD port, col 31 row 2</td>
 </tr>
 <tr>
 <td style="text-align: right;">2</td>
 <td><strong>GND</strong></td>
-<td>col 40, row 21</td>
+<td>col 30, row 21</td>
 <td style="text-align: center;">●</td>
 <td>LCD GND, from LCD port, col 30 row 2</td>
 </tr>
 <tr>
 <td style="text-align: right;">3</td>
 <td><strong>D13</strong></td>
-<td>col 40, row 20</td>
+<td>col 30, row 20</td>
 <td style="text-align: center;">●</td>
 <td>wire 1 — LED 1 red, from col 4, row 2</td>
 </tr>
 <tr>
 <td style="text-align: right;">4</td>
 <td>D12</td>
-<td>col 40, row 19</td>
+<td>col 30, row 19</td>
 <td style="text-align: center;"></td>
 <td><em>unused — trim flush</em></td>
 </tr>
 <tr>
 <td style="text-align: right;">5</td>
 <td><strong>D14</strong></td>
-<td>col 40, row 18</td>
+<td>col 30, row 18</td>
 <td style="text-align: center;">●</td>
 <td>wire 2 — LED 2 green, from col 11, row 2</td>
 </tr>
 <tr>
 <td style="text-align: right;">6</td>
 <td><strong>D27</strong></td>
-<td>col 40, row 17</td>
+<td>col 30, row 17</td>
 <td style="text-align: center;">●</td>
 <td>wire 3 — LED 3 blue, from col 18, row 2</td>
 </tr>
 <tr>
 <td style="text-align: right;">7</td>
 <td><strong>D26</strong></td>
-<td>col 40, row 16</td>
+<td>col 30, row 16</td>
 <td style="text-align: center;">●</td>
 <td>wire 4 — LED 4 yellow, from col 25, row 2</td>
 </tr>
 <tr>
 <td style="text-align: right;">8</td>
 <td><strong>D25</strong></td>
-<td>col 40, row 15</td>
+<td>col 30, row 15</td>
 <td style="text-align: center;">●</td>
 <td>wire 7 — button 3 blue, from col 17, row 11</td>
 </tr>
 <tr>
 <td style="text-align: right;">9</td>
 <td><strong>D33</strong></td>
-<td>col 40, row 14</td>
+<td>col 30, row 14</td>
 <td style="text-align: center;">●</td>
 <td>wire 6 — button 2 green, from col 10, row 11</td>
 </tr>
 <tr>
 <td style="text-align: right;">10</td>
 <td><strong>D32</strong></td>
-<td>col 40, row 13</td>
+<td>col 30, row 13</td>
 <td style="text-align: center;">●</td>
 <td>wire 5 — button 1 red, from col 3, row 11</td>
 </tr>
 <tr>
 <td style="text-align: right;">11</td>
 <td>D35</td>
-<td>col 40, row 12</td>
+<td>col 30, row 12</td>
 <td style="text-align: center;"></td>
 <td><em>unused — trim flush</em></td>
 </tr>
 <tr>
 <td style="text-align: right;">12</td>
 <td>D34</td>
-<td>col 40, row 11</td>
+<td>col 30, row 11</td>
 <td style="text-align: center;"></td>
 <td><em>unused — trim flush</em></td>
 </tr>
 <tr>
 <td style="text-align: right;">13</td>
 <td>VN</td>
-<td>col 40, row 10</td>
+<td>col 30, row 10</td>
 <td style="text-align: center;"></td>
 <td><em>unused — trim flush</em></td>
 </tr>
 <tr>
 <td style="text-align: right;">14</td>
 <td>VP</td>
-<td>col 40, row 9</td>
+<td>col 30, row 9</td>
 <td style="text-align: center;"></td>
 <td><em>unused — trim flush</em></td>
 </tr>
 <tr>
 <td style="text-align: right;">15</td>
 <td>EN</td>
-<td>col 40, row 8</td>
+<td>col 30, row 8</td>
 <td style="text-align: center;"></td>
 <td><em>unused — trim flush</em></td>
 </tr>
@@ -1079,25 +1079,25 @@ those three.</p>
 <td><strong>LCD port</strong></td>
 <td>pin 1 — GND</td>
 <td>col 30, row 2</td>
-<td>wire to <code>GND</code> at col 40, row 21</td>
+<td>wire to <code>GND</code> at col 30, row 21</td>
 </tr>
 <tr>
 <td><strong>LCD port</strong></td>
 <td>pin 2 — VCC</td>
 <td>col 31, row 2</td>
-<td>wire to <code>VIN</code> at col 40, row 22</td>
+<td>wire to <code>VIN</code> at col 30, row 22</td>
 </tr>
 <tr>
 <td><strong>LCD port</strong></td>
 <td>pin 3 — SDA</td>
 <td>col 32, row 2</td>
-<td>wire to <code>D21</code> at col 30, row 12</td>
+<td>wire to <code>D21</code> at col 40, row 12</td>
 </tr>
 <tr>
 <td><strong>LCD port</strong></td>
 <td>pin 4 — SCL</td>
 <td>col 33, row 2</td>
-<td>wire to <code>D22</code> at col 30, row 9</td>
+<td>wire to <code>D22</code> at col 40, row 9</td>
 </tr>
 </tbody>
 </table>
@@ -1133,7 +1133,7 @@ those three.</p>
 </tr>
 </tbody>
 </table>
-<p>All three are joined by a bare wire down <strong>column 1</strong>, rows 8–21. One wire (#12) carries ground from col 28, row 8 to the ESP32's <code>GND</code> at col 30, row 21. There are <strong>no other ground connections</strong> — every ground leg sits directly on a bus.</p></section><section class="docwrap" id="connections-md"><h1>How you actually connect things</h1>
+<p>All three are joined by a bare wire down <strong>column 1</strong>, rows 8–21. One wire (#12) carries ground from col 28, row 8 to the ESP32's <code>GND</code> at col 40, row 21. There are <strong>no other ground connections</strong> — every ground leg sits directly on a bus.</p></section><section class="docwrap" id="connections-md"><h1>How you actually connect things</h1>
 <p>Read this once before <code>BUILD.md</code>. Everything in that document is one of the five moves
 below, repeated. If these make sense, the build is just following a list.</p>
 <hr />
@@ -2036,7 +2036,7 @@ socket pins, so the plug and cable pass clear over the board. What it does mean 
 <td style="text-align: right;">1</td>
 <td>LED 1 red</td>
 <td>col 4, row 2</td>
-<td><strong>col 40, row 20</strong></td>
+<td><strong>col 30, row 20</strong></td>
 <td>D13 (VIN 3)</td>
 <td>step 3</td>
 </tr>
@@ -2044,7 +2044,7 @@ socket pins, so the plug and cable pass clear over the board. What it does mean 
 <td style="text-align: right;">2</td>
 <td>LED 2 green</td>
 <td>col 11, row 2</td>
-<td><strong>col 40, row 18</strong></td>
+<td><strong>col 30, row 18</strong></td>
 <td>D14 (VIN 5)</td>
 <td>step 3</td>
 </tr>
@@ -2052,7 +2052,7 @@ socket pins, so the plug and cable pass clear over the board. What it does mean 
 <td style="text-align: right;">3</td>
 <td>LED 3 blue</td>
 <td>col 18, row 2</td>
-<td><strong>col 40, row 17</strong></td>
+<td><strong>col 30, row 17</strong></td>
 <td>D27 (VIN 6)</td>
 <td>step 3</td>
 </tr>
@@ -2060,7 +2060,7 @@ socket pins, so the plug and cable pass clear over the board. What it does mean 
 <td style="text-align: right;">4</td>
 <td>LED 4 yellow</td>
 <td>col 25, row 2</td>
-<td><strong>col 40, row 16</strong></td>
+<td><strong>col 30, row 16</strong></td>
 <td>D26 (VIN 7)</td>
 <td>step 3</td>
 </tr>
@@ -2068,7 +2068,7 @@ socket pins, so the plug and cable pass clear over the board. What it does mean 
 <td style="text-align: right;">5</td>
 <td>button 1 red</td>
 <td>col 3, row 11</td>
-<td><strong>col 40, row 13</strong></td>
+<td><strong>col 30, row 13</strong></td>
 <td>D32 (VIN 10)</td>
 <td>step 4</td>
 </tr>
@@ -2076,7 +2076,7 @@ socket pins, so the plug and cable pass clear over the board. What it does mean 
 <td style="text-align: right;">6</td>
 <td>button 2 green</td>
 <td>col 10, row 11</td>
-<td><strong>col 40, row 14</strong></td>
+<td><strong>col 30, row 14</strong></td>
 <td>D33 (VIN 9)</td>
 <td>step 4</td>
 </tr>
@@ -2084,7 +2084,7 @@ socket pins, so the plug and cable pass clear over the board. What it does mean 
 <td style="text-align: right;">7</td>
 <td>button 3 blue</td>
 <td>col 17, row 11</td>
-<td><strong>col 40, row 15</strong></td>
+<td><strong>col 30, row 15</strong></td>
 <td>D25 (VIN 8)</td>
 <td>step 4</td>
 </tr>
@@ -2092,7 +2092,7 @@ socket pins, so the plug and cable pass clear over the board. What it does mean 
 <td style="text-align: right;">8</td>
 <td>button 4 yellow</td>
 <td>col 24, row 11</td>
-<td><strong>col 30, row 18</strong></td>
+<td><strong>col 40, row 18</strong></td>
 <td>D4 (3V3 5)</td>
 <td>step 4</td>
 </tr>
@@ -2100,7 +2100,7 @@ socket pins, so the plug and cable pass clear over the board. What it does mean 
 <td style="text-align: right;">9</td>
 <td>AA (always allow)</td>
 <td>col 4, row 19</td>
-<td><strong>col 30, row 8</strong></td>
+<td><strong>col 40, row 8</strong></td>
 <td>D23 (3V3 15)</td>
 <td>step 5</td>
 </tr>
@@ -2108,7 +2108,7 @@ socket pins, so the plug and cable pass clear over the board. What it does mean 
 <td style="text-align: right;">10</td>
 <td>no (deny)</td>
 <td>col 13, row 19</td>
-<td><strong>col 30, row 14</strong></td>
+<td><strong>col 40, row 14</strong></td>
 <td>D18 (3V3 9)</td>
 <td>step 5</td>
 </tr>
@@ -2116,7 +2116,7 @@ socket pins, so the plug and cable pass clear over the board. What it does mean 
 <td style="text-align: right;">11</td>
 <td>yes (approve)</td>
 <td>col 22, row 19</td>
-<td><strong>col 30, row 13</strong></td>
+<td><strong>col 40, row 13</strong></td>
 <td>D19 (3V3 10)</td>
 <td>step 5</td>
 </tr>
@@ -2124,7 +2124,7 @@ socket pins, so the plug and cable pass clear over the board. What it does mean 
 <td style="text-align: right;">12</td>
 <td>ground</td>
 <td>col 28, row 8</td>
-<td><strong>col 30, row 21</strong></td>
+<td><strong>col 40, row 21</strong></td>
 <td>GND (3V3 2)</td>
 <td>step 2</td>
 </tr>
@@ -2144,25 +2144,25 @@ socket pins, so the plug and cable pass clear over the board. What it does mean 
 <tr>
 <td>GND</td>
 <td>col 30, row 2</td>
-<td>col 40, row 21</td>
+<td>col 30, row 21</td>
 <td><strong>GND</strong></td>
 </tr>
 <tr>
 <td>VCC</td>
 <td>col 31, row 2</td>
-<td>col 40, row 22</td>
+<td>col 30, row 22</td>
 <td><strong>VIN</strong></td>
 </tr>
 <tr>
 <td>SDA</td>
 <td>col 32, row 2</td>
-<td>col 30, row 12</td>
+<td>col 40, row 12</td>
 <td><strong>D21</strong></td>
 </tr>
 <tr>
 <td>SCL</td>
 <td>col 33, row 2</td>
-<td>col 30, row 9</td>
+<td>col 40, row 9</td>
 <td><strong>D22</strong></td>
 </tr>
 </tbody>
@@ -2442,11 +2442,11 @@ Brown-black-brown is 100Ω and will look fine but run the LEDs bright; red-red-r
 <tbody>
 <tr>
 <td><strong>col 30</strong></td>
-<td>8, 9, 12, 13, 14, 18, 21</td>
+<td>13, 14, 15, 16, 17, 18, 20, 21, 22</td>
 </tr>
 <tr>
 <td><strong>col 40</strong></td>
-<td>13, 14, 15, 16, 17, 18, 20, 21, 22</td>
+<td>8, 9, 12, 13, 14, 18, 21</td>
 </tr>
 </tbody>
 </table>
@@ -2459,7 +2459,7 @@ Brown-black-brown is 100Ω and will look fine but run the LEDs bright; red-red-r
 <li>Lay it on the underside along row <strong>8</strong>, columns 1 → 28, <strong>beside the pad centres, never across them</strong>. A wire lying over a hole blocks the lead you push in later, and the joint still looks perfect from underneath.</li>
 <li>Tack one end. Check it is straight and clear of every hole. Then solder every 2nd–3rd pad.</li>
 <li>Leave ~10mm of tail at column 1 — the other two buses join it there.</li>
-<li>Run wire <strong>12</strong>: from <strong>col 28, row 8</strong> to the socket's <strong>GND</strong> pad at <strong>col 30, row 21</strong>. This is the board's only ground wire.</li>
+<li>Run wire <strong>12</strong>: from <strong>col 28, row 8</strong> to the socket's <strong>GND</strong> pad at <strong>col 40, row 21</strong>. This is the board's only ground wire.</li>
 </ol>
 <p>✅ <strong>Test:</strong> every pad in row 8 beeps to every other, and to the socket's GND pad. No other row beeps to it. Push a spare lead down through a row-8 hole from the top — it must reach the copper, not stop on the bus wire.</p>
 <h4>Step 3 — LEDs, resistors and their four wires  ·  <em>Moves 1, 3 and 4</em></h4>
@@ -2482,7 +2482,7 @@ Brown-black-brown is 100Ω and will look fine but run the LEDs bright; red-red-r
 <td>col 4, row 3</td>
 <td>col 4, row 4</td>
 <td>col 4, row 8</td>
-<td><strong>1</strong> → col 40, row 20 (D13)</td>
+<td><strong>1</strong> → col 30, row 20 (D13)</td>
 </tr>
 <tr>
 <td>2 green</td>
@@ -2490,7 +2490,7 @@ Brown-black-brown is 100Ω and will look fine but run the LEDs bright; red-red-r
 <td>col 11, row 3</td>
 <td>col 11, row 4</td>
 <td>col 11, row 8</td>
-<td><strong>2</strong> → col 40, row 18 (D14)</td>
+<td><strong>2</strong> → col 30, row 18 (D14)</td>
 </tr>
 <tr>
 <td>3 blue</td>
@@ -2498,7 +2498,7 @@ Brown-black-brown is 100Ω and will look fine but run the LEDs bright; red-red-r
 <td>col 18, row 3</td>
 <td>col 18, row 4</td>
 <td>col 18, row 8</td>
-<td><strong>3</strong> → col 40, row 17 (D27)</td>
+<td><strong>3</strong> → col 30, row 17 (D27)</td>
 </tr>
 <tr>
 <td>4 yellow</td>
@@ -2506,7 +2506,7 @@ Brown-black-brown is 100Ω and will look fine but run the LEDs bright; red-red-r
 <td>col 25, row 3</td>
 <td>col 25, row 4</td>
 <td>col 25, row 8</td>
-<td><strong>4</strong> → col 40, row 16 (D26)</td>
+<td><strong>4</strong> → col 30, row 16 (D26)</td>
 </tr>
 </tbody>
 </table>
@@ -2538,7 +2538,7 @@ Brown-black-brown is 100Ω and will look fine but run the LEDs bright; red-red-r
 <td>col 5, row 11</td>
 <td>~~col 3, row 16~~</td>
 <td>col 5, row 16</td>
-<td><strong>5</strong> → col 40, row 13 (D32)</td>
+<td><strong>5</strong> → col 30, row 13 (D32)</td>
 </tr>
 <tr>
 <td>2 green</td>
@@ -2546,7 +2546,7 @@ Brown-black-brown is 100Ω and will look fine but run the LEDs bright; red-red-r
 <td>col 12, row 11</td>
 <td>~~col 10, row 16~~</td>
 <td>col 12, row 16</td>
-<td><strong>6</strong> → col 40, row 14 (D33)</td>
+<td><strong>6</strong> → col 30, row 14 (D33)</td>
 </tr>
 <tr>
 <td>3 blue</td>
@@ -2554,7 +2554,7 @@ Brown-black-brown is 100Ω and will look fine but run the LEDs bright; red-red-r
 <td>col 19, row 11</td>
 <td>~~col 17, row 16~~</td>
 <td>col 19, row 16</td>
-<td><strong>7</strong> → col 40, row 15 (D25)</td>
+<td><strong>7</strong> → col 30, row 15 (D25)</td>
 </tr>
 <tr>
 <td>4 yellow</td>
@@ -2562,7 +2562,7 @@ Brown-black-brown is 100Ω and will look fine but run the LEDs bright; red-red-r
 <td>col 26, row 11</td>
 <td>~~col 24, row 16~~</td>
 <td>col 26, row 16</td>
-<td><strong>8</strong> → col 30, row 18 (D4)</td>
+<td><strong>8</strong> → col 40, row 18 (D4)</td>
 </tr>
 </tbody>
 </table>
@@ -2600,7 +2600,7 @@ Brown-black-brown is 100Ω and will look fine but run the LEDs bright; red-red-r
 <td>col 6, row 19</td>
 <td>~~col 4, row 21~~</td>
 <td>col 6, row 21</td>
-<td><strong>9</strong> → col 30, row 8 (D23)</td>
+<td><strong>9</strong> → col 40, row 8 (D23)</td>
 </tr>
 <tr>
 <td>no (deny)</td>
@@ -2608,7 +2608,7 @@ Brown-black-brown is 100Ω and will look fine but run the LEDs bright; red-red-r
 <td>col 15, row 19</td>
 <td>~~col 13, row 21~~</td>
 <td>col 15, row 21</td>
-<td><strong>10</strong> → col 30, row 14 (D18)</td>
+<td><strong>10</strong> → col 40, row 14 (D18)</td>
 </tr>
 <tr>
 <td>yes (approve)</td>
@@ -2616,7 +2616,7 @@ Brown-black-brown is 100Ω and will look fine but run the LEDs bright; red-red-r
 <td>col 24, row 19</td>
 <td>~~col 22, row 21~~</td>
 <td>col 24, row 21</td>
-<td><strong>11</strong> → col 30, row 13 (D19)</td>
+<td><strong>11</strong> → col 40, row 13 (D19)</td>
 </tr>
 </tbody>
 </table>
@@ -2638,25 +2638,25 @@ Brown-black-brown is 100Ω and will look fine but run the LEDs bright; red-red-r
 <tr>
 <td>GND</td>
 <td>col 30, row 2</td>
-<td>col 40, row 21</td>
+<td>col 30, row 21</td>
 <td><strong>GND</strong></td>
 </tr>
 <tr>
 <td>VCC</td>
 <td>col 31, row 2</td>
-<td>col 40, row 22</td>
+<td>col 30, row 22</td>
 <td><strong>VIN</strong></td>
 </tr>
 <tr>
 <td>SDA</td>
 <td>col 32, row 2</td>
-<td>col 30, row 12</td>
+<td>col 40, row 12</td>
 <td><strong>D21</strong></td>
 </tr>
 <tr>
 <td>SCL</td>
 <td>col 33, row 2</td>
-<td>col 30, row 9</td>
+<td>col 40, row 9</td>
 <td><strong>D22</strong></td>
 </tr>
 </tbody>
