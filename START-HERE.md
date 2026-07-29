@@ -212,6 +212,47 @@ changed since the last one that passed.
 
 ---
 
+## Running it
+
+```bash
+~/projects/agentpad/run.sh
+```
+
+That is the whole thing. It checks the board is plugged in, refuses to start a second
+daemon over the top of a running one, and then runs in the foreground — `ctrl-c` stops it.
+
+In another terminal, to watch the agents:
+
+```bash
+tmux attach -t agentpad
+```
+
+You do not have to attach. The buttons work either way; attaching is just how you read
+what the agents are saying. Detach with `ctrl-b d`.
+
+**Then:** press a colour button. That agent's tmux window is created if it does not exist,
+running `claude`, and focused. Press it again later to jump back to it.
+
+When an agent wants permission its LED blinks fast. **Press its colour button first to
+bring it on screen**, then `yes` / `no` / `AA`. The pad answers the agent you are looking
+at, not the one blinking — that is the interlock that stops a keystroke landing in the
+wrong session.
+
+### When something looks wrong
+
+| | |
+|---|---|
+| `No board at /dev/cu.usbserial-0001` | Cable not seated, or a charge-only cable — it will power the board but never enumerate |
+| Buttons do nothing | Is the daemon running? `pgrep -f daemon.py` |
+| LCD flashes `not blocked` | The interlock declined: that agent has no live prompt, or you are looking at a different one |
+| `serial noise or corruption` on upload | The daemon has the port. Stop it first — one process per port |
+| LEDs stuck on stale states | `ctrl-c` and re-run `run.sh`; it clears the board on startup |
+
+`daemon.log` records every event, button press and refusal, with timestamps. It is the
+first place to look.
+
+---
+
 ## The things most likely to bite you
 
 Not a general list — these are the ones that have actually happened on this project.

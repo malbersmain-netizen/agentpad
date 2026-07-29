@@ -51,6 +51,7 @@ fallback is not redundant; do not remove it on the grounds that the hook covers 
 
 | Path | What |
 |---|---|
+| `run.sh` | **Start here** — checks the board, refuses a duplicate daemon, runs it |
 | `daemon.py` | The brain: serial ↔ tmux ↔ LEDs/LCD. Launches/focuses agents, approve/deny. |
 | `test.py` | Serial smoke test |
 | `hooks/agentpad.sh` | Source of truth for the hook script — **copy to `~/.claude/agentpad.sh`** (see Install) |
@@ -93,7 +94,8 @@ Then `~/.claude/settings.json` needs five hooks, each running `~/.claude/agentpa
 | `Stop` | `done` |
 | `SessionEnd` | `none` |
 
-Run the daemon with `mise exec -- python daemon.py` from this directory.
+Start everything with `./run.sh` (checks the board, refuses a second daemon, runs in the
+foreground). Equivalent to `mise exec -- python daemon.py` from this directory.
 
 **Path note:** the code repo lives at `~/projects/agentpad`, not `~/agentpad`. The events file and all Python live here too; the hook script writes to `~/projects/agentpad/events.jsonl`. If you copy commands from an older draft that used `~/agentpad`, fix the path.
 
